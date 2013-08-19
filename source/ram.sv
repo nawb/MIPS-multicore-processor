@@ -75,10 +75,10 @@ module ram (input logic CLK, nRST, cpu_ram_if.ram ramif);
       en <= 0;
     end
     else if (count == LAT ||
-!(ramif.ramREN || ramif.ramWEN) ||
-ramif.ramaddr != addr ||
-en != {ramif.ramREN,ramif.ramWEN}
-)
+            !(ramif.ramREN || ramif.ramWEN) ||
+            ramif.ramaddr != addr ||
+            en != {ramif.ramREN,ramif.ramWEN}
+            )
     begin
       count <= 0;
       addr <= ramif.ramaddr;
