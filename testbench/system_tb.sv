@@ -36,14 +36,16 @@ module system_tb;
 `ifndef MAPPED
   system                              DUT (CLK,nRST,syif);
 `else
-  system                              DUT (
-    .\syif.tbCTRL (syif.tbCTRL),
-    .\syif.halt (syif.halt),
-    .\syif.WEN (syif.WEN),
-    .\syif.REN (syif.REN),
-    .\syif.addr (syif.addr),
-    .\syif.store (syif.store),
-    .\syif.load (syif.load)
+  system                              DUT (,,,,//for altera debug ports
+    CLK,
+    nRST,
+    syif.halt,
+    syif.load,
+    syif.addr,
+    syif.store,
+    syif.REN,
+    syif.WEN,
+    syif.tbCTRL
   );
 `endif
 endmodule
@@ -57,6 +59,9 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
 
   initial
   begin
+    //$monitor("@%g CLK=%b nRST=%b H=%b tbctrl=%b addr=%h store=%h",
+    //  $time, CLK, nRST, syif.halt, syif.tbCTRL, syif.addr, syif.store
+    //);
     nRST = 0;
     syif.tbCTRL = 0;
     syif.addr = 0;
@@ -108,7 +113,7 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
       syif.addr = line.substr(3,6).atohex() << 2;
       syif.store = line.substr(9,16).atohex();
       // print
-      $display("%s :: a:%d d:%h",line, syif.addr, syif.store);
+      $display("%s :: a:%h d:%h",line, syif.addr, syif.store);
       @(posedge CLK);
     end //while
     if (memfd)
@@ -159,6 +164,7 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
       syif.REN = 0;
       $fdisplay(memfd,":00000001FF");
       $fclose(memfd);
+      $display("Finished memory dump.");
     end
   endtask
 endprogram
