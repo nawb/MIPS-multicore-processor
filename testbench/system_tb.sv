@@ -59,20 +59,13 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
 
   initial
   begin
-    //$monitor("@%g CLK=%b nRST=%b H=%b tbctrl=%b addr=%h store=%h",
-    //  $time, CLK, nRST, syif.halt, syif.tbCTRL, syif.addr, syif.store
-    //);
     nRST = 0;
     syif.tbCTRL = 0;
     syif.addr = 0;
     syif.store = 0;
     syif.WEN = 0;
     syif.REN = 0;
-`ifndef MAPPED
     @(posedge CLK);
-`else
-    load_program();
-`endif
     $display("Starting Processor.");
     nRST = 1;
     // wait for halt
@@ -86,44 +79,6 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
     dump_memory();
     $finish;
   end
-
-  task automatic load_program();
-    string filename = "meminit.hex";
-    int memfd;
-
-    syif.tbCTRL = 1;
-    syif.addr = 0;
-    syif.WEN = 0;
-    syif.REN = 0;
-
-    memfd = $fopen(filename,"r");
-    if (memfd)
-      $display("Starting memory initialization.");
-    else
-      begin $display("Failed to open %s.",filename); $finish; end
-
-    while (memfd && !$feof(memfd))
-    begin
-      string line;
-      if (!$fgets(line,memfd) || line.substr(0,2) !== ":04")
-        break;
-      syif.WEN = 1;
-      // remove newline
-      line = line.substr(0,line.len()-2);
-      syif.addr = line.substr(3,6).atohex() << 2;
-      syif.store = line.substr(9,16).atohex();
-      // print
-      $display("%s :: a:%h d:%h",line, syif.addr, syif.store);
-      @(posedge CLK);
-    end //while
-    if (memfd)
-    begin
-      syif.tbCTRL = 0;
-      syif.WEN = 0;
-      $display("Finished initializing memory.");
-      $fclose(memfd);
-    end
-  endtask
 
   task automatic dump_memory();
     string filename = "memcpu.hex";
@@ -148,7 +103,7 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
 
       syif.addr = i << 2;
       syif.REN = 1;
-      @(posedge CLK);
+      repeat (2) @(posedge CLK);
       if (syif.load === 0)
         continue;
       values = {8'h04,16'(i),8'h00,syif.load};
