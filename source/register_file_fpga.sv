@@ -16,9 +16,9 @@ module register_file_fpga (
 );
 
   // interface
-  register_file_if rfif(CLOCK_50, KEY[2]);
+  register_file_if rfif();
   // rf
-  register_file RF(rfif);
+  register_file RF(CLOCK_50, KEY[2], rfif);
 
 assign rfif.wsel = SW[4:0];
 assign rfif.rsel1 = SW[9:5];
