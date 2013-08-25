@@ -15,7 +15,7 @@ module register_file_tb;
 
   parameter PERIOD = 10;
 
-  logic CLK = 0, nRST = 0;
+  logic CLK = 0, nRST;
 
   // test vars
   int v1 = 1;
@@ -27,6 +27,8 @@ module register_file_tb;
 
   // interface
   register_file_if rfif ();
+  // test program
+  test PROG ();
   // DUT
 `ifndef MAPPED
   register_file DUT(CLK, nRST, rfif);
@@ -46,5 +48,5 @@ module register_file_tb;
 
 endmodule
 
-program test();
+program test;
 endprogram
