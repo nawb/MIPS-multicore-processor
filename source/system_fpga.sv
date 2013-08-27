@@ -8,6 +8,9 @@
 // interface
 `include "system_if.vh"
 
+// types
+`include "cpu_types_pkg.vh"
+
 module system_fpga (
   input logic CLOCK_50,
   input logic [3:0] KEY,
@@ -24,9 +27,9 @@ module system_fpga (
   output logic [6:0] HEX7
 );
   // interface
-  system_if   syif();
+  system_if syif();
   // system
-  system      CPU(CLOCK_50, KEY[3], syif);
+  system CPU(CLOCK_50,KEY[3],syif);
 
   // signals we should not use
   assign syif.WEN = 0;
@@ -41,7 +44,7 @@ module system_fpga (
   assign syif.addr = {16'b0,SW[15:0]};
 
   always_comb
-  begin : HEX0
+  begin : HEXZERO
     unique casez (syif.load[3:0])
       'h0: HEX0 = 7'b1000000;
       'h1: HEX0 = 7'b1111001;
@@ -60,10 +63,10 @@ module system_fpga (
       'he: HEX0 = 7'b0000110;
       'hf: HEX0 = 7'b0001110;
     endcase
-  end : HEX0
+  end : HEXZERO
 
   always_comb
-  begin : HEX1
+  begin : HEXONE
     unique casez (syif.load[7:4])
       'h0: HEX1 = 7'b1000000;
       'h1: HEX1 = 7'b1111001;
@@ -82,10 +85,10 @@ module system_fpga (
       'he: HEX1 = 7'b0000110;
       'hf: HEX1 = 7'b0001110;
     endcase
-  end : HEX1
+  end : HEXONE
 
   always_comb
-  begin : HEX2
+  begin : HEXTWO
     unique casez (syif.load[11:8])
       'h0: HEX2 = 7'b1000000;
       'h1: HEX2 = 7'b1111001;
@@ -104,10 +107,10 @@ module system_fpga (
       'he: HEX2 = 7'b0000110;
       'hf: HEX2 = 7'b0001110;
     endcase
-  end : HEX2
+  end : HEXTWO
 
   always_comb
-  begin : HEX3
+  begin : HEXTHREE
     unique casez (syif.load[15:12])
       'h0: HEX3 = 7'b1000000;
       'h1: HEX3 = 7'b1111001;
@@ -126,10 +129,10 @@ module system_fpga (
       'he: HEX3 = 7'b0000110;
       'hf: HEX3 = 7'b0001110;
     endcase
-  end : HEX3
+  end : HEXTHREE
 
   always_comb
-  begin : HEX4
+  begin : HEXFOUR
     unique casez (syif.load[19:16])
       'h0: HEX4 = 7'b1000000;
       'h1: HEX4 = 7'b1111001;
@@ -148,10 +151,10 @@ module system_fpga (
       'he: HEX4 = 7'b0000110;
       'hf: HEX4 = 7'b0001110;
     endcase
-  end : HEX4
+  end : HEXFOUR
 
   always_comb
-  begin : HEX5
+  begin : HEXFIVE
     unique casez (syif.load[23:20])
       'h0: HEX5 = 7'b1000000;
       'h1: HEX5 = 7'b1111001;
@@ -170,16 +173,16 @@ module system_fpga (
       'he: HEX5 = 7'b0000110;
       'hf: HEX5 = 7'b0001110;
     endcase
-  end : HEX5
+  end : HEXFIVE
 
   always_comb
-  begin : HEX6
+  begin : HEXSIX
     unique casez (syif.load[27:24])
       'h0: HEX6 = 7'b1000000;
       'h1: HEX6 = 7'b1111001;
       'h2: HEX6 = 7'b0100100;
       'h3: HEX6 = 7'b0110000;
-      'h4: HEX0 = 7'b0011001;
+      'h4: HEX6 = 7'b0011001;
       'h5: HEX6 = 7'b0010010;
       'h6: HEX6 = 7'b0000010;
       'h7: HEX6 = 7'b1111000;
@@ -192,10 +195,10 @@ module system_fpga (
       'he: HEX6 = 7'b0000110;
       'hf: HEX6 = 7'b0001110;
     endcase
-  end : HEX6
+  end : HEXSIX
 
   always_comb
-  begin : HEX7
+  begin : HEXSEVEN
     unique casez (syif.load[31:28])
       'h0: HEX7 = 7'b1000000;
       'h1: HEX7 = 7'b1111001;
@@ -214,7 +217,7 @@ module system_fpga (
       'he: HEX7 = 7'b0000110;
       'hf: HEX7 = 7'b0001110;
     endcase
-  end : HEX7
+  end : HEXSEVEN
 
 
 endmodule
