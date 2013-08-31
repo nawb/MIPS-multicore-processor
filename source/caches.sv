@@ -9,7 +9,7 @@
 module caches (
   input logic CLK, nRST,
   datapath_cache_if.cache dcif,
-  cache_control_if ccif
+  cache_control_if.caches ccif
 );
   parameter CPUID = 0;
 
