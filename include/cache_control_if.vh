@@ -28,12 +28,12 @@ interface cache_control_if;
   // coherence
   // CPUS = number of cpus parameter passed from system -> cc
   // ccwait         : lets a cache know it needs to block cpu
-  // ccwb/ccinv     : let a cache know it needs to writeback/invalidate entry
-  // ccread/ccwrite : high if cache is doing a read/write of addr
+  // ccinv          : let a cache know it needs to invalidate entry
+  // ccwrite        : high if cache is doing a write of addr
   // ccsnoopaddr    : the addr being sent to other cache with either (wb/inv)
   // cctrans        : high if the cache state is transitioning (i.e. I->S, I->M, etc...)
-  logic   [CPUS-1:0]      ccwait, ccwb, ccinv;
-  logic   [CPUS-1:0]      ccread, ccwrite, cctrans;
+  logic   [CPUS-1:0]      ccwait, ccinv;
+  logic   [CPUS-1:0]      ccwrite, cctrans;
   word_t  [CPUS-1:0]      ccsnoopaddr;
 
   // ram side
@@ -48,13 +48,13 @@ interface cache_control_if;
             // ram inputs
             ramload, ramstate,
             // coherence inputs from cache
-            ccread, ccwrite, cctrans,
+            ccwrite, cctrans,
             // cache outputs
     output  iwait, dwait, iload, dload,
             // ram outputs
             ramstore, ramaddr, ramWEN, ramREN,
             // coherence outputs to cache
-            ccwait, ccwb, ccinv, ccsnoopaddr
+            ccwait, ccinv, ccsnoopaddr
   );
 
   // icache ports to controller
@@ -66,9 +66,15 @@ interface cache_control_if;
   // dcache ports to controller
   modport dcache (
     input   dwait, dload,
-            ccwait, ccwb, ccinv, ccsnoopaddr,
+            ccwait, ccinv, ccsnoopaddr,
     output  dREN, dWEN, daddr, dstore,
-            ccread, ccwrite, cctrans
+            ccwrite, cctrans
+  );
+  modport caches (
+    input   iwait, iload, dwait, dload,
+            ccwait, ccinv, ccsnoopaddr,
+    output  iREN, iaddr, dREN, dWEN, daddr, dstore,
+            ccwrite, cctrans
   );
 endinterface
 
