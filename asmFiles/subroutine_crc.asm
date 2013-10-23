@@ -11,7 +11,7 @@
 #fp $30 fp (callee preserved)
 #ra $31 return address
 #------------------------------------------------------
-# unsigned int crc32(unsigned int val)
+# $v0 = crc32($a0)
 crc32:
   lui $t1, 0x04C1
   ori $t1, $t1, 0x1DB7
