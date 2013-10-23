@@ -10,6 +10,9 @@
 #sp $29 sp (callee preserved)
 #fp $30 fp (callee preserved)
 #ra $31 return address
+
+# USAGE random0 = crc(seed), random1 = crc(random0)
+#       randomN = crc(randomN-1)
 #------------------------------------------------------
 # $v0 = crc32($a0)
 crc32:
