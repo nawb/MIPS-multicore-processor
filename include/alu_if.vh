@@ -8,7 +8,10 @@
  `include "cpu_types_pkg.vh"
 
 package alu_pkg;
-   
+   //DON'T NEED THESE ANYMORE SINCE THEY ARE
+   //ALREADY DEFINED IN CPU_TYPES_PKG
+   //SO MUCH FOR SPENDING THE ENTIRE DAY TRYING TO FIGURE OUT
+   //HOW TO ADD PARAMETERS TO AN INTERFACE FILE
    parameter [3:0] ADD  = 4'b0000;
    parameter [3:0] SUB  = 4'b0001;
    parameter [3:0] AND  = 4'b0010;
@@ -24,17 +27,6 @@ endpackage
 
 interface alu_if;
    import cpu_types_pkg::*;
-/*
-   const logic [3:0] ADD  = 4'b0000;
-   const logic [3:0] SUB  = 4'b0001;
-   const logic [3:0] AND  = 4'b0010;
-   const logic [3:0] OR   = 4'b0011;
-   const logic [3:0] XOR  = 4'b0100;
-   const logic [3:0] XNOR = 4'b0101;
-   const logic [3:0] LSL  = 4'b0110;
-   const logic [3:0] LSR  = 4'b0111;
-   const logic [3:0] HLT  = 4'b1000;
-*/
    
    logic [3:0] opcode;
    word_t      op1, op2, res;

@@ -21,8 +21,8 @@ module alu_tb;
    parameter PERIOD = 10;
    logic nRST = 1;
 
-//interface
-alu_if alum ();
+   //interface
+   alu_if alum ();
 
 `ifndef MAPPED
    alu DUT(nRST, alum);
@@ -38,7 +38,7 @@ alu_if alum ();
       .\alum.flag_v (alum.flag_z)
       );    
 `endif
-      
+   
    initial begin
       //initial values
       alum.op1 = '0;
@@ -48,52 +48,33 @@ alu_if alum ();
       //initial reset
       #PERIOD nRST = 1;
 
+      #PERIOD;
+      
       ///////////////////////////////////////////////
       //     ADDITION TESTS
       ///////////////////////////////////////////////
- 
+      
       $display("Testing ADD AAAA+5555");
-      #PERIOD;
-      alum.op1 = testA;
-      alum.op2 = test5;
-      alum.opcode = ALU_ADD;
-      #0.5ns;
-      if (alum.res != 32'hffffffff) $display("====FAILED===");
-      $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
-
+      do_op(testA, test5, ALU_ADD, 32'hffffffff);
+      
       
       $display("Testing ADD 1111+1111");
       nRST = 0;  #PERIOD nRST = 1; //reset result
-      alum.op1 = test1;
-      alum.op2 = test1;
-      alum.opcode = ALU_ADD;
-      #0.5ns;
-      if (alum.res != 32'h22222222) $display("====FAILED===");
-      $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
-
+      do_op(test1, test1, ALU_ADD, 32'h22222222);
+      
       
       $display("Testing ADD FFFF+1");
-      alum.op1 = testF;
-      alum.op2 = 32'h01;      
-      alum.opcode = ALU_ADD;
-      #0.5ns;
-      if (alum.res != 32'h0) $display("====FAILED===");
-      $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
+      do_op(testF, 32'h01, ALU_ADD, 32'h0);
 
-
+      
       ///////////////////////////////////////////////
       //     SUBTRACTION TESTS
       ///////////////////////////////////////////////
       
       //nRST = 0;  #PERIOD nRST = 1; //no reset, want to see change in garbage value
       $display("Testing SUB 1111-1111");
-      alum.op1 = test1;
-      alum.op2 = test1;
-      alum.opcode = ALU_SUB;
-      #0.5ns;
-      if (alum.res != '0) $display("====FAILED===");
-      $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
-
+      do_op(test1, test1, ALU_SUB, '0);
+      
       
       ///////////////////////////////////////////////
       //     AND TESTS
@@ -101,16 +82,26 @@ alu_if alum ();
       
       //nRST = 0;  #PERIOD nRST = 1; //dont reset because result is going to be 0, so want a garbage value to see res change
       $display("Testing AND 1111&1111");
-      alum.op1 = testA;
-      alum.op2 = test5;
-      alum.opcode = ALU_AND;
-      #0.5ns;
-      if (alum.res != '0) $display("====FAILED===");
-      $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
+      do_op(testA, test5, ALU_AND, '0);
       
+   end // initial begin
+
+   
+   task do_op;
+      input [31:0] op1_;
+      input [31:0] op2_;
+      input [3:0]  opcode_;
+      input [31:0] desired_res;
       
-      
-      
-   end
+      begin
+	 alum.op1 = op1_;
+	 alum.op2 = op2_;
+	 alum.opcode = opcode_;
+	 #0.5ns;
+	 if (alum.res != desired_res) $display("====FAILED===");
+	 $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
+      end
+   endtask
+
 endmodule
 
