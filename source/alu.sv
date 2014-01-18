@@ -4,50 +4,50 @@
 //Lab Section:	437-03
 //Description: 	
 
-import cpu_types_pkg::*;
+`include "alu_if.vh"
+`include "cpu_types_pkg.vh"
 
-parameter [3:0] ADD  = 4'b0000;
-parameter [3:0] SUB  = 4'b0001;
-parameter [3:0] AND  = 4'b0010;
-parameter [3:0] OR   = 4'b0011;
-parameter [3:0] XOR  = 4'b0100;
-parameter [3:0] XNOR = 4'b0101;
-parameter [3:0] LSL  = 4'b0110;
-parameter [3:0] LSR  = 4'b0111;
+import cpu_types_pkg::*;
 
 module alu
   (
    input logic 	     nRST,
-   input 	     word_t op1,
-   input 	     word_t op2,
-   input logic [3:0] opcode,
-   output 	     word_t res,
-   output logic      flag_n,
-   output logic      flag_v,
-   output logic      flag_z
+   alu_if.alum aluif
    );
    
-
    always_comb begin
       if (!nRST) begin
-	 res = '0;
+	 aluif.res = '0;
       end
       else begin
-	 casez(opcode)
-	   ADD: begin
-	      res = op1 + op2;
+	 casez(aluif.opcode)
+	   ALU_ADD: begin
+	      aluif.res = aluif.op1 + aluif.op2;
 	   end
-	   SUB: begin
-	      res = op1 - op2;
+	   ALU_SUB: begin
+	      aluif.res = aluif.op1 - aluif.op2;
 	   end
-	   AND: begin
-	      res = op1 & op2;
+	   ALU_AND: begin
+	      aluif.res = aluif.op1 & aluif.op2;
 	   end
-	   OR: begin
-	      res = op1 | op2;
+	   ALU_OR: begin
+	      aluif.res = aluif.op1 | aluif.op2;
 	   end
-	   XOR: begin
-	      res = op1 ^ op2;
+	   ALU_XOR: begin
+	      aluif.res = aluif.op1 ^ aluif.op2;
+	   end
+	   ALU_NOR: begin
+	      aluif.res = aluif.op1 ^ aluif.op2;	      
+	   end
+	   ALU_SLT: begin
+	   end
+	   ALU_SLTU: begin
+	   end
+	   ALU_SLL: begin
+	      aluif.res = aluif.op1 << 1;
+	   end
+	   ALU_SRL: begin
+	      aluif.res = aluif.op1 >> 1;	      
 	   end
 	 endcase
       end

@@ -4,6 +4,8 @@
 //Lab Section:	437-03
 //Description:
 
+`include "alu_if.vh"
+
 // mapped timing needs this. 1ns is too fast
 `timescale 1 ns / 1 ns
 
@@ -14,75 +16,101 @@ module alu_tb;
    int test5 = 32'h55555555;
    int test1 = 32'h11111111;
    int test0 = 32'h00000000;
-   parameter [3:0] ADD  = 4'b0000;
-   parameter [3:0] SUB  = 4'b0001;
-   parameter [3:0] AND  = 4'b0010;
-   parameter [3:0] OR   = 4'b0011;
-   parameter [3:0] XOR  = 4'b0100;
-   parameter [3:0] XNOR = 4'b0101;
-   parameter [3:0] LSL  = 4'b0110;
-   parameter [3:0] LSR  = 4'b0111;
+   int testF = 32'hFFFFFFFF;
    
    parameter PERIOD = 10;
    logic nRST = 1;
-   word_t op1;
-   word_t op2;
-   word_t res;
-   logic [3:0] opcode;   
-   logic       flag_n;
-   logic       flag_v;
-   logic       flag_z;
-   
-   alu DUT(.*);
-   
+
+//interface
+alu_if alum ();
+
+`ifndef MAPPED
+   alu DUT(nRST, alum);
+`else
+   alu DUT
+     (
+      .\alum.op1 (alum.op1),
+      .\alum.op2 (alum.op2),
+      .\alum.opcode (alum.opcode),
+      .\alum.res (alum.res),
+      .\alum.flag_v (alum.flag_n),
+      .\alum.flag_v (alum.flag_v),
+      .\alum.flag_v (alum.flag_z)
+      );    
+`endif
+      
    initial begin
       //initial values
-      op1 = '0;
-      op2 = '0;
-      opcode = '0;
+      alum.op1 = '0;
+      alum.op2 = '0;
+      alum.opcode = '0;
       nRST = 0;
       //initial reset
       #PERIOD nRST = 1;
 
-      //test add
-      #PERIOD;
-      op1 = testA;
-      op2 = test5;
-      opcode = ADD;
+      ///////////////////////////////////////////////
+      //     ADDITION TESTS
+      ///////////////////////////////////////////////
+ 
       $display("Testing ADD AAAA+5555");
+      #PERIOD;
+      alum.op1 = testA;
+      alum.op2 = test5;
+      alum.opcode = ALU_ADD;
       #0.5ns;
-      if (res != 32'hffffffff) $display("FAILED: add AAAA+5555");
+      if (alum.res != 32'hffffffff) $display("====FAILED===");
+      $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
+
       
-      //test add
-      nRST = 0;  #PERIOD nRST = 1; //reset result
-      op1 = test1;
-      op2 = test1;
-      opcode = ADD;
       $display("Testing ADD 1111+1111");
-      #0.5ns;
-      if (res != 32'h22222222) $display("FAILED: add 1111+1111");
-      
-      //test sub
       nRST = 0;  #PERIOD nRST = 1; //reset result
-      op1 = test1;
-      op2 = test1;
-      opcode = SUB;
+      alum.op1 = test1;
+      alum.op2 = test1;
+      alum.opcode = ALU_ADD;
+      #0.5ns;
+      if (alum.res != 32'h22222222) $display("====FAILED===");
+      $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
+
+      
+      $display("Testing ADD FFFF+1");
+      alum.op1 = testF;
+      alum.op2 = 32'h01;      
+      alum.opcode = ALU_ADD;
+      #0.5ns;
+      if (alum.res != 32'h0) $display("====FAILED===");
+      $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
+
+
+      ///////////////////////////////////////////////
+      //     SUBTRACTION TESTS
+      ///////////////////////////////////////////////
+      
+      //nRST = 0;  #PERIOD nRST = 1; //no reset, want to see change in garbage value
       $display("Testing SUB 1111-1111");
+      alum.op1 = test1;
+      alum.op2 = test1;
+      alum.opcode = ALU_SUB;
       #0.5ns;
-      if (res != '0) $display("FAILED: sub 1111-1111");
+      if (alum.res != '0) $display("====FAILED===");
+      $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
+
       
-      //test and
-      nRST = 0;  #PERIOD nRST = 1; //reset result
-      op1 = testA;
-      op2 = test5;
-      opcode = AND;
+      ///////////////////////////////////////////////
+      //     AND TESTS
+      ///////////////////////////////////////////////
+      
+      //nRST = 0;  #PERIOD nRST = 1; //dont reset because result is going to be 0, so want a garbage value to see res change
       $display("Testing AND 1111&1111");
+      alum.op1 = testA;
+      alum.op2 = test5;
+      alum.opcode = ALU_AND;
       #0.5ns;
-      if (res != '0) $display("FAILED: AND 1111&1111");
-      
+      if (alum.res != '0) $display("====FAILED===");
+      $display("res=%h, [V%d N%d Z%d]\n", alum.res, alum.flag_v, alum.flag_n, alum.flag_z);
       
       
       
       
    end
 endmodule
+
