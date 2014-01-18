@@ -26,13 +26,16 @@ IFS="	"
 targetd="."
 
 if [[ $file == *_tb.sv ]]; then
-	targetd="testbench"
+	echo "Bad file name"
+	exit 2
 elif [[ $file == *.sv ]]; then
 	targetd="source"
 else
 	echo "Bad file name"
 	exit 2
 fi
+
+### CREATE SOURCE FILE
 
 file="$targetd/$file"
 
@@ -57,7 +60,13 @@ echo "(" >> ./$file
 echo ");" >> ./$file
 echo "endmodule" >> ./$file
 
-emacs $file &
+
+### CREATE TESTBENCH FILE
+tbsuffix="_tb.sv"
+tbfile=$(echo "testbench/$module$tbsuffix")
+echo $tbfile
+
+#emacs $file &
 
 exit 0
 
