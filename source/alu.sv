@@ -11,21 +11,26 @@ import cpu_types_pkg::*;
 
 module alu
   (
-   input logic 	     nRST,
+   input logic nRST,
    alu_if.alum aluif
    );
+
+   logic       carry_bit;   
    
    always_comb begin
       if (!nRST) begin
 	 aluif.res = '0;
+	 aluif.flag_v = 'x;
+	 aluif.flag_n = 'x;
+	 aluif.flag_z = 'x;
       end
       else begin
 	 casez(aluif.opcode)
 	   ALU_ADD: begin
-	      aluif.res = aluif.op1 + aluif.op2;
+	      {aluif.flag_v, aluif.res} = aluif.op1 + aluif.op2;
 	   end
 	   ALU_SUB: begin
-	      aluif.res = aluif.op1 - aluif.op2;
+	      {aluif.flag_v, aluif.res} = aluif.op1 - aluif.op2;
 	   end
 	   ALU_AND: begin
 	      aluif.res = aluif.op1 & aluif.op2;
@@ -37,7 +42,7 @@ module alu
 	      aluif.res = aluif.op1 ^ aluif.op2;
 	   end
 	   ALU_NOR: begin
-	      aluif.res = aluif.op1 ^ aluif.op2;	      
+	      aluif.res = aluif.op1 ~^ aluif.op2;
 	   end
 	   ALU_SLT: begin
 	   end
@@ -49,7 +54,10 @@ module alu
 	   ALU_SRL: begin
 	      aluif.res = aluif.op1 >> 1;	      
 	   end
-	 endcase
+	 endcase // casez (aluif.opcode)
+	 
+	 aluif.flag_z = aluif.res ? 0 : 1; //Zero flag
+	 aluif.flag_n = aluif.res[$size(aluif.res) - 1] ? 1 : 0; //Neg flag
       end
    end
 endmodule

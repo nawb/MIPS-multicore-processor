@@ -12,17 +12,10 @@
 import cpu_types_pkg::*;
 
 module alu_tb;
-   int testA = 32'hAAAAAAAA;
-   int test5 = 32'h55555555;
-   int test1 = 32'h11111111;
-   int test0 = 32'h00000000;
-   int testF = 32'hFFFFFFFF;
-   
-   parameter PERIOD = 10;
-   logic nRST = 1;
-
    //interface
    alu_if alum ();
+   logic nRST;
+   parameter PERIOD = 10; //just need a random time, but helpful if we match it against the clock period for counting cycles
 
 `ifndef MAPPED
    alu DUT(nRST, alum);
@@ -37,7 +30,14 @@ module alu_tb;
       .\alum.flag_v (alum.flag_v),
       .\alum.flag_v (alum.flag_z)
       );    
-`endif
+`endif // !`ifndef MAPPED
+
+   int testA = 32'hAAAAAAAA;
+   int test5 = 32'h55555555;
+   int test1 = 32'h11111111;
+   int test0 = 32'h00000000;
+   int testF = 32'hFFFFFFFF;
+   int test1_neg = -1;
    
    initial begin
       //initial values
@@ -61,11 +61,27 @@ module alu_tb;
       $display("Testing ADD 1111+1111");
       nRST = 0;  #PERIOD nRST = 1; //reset result
       do_op(test1, test1, ALU_ADD, 32'h22222222);
-      
-      
-      $display("Testing ADD FFFF+1");
+
+            
+      $display("Testing ADD FFFF+1 (overflow flag)");
       do_op(testF, 32'h01, ALU_ADD, 32'h0);
 
+
+      $display("Testing ADD -1+2 (negative with positive)");
+      do_op(-1, 2, ALU_ADD, 1);
+
+      
+      $display("Testing ADD -256+-256 (negative with negative)");
+      do_op(-256, -256, ALU_ADD, -512);
+
+      
+      $display("Testing ADD 0000+0000 (zero flag)");
+      do_op(test0, test0, ALU_ADD, 32'h0);
+
+
+      $display("Testing ADD -1+0 (negative flag)");
+      do_op(test1_neg, test0, ALU_ADD, 32'hffffffff);
+    
       
       ///////////////////////////////////////////////
       //     SUBTRACTION TESTS
@@ -92,6 +108,7 @@ module alu_tb;
       input [31:0] op2_;
       input [3:0]  opcode_;
       input [31:0] desired_res;
+//      input [2:0]  desired_flags; //3 bits [V N Z]
       
       begin
 	 alum.op1 = op1_;
