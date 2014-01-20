@@ -45,8 +45,12 @@ module alu
 	      aluif.res = aluif.op1 ~^ aluif.op2;
 	   end
 	   ALU_SLT: begin
+	      aluif.res = aluif.op1 < aluif.op2 ? 32'b0 : 32'b01;	      
 	   end
 	   ALU_SLTU: begin
+	      aluif.res = (~aluif.op1 + 1'b1) < (~aluif.op2+1'b1)?
+		32'b0 : 32'b01;
+	      //gets the two's complement
 	   end
 	   ALU_SLL: begin
 	      aluif.res = aluif.op1 << 1;
