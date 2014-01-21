@@ -58,18 +58,20 @@ module register_file_tb;
       nRST = 1;
       nRST = 0; #(PERIOD/2);
       @(posedge CLK) nRST = 1;
+
+      $monitor("%5dns: rdat1 [%h]\trdat2 [%h]",$time, rfif.rdat1, rfif.rdat2);
       
       //test writes and reads
       $display("Testing conseuctive writes and reads");
       for (int ii = 0; ii < 32; ii++) begin
 	 rfif.WEN = 1'b1;
-	 rfif.wdat = 32'h0AAA;
+	 rfif.wdat = ii*4;
 	 rfif.wsel = ii;
 	 rfif.rsel1 = ii;
 	 #(PERIOD);
 	 rfif.WEN = 1'b0;
 	 
-	 if (rfif.rdat1 != 'h0AAA && ii!=0) 
+	 if (rfif.rdat1 != ii*4) 
 	   $display("FAILED: reg%d should be %d! %d", ii, v3, $time);
 	 //else $display("reg%d -- Passed write/read test.", ii);
       end // for (int ii = 0; ii < 32; ii++)
@@ -101,9 +103,24 @@ module register_file_tb;
       else $display("Passed write to reg0 test.");
 
 
+      $display("Testing ReadAfterWrite race case");
+      rfif.wdat = v3;
+      rfif.wsel = 3;
+      rfif.rsel1 = 3;
 
+      //Enable write immediately before read
+      #(0.1ns) rfif.WEN = 1'b1;
       
+      //read WHILE enabling WEN, should not show new value yet
+      $display("While writing: [%h]", rfif.rdat1);
+      if (rfif.rdat1 != '0) $display("Error: Already reading new number");
 
+      //wait for write to complete, should have new value now
+      #PERIOD;
+      $display("After writing: [%h]", rfif.rdat1);
+      if (rfif.rdat1 != v3) $display("Error: Still reading old number");
+      else $display("Correctly passed race case");
+/*
       //test writes
       rfif.WEN = 1;
       
@@ -135,7 +152,7 @@ module register_file_tb;
       #(PERIOD);
       rfif.rsel1 = 27;
       #(PERIOD);
-      
+*/      
    end
 
    
