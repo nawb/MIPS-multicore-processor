@@ -48,15 +48,17 @@ module alu
 	      aluif.res = aluif.op1 < aluif.op2 ? 32'b0 : 32'b01;	      
 	   end
 	   ALU_SLTU: begin
-	      aluif.res = (~aluif.op1 + 1'b1) < (~aluif.op2+1'b1)?
-		32'b0 : 32'b01;
-	      //gets the two's complement
+	      aluif.res = (unsigned) aluif.op1 < (unsigned) aluif.op2 ?
+			  32'b0 : 32'b01;
 	   end
 	   ALU_SLL: begin
 	      aluif.res = aluif.op1 << 1;
 	   end
 	   ALU_SRL: begin
 	      aluif.res = aluif.op1 >> 1;	      
+	   end
+	   default: begin
+	      aluif.res = 32'b0;	      
 	   end
 	 endcase // casez (aluif.opcode)
 	 
