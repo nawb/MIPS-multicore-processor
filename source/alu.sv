@@ -45,11 +45,13 @@ module alu
 	      aluif.res = aluif.op1 ~^ aluif.op2;
 	   end
 	   ALU_SLT: begin
-	      aluif.res = aluif.op1 < aluif.op2 ? 32'b01 : 32'b0;
+	      aluif.res = $signed(aluif.op1) < $signed(aluif.op2) ? 
+			  32'b01 : 32'b0;
 	   end
 	   ALU_SLTU: begin
 	      aluif.res = $unsigned(aluif.op1) < $unsigned(aluif.op2) ?
 			  32'b01 : 32'b0;
+	      //$unsigned() gets the two's complement
 	   end
 	   ALU_SLL: begin
 	      aluif.res = aluif.op1 << 1;
