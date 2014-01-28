@@ -14,9 +14,10 @@ module ram (input logic CLK, nRST, cpu_ram_if.ram ramif);
   // import types
   import cpu_types_pkg::*;
 
-  parameter BAD = 32'hBAD1BAD1, LAT = 2;
+  parameter BAD = 32'hBAD1BAD1, LAT = 1;
 
   logic [3:0]   count;
+  logic [3:0]   lcount;
   ramstate_t    rstate;
   word_t        q, addr = 0;
   logic [1:0]   en = '0;
@@ -66,39 +67,44 @@ module ram (input logic CLK, nRST, cpu_ram_if.ram ramif);
   assign wren = (rstate == ACCESS) ? ramif.ramWEN : 0;
   assign ramif.ramstate = rstate;
 
-  always_ff @(posedge CLK or negedge nRST)
+  always_ff @(negedge CLK, negedge nRST)
   begin
     if (!nRST)
     begin
-      count <= 0;
+      lcount <= 0;
       addr <= 0;
       en <= 0;
     end
-    else if (count == LAT ||
-            !(ramif.ramREN || ramif.ramWEN) ||
-            ramif.ramaddr != addr ||
-            en != {ramif.ramREN,ramif.ramWEN}
-            )
+    else if (
+      !(ramif.ramREN || ramif.ramWEN) ||
+      ramif.ramaddr != addr ||
+      en != {ramif.ramREN,ramif.ramWEN}
+    )
     begin
-      count <= 0;
+      lcount <= 1;
       addr <= ramif.ramaddr;
       en <= {ramif.ramREN,ramif.ramWEN};
     end
     else if (ramif.ramREN || ramif.ramWEN)
     begin
-      count <= count + 1;
+      lcount <= count + 1;
     end
   end
 
   always_comb
   begin
+    count = lcount;
+    if (addr != ramif.ramaddr)
+    begin
+      count = '0;
+    end
     casez({ramif.ramWEN,ramif.ramREN,nRST})
       3'b00z:   rstate = FREE;
       3'b011,
       3'b101:   rstate = BUSY;
       default:  rstate = ERROR;
     endcase
-    if (!nRST && (ramif.ramREN || ramif.ramWEN) || (count == LAT))
+    if (!nRST || ((addr == ramif.ramaddr) && ((ramif.ramREN || ramif.ramWEN) && (count >= LAT))))
     begin
       rstate = ACCESS;
     end
