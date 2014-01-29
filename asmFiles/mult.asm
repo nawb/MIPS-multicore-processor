@@ -15,8 +15,16 @@ mult:
 	#store upper 16
 	#store lower 16
 
-	ori $1, $0, mydata
-	ori $2, $0, 4(mydata)
+#TEST VALUES:
+	ori $1, $0, 0x0001
+	ori $2, $0, 0x0005
+	push $1
+	push $2
+#############
+
+	pop $5  #pop op2
+	pop $6  #pop op1
+
 #  ori   $1, $0, mydata
 #  ori   $2, $0, 0x0080
 #  addu  $3, $1, $2
@@ -28,4 +36,4 @@ mult:
 mydata:
 	org 0x0080
 	cfw   10	
-	cfw 5
+	
