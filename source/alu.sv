@@ -37,7 +37,8 @@ module alu
 	   aluif.flag_v = 0;
 	end
 	ALU_NOR: begin
-	   aluif.res = aluif.op1 ~^ aluif.op2;
+//	   aluif.res = aluif.op1 ~^ aluif.op2; <--THIS IS xnor NOT nor!!
+	   aluif.res = ~(aluif.op1 | aluif.op2);
 	   aluif.flag_v = 0;
 	end
 	ALU_SLT: begin

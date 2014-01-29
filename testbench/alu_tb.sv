@@ -170,21 +170,21 @@ module alu_tb;
       do_op(testF, testF, ALU_XOR, '0);
 
       ///////////////////////////////////////////////
-      //     XNOR TESTS
+      //     NOR TESTS
       ///////////////////////////////////////////////
-      $display("==========\n= XNOR \n==========\n");
+      $display("==========\n= NOR \n==========\n");
 
-      $display("Testing XNOR 0^0");
+      $display("Testing NOR 0^0");
       do_op('0, '0, ALU_NOR, testF);
 
-      $display("Testing XNOR 0^AAAA");
+      $display("Testing NOR 0^AAAA");
       do_op('0, testA, ALU_NOR, test5);
 
-      $display("Testing XNOR 5555^AAAA");
+      $display("Testing NOR 5555^AAAA");
       do_op(test5, testA, ALU_NOR, '0);
 
-      $display("Testing XNOR ffff^ffff");
-      do_op(testF, testF, ALU_NOR, testF);
+      $display("Testing NOR ffff^ffff");
+      do_op(testF, testF, ALU_NOR, '0);
 
       ///////////////////////////////////////////////
       //     SLT TESTS

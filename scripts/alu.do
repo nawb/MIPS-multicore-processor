@@ -1,13 +1,12 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /alu_tb/nRST
-add wave -noupdate /alu_tb/op1
-add wave -noupdate /alu_tb/op2
-add wave -noupdate /alu_tb/res
-add wave -noupdate /alu_tb/opcode
-add wave -noupdate /alu_tb/flag_n
-add wave -noupdate /alu_tb/flag_v
-add wave -noupdate /alu_tb/flag_z
+add wave -noupdate /alu_tb/alum/op1
+add wave -noupdate /alu_tb/alum/op2
+add wave -noupdate /alu_tb/alum/res
+add wave -noupdate /alu_tb/alum/opcode
+add wave -noupdate /alu_tb/alum/flag_n
+add wave -noupdate /alu_tb/alum/flag_v
+add wave -noupdate /alu_tb/alum/flag_z
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {36 ns} 0}
 quietly wave cursor active 1
