@@ -21,7 +21,7 @@ module alu_fpga
    output logic [6:0]  HEX5,
    output logic [6:0]  HEX6,
    output logic [6:0]  HEX7,
-   output logic [16:0] LEDR,
+   output logic [15:0] LEDR,
    output logic [3:0]  LEDG
    );
    
@@ -30,9 +30,13 @@ module alu_fpga
    // rf
    alu ALU(aluif);
    
-   assign aluif.op1  =  SW[17] & {{16{SW[16]}}, SW[15:0]};
-   assign aluif.op2  = ~SW[17] & {{16{SW[16]}}, SW[15:0]};
-   assign LEDR[15:0] =  SW[17] ? aluif.op1[15:0] : aluif.op2[15:0];
+//   assign aluif.op1  =  SW[17] & {{16{SW[16]}}, SW[15:0]};
+//   assign aluif.op2  = ~SW[17] & {{16{SW[16]}}, SW[15:0]};
+//   assign LEDR[15:0] =  SW[17] ? aluif.op1[15:0] : aluif.op2[15:0];
+   assign aluif.op1 = SW[4:0];
+   assign aluif.op2 = SW[8:5];
+   assign LEDR[4:0] = aluif.op1;
+   assign LEDR[8:5] = aluif.op2;
 
    assign LEDG[0] = aluif.flag_z;
    assign LEDG[1] = aluif.flag_n;
@@ -120,7 +124,7 @@ module alu_fpga
 	  'hf: HEX3 = 7'b0001110;
 	endcase // unique casez (aluif.res[15:12])
 
-	unique casez (aluif.res[19:16])
+	unique casez (aluif.op1[3:0])
 	  'h0: HEX4 = 7'b1000000;
 	  'h1: HEX4 = 7'b1111001;
 	  'h2: HEX4 = 7'b0100100;
@@ -139,7 +143,7 @@ module alu_fpga
 	  'hf: HEX4 = 7'b0001110;
 	endcase // unique casez (aluif.res[15:12])
 	
-	unique casez (aluif.res[23:20])
+	unique casez (aluif.op1[7:4])
 	  'h0: HEX5 = 7'b1000000;
 	  'h1: HEX5 = 7'b1111001;
 	  'h2: HEX5 = 7'b0100100;
@@ -158,7 +162,7 @@ module alu_fpga
 	  'hf: HEX5 = 7'b0001110;
 	endcase // unique casez (aluif.res[15:12])
 	
-	unique casez (aluif.res[27:24])
+	unique casez (aluif.op2[3:0])
 	  'h0: HEX6 = 7'b1000000;
 	  'h1: HEX6 = 7'b1111001;
 	  'h2: HEX6 = 7'b0100100;
@@ -177,7 +181,7 @@ module alu_fpga
 	  'hf: HEX6 = 7'b0001110;
 	endcase // unique casez (aluif.res[15:12])
 	
-	unique casez (aluif.res[31:28])
+	unique casez (aluif.op2[7:4])
 	  'h0: HEX7 = 7'b1000000;
 	  'h1: HEX7 = 7'b1111001;
 	  'h2: HEX7 = 7'b0100100;
