@@ -7,9 +7,9 @@
 
 	##############
 	#TEST VALUES:
-	ori $4, $0, 30 		//current day
-	ori $5, $0, 2		//current month
-	ori $6, $0, 2000 	//current year
+	ori $4, $0, 20 		//current day
+	ori $5, $0, 1		//current month
+	ori $6, $0, 2014 	//current year
 	##############
 
 count_days:

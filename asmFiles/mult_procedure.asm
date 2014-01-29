@@ -14,7 +14,7 @@
 	#TEST VALUES:
 	ori $24, $0, 2
 	ori $25, $0, 3
-	ori $26, $0, 6
+	ori $26, $0, 4
 	##############
 	
 mult_procedure:
