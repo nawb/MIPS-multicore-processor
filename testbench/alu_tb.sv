@@ -14,11 +14,11 @@ import cpu_types_pkg::*;
 module alu_tb;
    //interface
    alu_if alum ();
-   logic nRST;
+//   logic nRST;
    parameter PERIOD = 10; //just need a random time, but helpful if we match it against the clock period for counting cycles
 
 `ifndef MAPPED
-   alu DUT(nRST, alum);
+   alu DUT(alum);
 `else
    alu DUT
      (
@@ -38,6 +38,8 @@ module alu_tb;
    int test0 = 32'h00000000;
    int testF = 32'hFFFFFFFF;
    int test1_neg = -1;
+
+   logic nRST;
    
    initial begin
       //initial values
