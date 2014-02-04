@@ -12,3 +12,9 @@ README
 .deps
 *.hex
 *.ver
+db
+.qsys*
+*.qpf
+*.qws
+*.qsf
+singlecycle.sof
