@@ -37,7 +37,7 @@ module memory_control_tb;
       #PERIOD nRST = 1;
 
       $monitor("%d %d %d %d %d", 
-	       memif.iREN, memif.dREN, memif.dWEN, memif.iwait, memif.dwait);
+	       memif.dREN, memif.dWEN, memif.iREN, memif.dwait, memif.iwait);
 
       $display("Sending normal instruction request");
       #PERIOD memif.iREN = 1'b1;
@@ -50,10 +50,16 @@ module memory_control_tb;
       #PERIOD memif.dREN = 1'b1;
       #PERIOD memif.dREN = 1'b0;
 
-      $display("Sending d and i request at the same time");
+      $display("Sending dR and i request at the same time");
       #PERIOD memif.iREN = 1'b1;
       memif.dREN = 1'b1;
       #PERIOD memif.dREN = 1'b0;
+      #PERIOD memif.iREN = 1'b0;
+
+      $display("Sending dW and i request at the same time");
+      #PERIOD memif.iREN = 1'b1;
+      memif.dWEN = 1'b1;
+      #PERIOD memif.dWEN = 1'b0;
       #PERIOD memif.iREN = 1'b0;
       
    end
