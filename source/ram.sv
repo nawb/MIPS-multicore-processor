@@ -24,7 +24,7 @@ module ram (input logic CLK, nRST, cpu_ram_if.ram ramif);
   logic         wren;
 
   altsyncram  altsyncram_component (
-        .address_a (ramif.ramaddr[14:2]),
+        .address_a (ramif.ramaddr[15:2]),
         .clock0 (CLK),
         .data_a (ramif.ramstore),
         .wren_a (wren),
@@ -54,12 +54,12 @@ module ram (input logic CLK, nRST, cpu_ram_if.ram ramif);
     altsyncram_component.intended_device_family = "Cyclone II",
     altsyncram_component.lpm_hint = "ENABLE_RUNTIME_MOD=YES,INSTANCE_NAME=RAM",
     altsyncram_component.lpm_type = "altsyncram",
-    altsyncram_component.numwords_a = 8192,
+    altsyncram_component.numwords_a = 16384,
     altsyncram_component.operation_mode = "SINGLE_PORT",
     altsyncram_component.outdata_aclr_a = "NONE",
     altsyncram_component.outdata_reg_a = "UNREGISTERED",
     altsyncram_component.power_up_uninitialized = "FALSE",
-    altsyncram_component.widthad_a = 13,
+    altsyncram_component.widthad_a = 14,
     altsyncram_component.width_a = 32,
     altsyncram_component.width_byteena_a = 1;
 
