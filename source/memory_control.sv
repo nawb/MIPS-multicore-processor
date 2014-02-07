@@ -36,23 +36,17 @@ module memory_control
       if (ccif.dWEN) begin
 	 ccif.dwait = 1'b1;
 	 ccif.iwait = 1'b0;
-	 ccif.ramaddr = ccif.daddr;
-	 ccif.dload = ccif.ramload;
 	 ccif.ramWEN = 1'b1;
       end
       else if (ccif.dREN) begin
 	 ccif.dwait = 1'b1;
 	 ccif.iwait = 1'b0;
-	 ccif.ramaddr = ccif.daddr;
-	 ccif.dload = ccif.ramload;
 	 ccif.ramWEN = 1'b0;
 	 ccif.ramREN = 1'b1;
       end
       else if (ccif.iREN) begin
 	 ccif.iwait = 1'b1;
 	 ccif.dwait = 1'b0;
-	 ccif.ramaddr = ccif.iaddr;
-	 ccif.iload = ccif.ramload;
 	 ccif.ramREN = 1'b1;
       end
       else begin
@@ -60,9 +54,15 @@ module memory_control
 	 ccif.iwait = 1'b0;
 	 ccif.ramREN = 1'b0;
 	 ccif.ramWEN = 1'b0;
-      end      
+      end // else: !if(ccif.iREN)
    end // always_comb
 
+   assign ccif.ramaddr = (ccif.dWEN | ccif.dREN) ? ccif.daddr : ccif.iaddr;
+   assign ccif.dload = ccif.ramload;
+   assign ccif.iload = ccif.ramload;
+   assign ccif.ramstore = ccif.dstore;
+   
+   
    /*
     always_comb @(ccif.dWEN, ccif.dREN, ccif.iREN) begin
     if (ccif.dWEN) begin

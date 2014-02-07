@@ -78,8 +78,8 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
     nRST = 0;
     dump_memory();
     $finish;
-  end
-
+  end // initial begin
+   
   task automatic dump_memory();
     string filename = "memcpu.hex";
     int memfd;
