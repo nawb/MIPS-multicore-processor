@@ -14,18 +14,19 @@ module control_unit
    control_unit_if.cu cuif
    );
 
-   logic [5:0] op;
+   opcode_t op;
+   
    logic [4:0] regs, regt, regd, shamt;
-   logic [5:0] funct;
+   funct_t funct;
    logic [15:0] imm16;
 
    //INSTRUCTION PARSE AND DECODE
-   assign op    = cuif.instr[31:26];
+   assign op    = opcode_t'(cuif.instr[31:26]);
    assign regs  = cuif.instr[25:21];
    assign regt  = cuif.instr[20:16];
    assign regd  = cuif.instr[15:11];
    assign shamt = cuif.instr[10:6];
-   assign funct = cuif.instr[5:0];
+   assign funct = funct_t'(cuif.instr[5:0]);
    assign imm16 = cuif.instr[15:0];
 
    //CONTROL SIGNALS
@@ -38,7 +39,7 @@ module control_unit
 			 0 : (op == BEQ) ? 0 : 1;
    
    assign cuif.pc_src  = (op == BEQ) ?
-			 alu_flags[0] : 0; //alu_flags[0] = zero flag
+			 cuif.alu_flags[0] : 0; //alu_flags[0] = zero flag
    
    assign cuif.memwr   = (op == SW || op == BEQ) ?
 			 0 : 1 ;
