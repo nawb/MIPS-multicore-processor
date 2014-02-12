@@ -28,27 +28,53 @@ module pc_tb;
 `else
    pc DUT
      (
-      .\rfif.rdat2 (rfif.rdat2),
-      .\rfif.rdat1 (rfif.rdat1),
-      .\rfif.wdat (rfif.wdat),
-      .\rfif.rsel2 (rfif.rsel2),
-      .\rfif.rsel1 (rfif.rsel1),
-      .\rfif.wsel (rfif.wsel),
-      .\rfif.WEN (rfif.WEN),
+      .\pcif.imm26 (pcif.imm26),
       .\nRST (nRST),
       .\CLK (CLK)
       );
 `endif
+
+   word_t targetaddr = '0;   
    
    initial begin
       //initial values
       nRST = 1;
+      pcif.imm26 = '0;
+      pcif.immext = '0;
+      pcif.branchmux = 0;
+      pcif.jumpmux = 0;
+      $monitor("%h", pcif.imemaddr);
       
-      //initial reset
+      $display("Initial reset");      
       nRST = 1;
       nRST = 0; #(PERIOD/2);
       @(posedge CLK) nRST = 1;
 
+      $display("Counting 4 instructions");
+      targetaddr = pcif.imemaddr + 16;      
+      #(PERIOD*4); #(PERIOD*0.1); //measure at beginning of next clk      
+      if (pcif.imemaddr == targetaddr) $display ("cool.");
+      else $display("PC is off by %d instructions! [at %.3d]", targetaddr/4, $time);
+
+      $display("Branching fwd to an instruction");
+      pcif.immext = 32'h07778;
+      pcif.branchmux = 1;
+      targetaddr = pcif.imemaddr + 4 + (32'h07778 << 2);      
+      #(PERIOD);
+      if (pcif.imemaddr == targetaddr) $display ("cool.");
+      else $display("PC did not branch to correct instruction %h! [at %.3d]", targetaddr, $time);
+      @(posedge CLK) pcif.branchmux = 0; 
+
+      $display("Branching back to an instruction by 2 instructions");
+      targetaddr = pcif.imemaddr + 4 + (-64 << 2);
+      pcif.immext = -64;
+      pcif.branchmux = 1;
+      #(PERIOD);
+      if (pcif.imemaddr == targetaddr) $display ("cool.");
+      else $display("PC did not branch to correct instruction %h! [at %.3d]", targetaddr, $time);
+      @(posedge CLK) pcif.branchmux = 0; 
+      
+      
    end   
 endmodule
 

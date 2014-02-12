@@ -17,6 +17,8 @@ module pc
    );
 
    word_t pc_cnt;
+
+   assign pcif.imemaddr = pc_cnt;   
    
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST) begin
