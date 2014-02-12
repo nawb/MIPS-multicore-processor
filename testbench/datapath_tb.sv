@@ -28,14 +28,33 @@ module datapath_tb;
    
    initial begin
       //initial values
+      nRST = 0;
+      #PERIOD;      
       nRST = 1;
-      regs = 4;
+      regs = 0;
       regt = 0;
-      regd = 5;      
-      //d=s+t
-      dpif.imemload = {RTYPE, regs, regt, regd, 5'b0, ADD};      
-      #PERIOD;
+      regd = 0;
 
+      $display("ORI $21, $0, 0x80");      
+      #(PERIOD);
+      regs = 0;
+      regt = 21;
+      dpif.imemload = {ORI, regs, regt, 16'h080};
+
+      $display("ORI $22, $0, 0xF0");
+      #(2*PERIOD);
+      regs = 0;
+      regt = 22;
+      dpif.imemload = {ORI, regs, regt, 16'h0F0}; 
+
+      $display("ADD $4, $5, $6");
+      #(10*PERIOD);
+      regs = 4;
+      regt = 5;
+      regd = 6;      
+      //d=s+t      
+      dpif.imemload = {RTYPE, regs, regt, regd, 5'b0, ADD}; 
+      
       nRST = 0;
       
    end // initial begin

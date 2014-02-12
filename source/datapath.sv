@@ -46,11 +46,11 @@ module datapath (
    
    //BLOCK CONNECTIONS
    //register file
-   assign rfif.rsel1 = cuif.rt;
-   assign rfif.rsel2 = cuif.rs;
+   assign rfif.rsel1 = cuif.rs;
+   assign rfif.rsel2 = cuif.rt;
    assign rfif.wsel  = cuif.regdst ? cuif.rt : cuif.rd;
    assign rfif.wdat  = cuif.memtoreg ? aluif.res : dpif.dmemload;
-   assign rfif.WEN   = rqif.regwr;
+   assign rfif.WEN   = rqif.wreq;
    assign dpif.dmemstore = rfif.rdat2;   
 
    //alu
@@ -64,11 +64,13 @@ module datapath (
 
    //request unit
    assign rqif.regwr = cuif.regwr;
+   assign rqif.dcuREN = cuif.dcuREN;
+   assign rqif.dcuWEN = cuif.dcuWEN;
    assign rqif.ihit = dpif.ihit;
    assign rqif.dhit = dpif.dhit;
-   assign dpif.imemREN = rqif.iREN;
-   assign dpif.dmemREN = rqif.dREN;
-   assign dpif.dmemWEN = rqif.dWEN;
+   assign dpif.imemREN = rqif.imemREN;
+   assign dpif.dmemREN = rqif.dmemREN;
+   assign dpif.dmemWEN = rqif.dmemWEN;
 
    //pc
    assign pcif.branchmux = cuif.pc_src;
@@ -79,10 +81,6 @@ module datapath (
    //control unit
    assign cuif.instr = dpif.imemload;
    assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
-   
 
    
-   
-   
-
 endmodule

@@ -14,19 +14,18 @@ module control_unit
    control_unit_if.cu cuif
    );
 
-   opcode_t op;   
-   regbits_t regs, regt, regd, shamt;
+   opcode_t op;
    funct_t funct;
    logic [IMM_W-1:0] imm16;
 
    //INSTRUCTION PARSE AND DECODE
-   assign op    = opcode_t'(cuif.instr[31:26]);
-   assign regs  = cuif.instr[25:21];
-   assign regt  = cuif.instr[20:16];
-   assign regd  = cuif.instr[15:11];
-   assign shamt = cuif.instr[10:6];
-   assign funct = funct_t'(cuif.instr[5:0]);
-   assign imm16 = cuif.instr[15:0];
+   assign op         = opcode_t'(cuif.instr[31:26]);
+   assign cuif.rs    = cuif.instr[25:21];
+   assign cuif.rt    = cuif.instr[20:16];
+   assign cuif.rd    = cuif.instr[15:11];
+   assign cuif.shamt = cuif.instr[10:6];
+   assign funct      = funct_t'(cuif.instr[5:0]);
+   assign imm16      = cuif.instr[15:0];
 
    //CONTROL SIGNALS
    assign cuif.regdst  = (op == LW || op == ORI || op == ANDI || op == XORI) ? 
@@ -36,14 +35,16 @@ module control_unit
 			 0 : 1; //0=zeroextend, 1=signextend
    
    assign cuif.alu_src = (op == RTYPE) ? 
-			 0 : (op == BEQ) ? 0 : 1;
+			 0 : (op == BEQ || op == BNE || op == ORI || op == ANDI || op == XORI) ? 1 : 0;
    
    assign cuif.pc_src  = (op == BEQ) ? 
 			 cuif.alu_flags[0] :  //alu_flags[0] = zero flag
 			 (op == BNE) ? ~cuif.alu_flags[0] : 0;
    
-   assign cuif.memwr   = (op == SW || op == SB || op == SH || op == BEQ || op == BNE) ?
-			 0 : 1 ;
+//   assign cuif.memwr   = (op == SW || op == SB || op == SH || op == BEQ || op == BNE) ?
+   //idk what I'm doing here^
+   assign cuif.memwr   = (op == SW || op == SB || op == SH) ?
+			 1 : 0 ;
    
    assign cuif.memtoreg= (op == LW || op == LUI || op == LBU || op == LHU) ?
 			 1 : 0;
@@ -51,6 +52,8 @@ module control_unit
    assign cuif.regwr   = (op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
 			 1 : 0;
       
+   assign cuif.dcuREN  = cuif.memtoreg;
+   assign cuif.dcuWEN  = cuif.memwr; 
    
    always_comb begin : ALU_OP
       if (op == RTYPE) begin

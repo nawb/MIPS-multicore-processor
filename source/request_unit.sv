@@ -16,6 +16,8 @@ module request_unit
    );
 
    logic       memfree; //flag for when memory is free to use   
+
+   assign rqif.wreq = rqif.regwr;   
    
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST) begin
@@ -24,7 +26,15 @@ module request_unit
 	 rqif.dmemWEN <= 0;
 	 rqif.imemREN <= 0;
 	 memfree <= 0;	 
-      end 
+      end
+      /*
+      else begin //PASS THROUGH
+	 rqif.pcEN <= 1;
+	 rqif.dmemREN <= rqif.dcuREN;
+	 rqif.dmemWEN <= rqif.dcuWEN;
+	 rqif.imemREN <= 1;	 
+      end*/
+      
       else if (!(rqif.dcuWEN || rqif.dcuREN)) begin //when not at a lw/sw instruction
 	 rqif.dmemREN <= rqif.dcuREN;
 	 rqif.dmemWEN <= rqif.dcuWEN;
@@ -44,6 +54,6 @@ module request_unit
 	    rqif.pcEN <= rqif.ihit; //move to next instruction
 	    memfree <= !rqif.ihit;
 	 end	 
-      end      
+      end
    end
 endmodule
