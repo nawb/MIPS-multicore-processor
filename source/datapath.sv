@@ -16,7 +16,7 @@
 `include "register_file_if.vh"
 `include "alu_if.vh"
 `include "pc_if.vh"
-//`include "request_unit_if.vh"
+`include "request_unit_if.vh"
 // alu op, mips op, and instruction type
 `include "cpu_types_pkg.vh"
 
@@ -35,14 +35,14 @@ module datapath (
    register_file_if   rfif ();
    alu_if             aluif ();
    pc_if              pcif ();
-   //request_unit_if    rqif ();   
+   request_unit_if    rqif ();   
    
    //MAP BLOCKS
    control_unit    CU (cuif);
    register_file   RF (CLK, nRST, rfif);
    alu             ALU (aluif);
-   pc #(PC_INIT)   PC (pcif);
-   //request_unit    RQ (rqif);
+   pc #(PC_INIT)   PC (CLK, nRST, pcif);
+   request_unit    RQ (CLK, nRST, rqif);
    
    //BLOCK CONNECTIONS
    //register file
@@ -68,12 +68,13 @@ module datapath (
    assign rqif.dhit = dpif.dhit;
    assign dpif.imemREN = rqif.iREN;
    assign dpif.dmemREN = rqif.dREN;
-   assign dpif.dmemWEN = rqif.dWEN;   
+   assign dpif.dmemWEN = rqif.dWEN;
 
    //pc
    assign pcif.branchmux = cuif.pc_src;
    assign pcif.jumpmux = 0; //cuif.jump_src;
-   assign dpif.memaddr = pcif.imemaddr;   
+   assign dpif.imemaddr = pcif.imemaddr;
+   assign pcif.pcEN = rqif.pcEN;   
    
    //control unit
    assign cuif.instr = dpif.imemload;

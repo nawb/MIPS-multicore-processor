@@ -11,12 +11,11 @@
 interface request_unit_if;
    import cpu_types_pkg::*;
 
-   logic regw, ren, wen, ihit, dhit, iREN, dREN, dWEN;
-   logic [2:0] pcstate;   
+   logic regwr, dcuREN, dcuWEN, ihit, dhit, imemREN, dmemWEN, dmemREN, pcEN;   
    
    modport req (
-		input  regw, ren, wen, ihit, dhit,
-		output iREN, dREN, dWEN, pcstate
+		input  regwr, dcuREN, dcuWEN, ihit, dhit,
+		output imemREN, dmemREN, dmemWEN, pcEN
 		);
 endinterface
 
