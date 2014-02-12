@@ -38,8 +38,9 @@ module control_unit
    assign cuif.alu_src = (op == RTYPE) ? 
 			 0 : (op == BEQ) ? 0 : 1;
    
-   assign cuif.pc_src  = (op == BEQ || op == BNE) ?
-			 cuif.alu_flags[0] : 0; //alu_flags[0] = zero flag
+   assign cuif.pc_src  = (op == BEQ) ? 
+			 cuif.alu_flags[0] :  //alu_flags[0] = zero flag
+			 (op == BNE) ? ~cuif.alu_flags[0] : 0;
    
    assign cuif.memwr   = (op == SW || op == SB || op == SH || op == BEQ || op == BNE) ?
 			 0 : 1 ;
