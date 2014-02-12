@@ -25,7 +25,7 @@ module pc
       if (!nRST) begin
 	 pc_cnt <= PC_INIT;
       end
-      else begin
+      else if (pcif.pcEN) begin
 	 if (pcif.jumpmux) begin
 	    pc_cnt <= pcif.imm26 << 2;	   
 	 end
@@ -36,6 +36,7 @@ module pc
 	      pc_cnt <= pc_cnt + 4;	    
 	 end
       end
+      else pc_cnt <= pc_cnt;      
    end
    
 endmodule
