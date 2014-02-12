@@ -51,6 +51,7 @@ module datapath (
    assign rfif.wsel  = cuif.regdst ? cuif.rt : cuif.rd;
    assign rfif.wdat  = cuif.memtoreg ? aluif.res : dpif.dmemload;
    assign rfif.WEN   = cuif.regwr;
+   assign dpif.dmemstore = rfif.rdat2;   
 
    //alu
    assign aluif.op1  = rfif.rdat1;
@@ -59,6 +60,7 @@ module datapath (
 		       (cuif.extop ? $signed(imemload[25:0]) : {12'b0, imemload[25:0]}) :
 		       rfif.rdat2; 
    assign aluif.opcode = cuif.alu_op;
+   assign dpif.dmemaddr = aluif.res;   
 
    //request unit
 
