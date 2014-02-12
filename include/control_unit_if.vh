@@ -26,7 +26,7 @@ interface control_unit_if;
    logic 	regdst;
    logic 	extop;
    //EX STAGE
-   logic [3:0] 	alu_op;
+   aluop_t 	alu_op;
    logic 	alu_src, pc_src;
    //MEM+WB STAGE
    logic 	memwr, memtoreg, regwr;

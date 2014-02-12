@@ -14,11 +14,10 @@ module control_unit
    control_unit_if.cu cuif
    );
 
-   opcode_t op;
-   
-   logic [4:0] regs, regt, regd, shamt;
+   opcode_t op;   
+   regbits_t regs, regt, regd, shamt;
    funct_t funct;
-   logic [15:0] imm16;
+   logic [IMM_W-1:0] imm16;
 
    //INSTRUCTION PARSE AND DECODE
    assign op    = opcode_t'(cuif.instr[31:26]);
@@ -72,10 +71,10 @@ module control_unit
       else if (op == ORI) begin
 	 cuif.alu_op = ALU_OR;
       end
-      else if (op == BEQ) begin
+      else if (op == BEQ || op == BNE) begin
 	 cuif.alu_op = ALU_SUB;
       end
-      else begin
+      else begin //(if LW/SW)
 	 cuif.alu_op = ALU_ADD;	 
       end      
    end // block: ALU_OP
