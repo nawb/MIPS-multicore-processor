@@ -10,6 +10,7 @@ import cpu_types_pkg::*;
 
 
 module pc
+  #(PC_INIT)
   (
    input logic CLK, 
    input logic nRST, 
@@ -22,7 +23,7 @@ module pc
    
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST) begin
-	 pc_cnt <= '0;	 
+	 pc_cnt <= PC_INIT;
       end
       else begin
 	 if (pcif.jumpmux) begin
