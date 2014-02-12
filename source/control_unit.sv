@@ -29,10 +29,11 @@ module control_unit
    assign imm16 = cuif.instr[15:0];
 
    //CONTROL SIGNALS
-   assign cuif.regdst  = (op == LW || op == ORI) ? 
+   assign cuif.regdst  = (op == LW || op == ORI || op == ANDI || op == XORI) ? 
 			 0 : 1 ;
 
-   assign cuif.extop   = (op == ORI) ? 0 : 1; //0=zeroextend, 1=signextend
+   assign cuif.extop   = (op == ORI || op == ANDI || op == XORI) ?
+			 0 : 1; //0=zeroextend, 1=signextend
    
    assign cuif.alu_src = (op == RTYPE) ? 
 			 0 : (op == BEQ) ? 0 : 1;
@@ -40,13 +41,13 @@ module control_unit
    assign cuif.pc_src  = (op == BEQ || op == BNE) ?
 			 cuif.alu_flags[0] : 0; //alu_flags[0] = zero flag
    
-   assign cuif.memwr   = (op == SW || op == BEQ || op == BNE) ?
+   assign cuif.memwr   = (op == SW || op == SB || op == SH || op == BEQ || op == BNE) ?
 			 0 : 1 ;
    
-   assign cuif.memtoreg= (op == LW) ?
+   assign cuif.memtoreg= (op == LW || op == LUI || op == LBU || op == LHU) ?
 			 1 : 0;
 
-   assign cuif.regwr   = (op == LW || op == ORI) ?
+   assign cuif.regwr   = (op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
 			 1 : 0;
       
    
@@ -70,6 +71,12 @@ module control_unit
       end // if (op == RTYPE)
       else if (op == ORI) begin
 	 cuif.alu_op = ALU_OR;
+      end
+      else if (op == ANDI) begin
+	 cuif.alu_op = ALU_AND;
+      end
+      else if (op == XORI) begin
+	 cuif.alu_op = ALU_XOR;
       end
       else if (op == BEQ || op == BNE) begin
 	 cuif.alu_op = ALU_SUB;
