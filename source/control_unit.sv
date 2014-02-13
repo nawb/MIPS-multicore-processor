@@ -26,6 +26,7 @@ module control_unit
    assign cuif.shamt = cuif.instr[10:6];
    assign funct      = funct_t'(cuif.instr[5:0]);
    assign cuif.imm16 = cuif.instr[15:0];
+   assign cuif.halt  = (op == HALT) ? 1'b1 : 1'b0;  
    
    //CONTROL SIGNALS
    assign cuif.regdst  = (op == LW || op == ORI || op == ANDI || op == XORI) ? 
@@ -58,7 +59,7 @@ module control_unit
 			 1 : 0;
    
    assign cuif.dcuREN  = cuif.memtoreg;
-   assign cuif.dcuWEN  = cuif.memwr; 
+   assign cuif.dcuWEN  = cuif.memwr;    
    
    always_comb begin : ALU_OP
       if (op == RTYPE) begin

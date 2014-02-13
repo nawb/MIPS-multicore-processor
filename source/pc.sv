@@ -22,7 +22,7 @@ module pc
    assign pcif.imemaddr = pc_cnt;   
    
    always_ff @ (posedge CLK, negedge nRST) begin
-      if (!nRST) begin
+      if (!nRST || pcif.halt) begin
 	 pc_cnt <= PC_INIT;
       end
       else if (pcif.pcEN) begin

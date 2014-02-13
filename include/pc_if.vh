@@ -17,12 +17,12 @@ interface pc_if;
    logic 	      branchmux; //pc_src from cu
    logic 	      jumpmux;
    word_t  imemaddr;
-   logic 	      pcEN;
+   logic 	      pcEN, halt;
          
    // register file ports
    modport pc 
      (
-      input  branchmux, jumpmux, immext, imm26, pcEN,
+      input  branchmux, jumpmux, immext, imm26, pcEN, halt,
       output imemaddr
       );
 

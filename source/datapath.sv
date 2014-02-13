@@ -79,11 +79,11 @@ module datapath (
    assign pcif.jumpmux = 0; //cuif.jump_src;
    assign dpif.imemaddr = pcif.imemaddr;
    assign pcif.pcEN = rqif.pcEN;
-   //assign dpif.halt = 1'b0;   
+   assign pcif.halt = cuif.halt;   
    
    //control unit
    assign cuif.instr = dpif.imemload;
    assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
-
+   assign dpif.halt = cuif.halt;   
    
 endmodule
