@@ -22,7 +22,7 @@ interface control_unit_if;
    word_t       instr;
    logic [3:0] 	alu_flags;   
    //ID STAGE
-   regbits_t       rs, rd, rt;
+   regbits_t    rs, rd, rt;
    logic [IMM_W-1:0] imm16;
    logic 	regdst;
    logic 	extop;

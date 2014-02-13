@@ -25,7 +25,7 @@ module control_unit
    assign cuif.rd    = cuif.instr[15:11];
    assign cuif.shamt = cuif.instr[10:6];
    assign funct      = funct_t'(cuif.instr[5:0]);
-   assign imm16      = cuif.instr[15:0];
+   assign cuif.imm16 = cuif.instr[15:0];
    
    //CONTROL SIGNALS
    assign cuif.regdst  = (op == LW || op == ORI || op == ANDI || op == XORI) ? 

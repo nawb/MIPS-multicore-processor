@@ -52,7 +52,7 @@ module datapath (
 
    //alu
    assign aluif.op1  = rfif.rdat1;
-   always_comb begin : 3INPUT_MUX_FOR_OP2
+   always_comb begin : THREE_INPUT_MUX_FOR_OP2
       casez (cuif.alu_src)
 	0: aluif.op2 = rfif.rdat2;
 	1: aluif.op2 = //EXTENDER BLOCK:
