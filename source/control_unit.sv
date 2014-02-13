@@ -16,7 +16,7 @@ module control_unit
 
    opcode_t op;
    funct_t funct;
-   logic [IMM_W-1:0] imm16;
+
 
    //INSTRUCTION PARSE AND DECODE
    assign op         = opcode_t'(cuif.instr[31:26]);
@@ -31,11 +31,16 @@ module control_unit
    assign cuif.regdst  = (op == LW || op == ORI || op == ANDI || op == XORI) ? 
 			 0 : 1 ;
 
-   assign cuif.extop   = (op == ORI || op == ANDI || op == XORI) ?
+   assign cuif.extop   = (op == ORI || op == ANDI || op == XORI || op == LUI) ?
 			 0 : 1; //0=zeroextend, 1=signextend
+   //signextend on: ADDIU, LW, SLTI, SLTIU, SW, LL, SC
    
-   assign cuif.alu_src = (op == RTYPE) ? 
-			 0 : (op == BEQ || op == BNE || op == ORI || op == ANDI || op == XORI) ? 1 : 0;
+   //assign cuif.luimux  = (op == LUI) ? 1 : 0; // Basically, ALUsrc[1] = LUI ? {imm16, 16'b0} : extender
+   
+   assign cuif.alu_src = (op == RTYPE) ? 0 :
+			 (op == BEQ || op == BNE || op == ORI || op == ANDI || op == XORI) ? 1 :
+			 (op == LUI) ? 2 : 0
+			 ;
    
    assign cuif.pc_src  = (op == BEQ) ? 
 			 cuif.alu_flags[0] :  //alu_flags[0] = zero flag
@@ -46,7 +51,7 @@ module control_unit
    assign cuif.memwr   = (op == SW) ?
 			 1 : 0 ;
    
-   assign cuif.memtoreg= (op == LW || op == LUI) ?
+   assign cuif.memtoreg= (op == LW) ? //NOT ON LUI...LUI is more like ORI
 			 1 : 0;
 
    assign cuif.regwr   = (op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?

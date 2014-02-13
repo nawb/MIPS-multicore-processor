@@ -23,12 +23,15 @@ interface control_unit_if;
    logic [3:0] 	alu_flags;   
    //ID STAGE
    regbits_t       rs, rd, rt;
+   logic [IMM_W-1:0] imm16;
    logic 	regdst;
    logic 	extop;
+//   logic        luimux;   
    //EX STAGE
    aluop_t 	alu_op;
    regbits_t    shamt;   
-   logic 	alu_src, pc_src;	
+   logic [1:0]	alu_src;
+   logic 	pc_src;	
    //MEM+WB STAGE
    logic 	memwr, memtoreg, regwr;
    logic        dcuWEN, dcuREN;
@@ -38,7 +41,7 @@ interface control_unit_if;
    modport cu
      (
       input instr, alu_flags,
-      output rs, rd, rt, regdst, extop, alu_op, shamt, alu_src, pc_src,
+      output rs, rd, rt, imm16, regdst, extop, alu_op, shamt, alu_src, pc_src,
       memwr, memtoreg, regwr, dcuWEN, dcuREN
       );
    

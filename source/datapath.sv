@@ -52,10 +52,15 @@ module datapath (
 
    //alu
    assign aluif.op1  = rfif.rdat1;
-   assign aluif.op2  = cuif.alu_src ?
-		       //EXTENDER BLOCK:
-		       (cuif.extop ? $signed(dpif.imemload[15:0]) : {16'b0, dpif.imemload[15:0]}) :
-		       rfif.rdat2; 
+   always_comb begin : 3INPUT_MUX_FOR_OP2
+      casez (cuif.alu_src)
+	0: aluif.op2 = rfif.rdat2;
+	1: aluif.op2 = //EXTENDER BLOCK:
+		       (cuif.extop ? $signed(cuif.imm16) : {16'b0, cuif.imm16});
+	2: aluif.op2 = {cuif.imm16, 16'b0}; //for LUI specifically
+	default: aluif.op2 = rfif.rdat2;	
+      endcase
+   end
    assign aluif.opcode = cuif.alu_op;
    assign dpif.dmemaddr = aluif.res;
 
@@ -73,7 +78,8 @@ module datapath (
    assign pcif.branchmux = cuif.pc_src;
    assign pcif.jumpmux = 0; //cuif.jump_src;
    assign dpif.imemaddr = pcif.imemaddr;
-   assign pcif.pcEN = rqif.pcEN;   
+   assign pcif.pcEN = rqif.pcEN;
+   //assign dpif.halt = 1'b0;   
    
    //control unit
    assign cuif.instr = dpif.imemload;
