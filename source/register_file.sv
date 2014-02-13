@@ -7,8 +7,7 @@ import cpu_types_pkg::*;
 
 module register_file 
   (
-   input logic CLK,
-   input logic nRST,
+   input logic CLK, nRST,
    register_file_if.rf rfif
    );
 

@@ -41,7 +41,7 @@ module control_unit
 			 cuif.alu_flags[0] :  //alu_flags[0] = zero flag
 			 (op == BNE) ? ~cuif.alu_flags[0] : 0;
    
-//   assign cuif.memwr   = (op == SW || op == SB || op == SH || op == BEQ || op == BNE) ?
+   //   assign cuif.memwr   = (op == SW || op == SB || op == SH || op == BEQ || op == BNE) ?
    //idk what I'm doing here^
    assign cuif.memwr   = (op == SW) ?
 			 1 : 0 ;
@@ -51,7 +51,7 @@ module control_unit
 
    assign cuif.regwr   = (op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
 			 1 : 0;
-      
+   
    assign cuif.dcuREN  = cuif.memtoreg;
    assign cuif.dcuWEN  = cuif.memwr; 
    
@@ -70,24 +70,28 @@ module control_unit
 	   SRL:  cuif.alu_op = ALU_SRL;
 	   SLT:  cuif.alu_op = ALU_SLT;
 	   SLTU: cuif.alu_op = ALU_SLTU;	   
-	   //JR:   cuif.alu_op =  
+	   //JR:   cuif.alu_op =
+	   default: cuif.alu_op = ALU_ADD;	   
 	 endcase // casez	 
       end // if (op == RTYPE)
-      else if (op == ORI) begin
-	 cuif.alu_op = ALU_OR;
-      end
-      else if (op == ANDI) begin
-	 cuif.alu_op = ALU_AND;
-      end
-      else if (op == XORI) begin
-	 cuif.alu_op = ALU_XOR;
-      end
-      else if (op == BEQ || op == BNE) begin
-	 cuif.alu_op = ALU_SUB;
-      end
-      else begin //(if LW/SW)
-	 cuif.alu_op = ALU_ADD;	 
-      end      
+      else begin
+	 casez (op)
+	   ORI: begin
+	      cuif.alu_op = ALU_OR;
+	   end
+	   ANDI: begin
+	      cuif.alu_op = ALU_AND;
+	   end
+	   XORI: begin
+	      cuif.alu_op = ALU_XOR;
+	   end
+	   (BEQ | BNE): begin
+	      cuif.alu_op = ALU_SUB;
+	   end
+	   default: cuif.alu_op = ALU_ADD; //(if LW/SW)
+	 endcase // casez (op)
+      end // else: !if(op == RTYPE)
+      
    end // block: ALU_OP
-         
+   
 endmodule

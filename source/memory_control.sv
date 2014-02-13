@@ -37,6 +37,7 @@ module memory_control
 	 ccif.dwait = 1'b1;
 	 ccif.iwait = 1'b0;
 	 ccif.ramWEN = 1'b1;
+	 ccif.ramREN = 1'bx;
       end
       else if (ccif.dREN) begin
 	 ccif.dwait = 1'b1;
@@ -48,6 +49,7 @@ module memory_control
 	 ccif.iwait = 1'b1;
 	 ccif.dwait = 1'b0;
 	 ccif.ramREN = 1'b1;
+	 ccif.ramWEN = 1'b0;
       end
       else begin
 	 ccif.dwait = 1'b0;

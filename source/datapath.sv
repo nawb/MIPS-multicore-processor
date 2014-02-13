@@ -1,7 +1,4 @@
 /*
- Eric Villasenor
- evillase@gmail.com
- 
  Nabeel Zaim
  mg232
  
