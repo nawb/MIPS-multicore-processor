@@ -61,7 +61,8 @@ module datapath (
 	default: aluif.op2 = rfif.rdat2;	
       endcase
    end
-   assign aluif.opcode = cuif.alu_op;
+   assign aluif.opcode  = cuif.alu_op;
+   assign aluif.shamt   = cuif.shamt;   
    assign dpif.dmemaddr = aluif.res;
 
    //request unit
@@ -84,6 +85,6 @@ module datapath (
    //control unit
    assign cuif.instr = dpif.imemload;
    assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
-   assign dpif.halt = cuif.halt;   
+   assign dpif.halt = cuif.halt;
    
 endmodule

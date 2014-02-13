@@ -14,7 +14,7 @@ add wave -noupdate -expand -group RFILE -expand -group rd -radix unsigned /syste
 add wave -noupdate -expand -group RFILE -expand -group rd /system_tb/DUT/CPU/DP/RF/rfif/wdat
 add wave -noupdate /system_tb/DUT/CPU/DP/RF/rfif/WEN
 add wave -noupdate /system_tb/DUT/CPU/DP/RF/rfile
-add wave -noupdate /system_tb/DUT/CPU/DP/PC/pcif/imemaddr
+add wave -noupdate /system_tb/DUT/CPU/dcif/dmemload
 add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/regdst
 add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/extop
 add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/alu_op
@@ -23,8 +23,16 @@ add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cui
 add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/memwr
 add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/memtoreg
 add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/regwr
+add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/en
+add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/wren
+add wave -noupdate -group singlecycle /system_tb/DUT/CPU/CLK
+add wave -noupdate -group singlecycle /system_tb/DUT/CPU/nRST
+add wave -noupdate -group singlecycle /system_tb/DUT/CPU/halt
+add wave -noupdate -group PC /system_tb/DUT/CPU/DP/PC/pc_cnt
+add wave -noupdate -group PC /system_tb/DUT/CPU/DP/PC/pcif/imemaddr
+add wave -noupdate -group PC /system_tb/DUT/CPU/DP/PC/pcif/pcEN
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {132599 ps} 0}
+WaveRestoreCursors {{Cursor 1} {235160 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -40,4 +48,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {1053084 ps}
+WaveRestoreZoom {0 ps} {587204 ps}

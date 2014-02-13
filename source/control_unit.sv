@@ -29,8 +29,8 @@ module control_unit
    assign cuif.halt  = (op == HALT) ? 1'b1 : 1'b0;  
    
    //CONTROL SIGNALS
-   assign cuif.regdst  = (op == LW || op == ORI || op == ANDI || op == XORI) ? 
-			 0 : 1 ;
+   assign cuif.regdst  = (op == LW || ~(op == RTYPE)) ? 
+			 1 : 0 ;
 
    assign cuif.extop   = (op == ORI || op == ANDI || op == XORI || op == LUI) ?
 			 0 : 1; //0=zeroextend, 1=signextend
@@ -39,7 +39,7 @@ module control_unit
    //assign cuif.luimux  = (op == LUI) ? 1 : 0; // Basically, ALUsrc[1] = LUI ? {imm16, 16'b0} : extender
    
    assign cuif.alu_src = (op == RTYPE) ? 0 :
-			 (op == BEQ || op == BNE || op == ORI || op == ANDI || op == XORI) ? 1 :
+			 (op == BEQ || op == BNE || op == ORI || op == ANDI || op == XORI || op == ADDIU || op == SLTI || op == SLTIU || op == SW || op == SC || op == LW) ? 1 : //all the things requiring a signexted/zeroextend
 			 (op == LUI) ? 2 : 0
 			 ;
    
@@ -55,7 +55,8 @@ module control_unit
    assign cuif.memtoreg= (op == LW) ? //NOT ON LUI...LUI is more like ORI
 			 1 : 0;
 
-   assign cuif.regwr   = (op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
+   assign cuif.regwr   = //(op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
+			 ~(op == SW || op == BEQ || op == BNE || op == SC || op == J) ?
 			 1 : 0;
    
    assign cuif.dcuREN  = cuif.memtoreg;

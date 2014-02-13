@@ -68,14 +68,15 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
     @(posedge CLK);
     $display("Starting Processor.");
     nRST = 1;
-    // wait for halt
+     
+    // wait for halt    
     while (!syif.halt)
     begin
       @(posedge CLK);
       cycles++;
     end
     $display("Halted at %g time and ran for %d cycles.",$time, cycles);
-    nRST = 0;
+    // nRST = 0;
     dump_memory();
     $finish;
   end // initial begin
