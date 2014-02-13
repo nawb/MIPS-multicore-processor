@@ -49,7 +49,7 @@ module datapath (
    assign rfif.rsel1 = cuif.rs;
    assign rfif.rsel2 = cuif.rt;
    assign rfif.wsel  = cuif.regdst ? cuif.rt : cuif.rd;
-   assign rfif.wdat  = cuif.memtoreg ? aluif.res : dpif.dmemload;
+   assign rfif.wdat  = cuif.memtoreg ? dpif.dmemload : aluif.res;
    assign rfif.WEN   = rqif.wreq;
    assign dpif.dmemstore = rfif.rdat2;   
 
@@ -57,7 +57,7 @@ module datapath (
    assign aluif.op1  = rfif.rdat1;
    assign aluif.op2  = cuif.alu_src ?
 		       //EXTENDER BLOCK:
-		       (cuif.extop ? $signed(dpif.imemload[25:0]) : {12'b0, dpif.imemload[25:0]}) :
+		       (cuif.extop ? $signed(dpif.imemload[15:0]) : {16'b0, dpif.imemload[15:0]}) :
 		       rfif.rdat2; 
    assign aluif.opcode = cuif.alu_op;
    assign dpif.dmemaddr = aluif.res;

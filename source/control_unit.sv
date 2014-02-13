@@ -26,7 +26,7 @@ module control_unit
    assign cuif.shamt = cuif.instr[10:6];
    assign funct      = funct_t'(cuif.instr[5:0]);
    assign imm16      = cuif.instr[15:0];
-
+   
    //CONTROL SIGNALS
    assign cuif.regdst  = (op == LW || op == ORI || op == ANDI || op == XORI) ? 
 			 0 : 1 ;
@@ -43,10 +43,10 @@ module control_unit
    
 //   assign cuif.memwr   = (op == SW || op == SB || op == SH || op == BEQ || op == BNE) ?
    //idk what I'm doing here^
-   assign cuif.memwr   = (op == SW || op == SB || op == SH) ?
+   assign cuif.memwr   = (op == SW) ?
 			 1 : 0 ;
    
-   assign cuif.memtoreg= (op == LW || op == LUI || op == LBU || op == LHU) ?
+   assign cuif.memtoreg= (op == LW || op == LUI) ?
 			 1 : 0;
 
    assign cuif.regwr   = (op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
@@ -89,8 +89,5 @@ module control_unit
 	 cuif.alu_op = ALU_ADD;	 
       end      
    end // block: ALU_OP
-   
-
-   
-   
+         
 endmodule
