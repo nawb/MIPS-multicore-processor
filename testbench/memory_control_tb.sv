@@ -38,19 +38,19 @@ module memory_control_tb;
       //initial values
       ccif.iREN = 0;
       ccif.iaddr = '0;
+      ccif.daddr = '0;      
 
       ccif.dREN = 0;
       ccif.dWEN = 0;
       ccif.dstore = '0;
-      
-      
-      
+            
       
       nRST = 0;
       $display("initial reset");
       #PERIOD nRST = 1;
 
-      $monitor("%d %d %d %d %d", 
+      $display("dREN dWEN iREN | dwait iwait");      
+      $monitor(" %3d  %3d  %3d |   %3d   %3d", 
 	       ccif.dREN, ccif.dWEN, ccif.iREN, ccif.dwait, ccif.iwait);
 
       $display("Sending normal instruction request");
