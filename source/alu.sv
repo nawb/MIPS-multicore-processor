@@ -53,11 +53,11 @@ module alu
 	   aluif.flag_v = 0;
 	end
 	ALU_SLL: begin
-	   aluif.res = aluif.op1 << aluif.op2;
+	   aluif.res = aluif.op1 << aluif.shamt;
 	   aluif.flag_v = 0;
 	end
 	ALU_SRL: begin
-	   aluif.res = aluif.op1 >> aluif.op2;
+	   aluif.res = aluif.op1 >> aluif.shamt;
 	   aluif.flag_v = 0;
 	end
 	default: begin

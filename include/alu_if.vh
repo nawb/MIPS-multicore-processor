@@ -28,14 +28,15 @@ endpackage
 interface alu_if;
    import cpu_types_pkg::*;
    
-   logic [3:0] opcode;
-   word_t      op1, op2, res;
-   logic       flag_n, flag_v, flag_z;   
+   aluop_t opcode;
+   word_t  op1, op2, res;
+   logic   flag_n, flag_v, flag_z;
+   logic [SHAM_W-1:0] shamt;
    
    // regular module ports
    modport alum
      (
-      input  op1, op2, opcode,
+      input  op1, op2, opcode, shamt,
       output res, flag_n, flag_v, flag_z
       );
    	          
