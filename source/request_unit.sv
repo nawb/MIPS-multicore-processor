@@ -25,8 +25,8 @@ module request_unit
 	 rqif.pcEN <= 0;	 
       end
       else begin
-	 rqif.dmemREN <= rqif.dhit ? 0 : rqif.dmemREN;
-	 rqif.dmemWEN <= rqif.dhit ? 0 : rqif.dmemWEN;
+	 rqif.dmemREN <= rqif.dhit ? 0 : rqif.dcuREN;
+	 rqif.dmemWEN <= rqif.dhit ? 0 : rqif.dcuWEN;
 	 rqif.pcEN <= rqif.ihit;	 
       end
    end

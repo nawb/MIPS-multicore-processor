@@ -64,7 +64,7 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
     syif.addr = 0;
     syif.store = 0;
     syif.WEN = 0;
-    syif.REN = 0;
+    syif.REN = 0;     
     @(posedge CLK);
     $display("Starting Processor.");
     nRST = 1;
@@ -74,9 +74,11 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
     begin
       @(posedge CLK);
       cycles++;
+       $display("cycle %d", cycles);       
     end
     $display("Halted at %g time and ran for %d cycles.",$time, cycles);
-    //nRST = 0;
+ 
+    nRST = 0;
     dump_memory();
     $finish;
   end // initial begin
@@ -92,7 +94,7 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
 
     memfd = $fopen(filename,"w");
     if (memfd)
-      $display("Starting memory dump.");
+      $display("Starting memory dump. %d", $time);
     else
       begin $display("Failed to open %s.",filename); $finish; end
 

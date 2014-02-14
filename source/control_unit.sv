@@ -26,7 +26,14 @@ module control_unit
    assign cuif.shamt = cuif.instr[10:6];
    assign funct      = funct_t'(cuif.instr[5:0]);
    assign cuif.imm16 = cuif.instr[15:0];
-   assign cuif.halt  = ~(op == HALT) ? 0 : 1;
+
+   always_comb begin : HALT_DETECT //had to convert this assign into casez to account for case of zs
+      casez(op)
+	HALT: cuif.halt = 1;
+	default: cuif.halt = 0;      
+      endcase
+   end
+
    
    //CONTROL SIGNALS
    assign cuif.regdst  = (op == LW || ~(op == RTYPE)) ? 

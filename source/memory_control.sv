@@ -25,7 +25,8 @@ module memory_control
 
    // number of cpus for cc
    parameter CPUS = 2;
-
+   localparam CPUID = 0;
+   
    //priority mux,
    //dWEN|dREN has highest priority
    //iREN has second priority
@@ -36,19 +37,19 @@ module memory_control
    //Also, assert a wait high during RAM's BUSY state...until it reaches ACCESS state,
    //that's when you want to pull it back low to let cache layer know that it has been done, and it can assert ihit/dhit
    always_comb begin
-      if (ccif.dWEN) begin
+      if (ccif.dWEN[CPUID]) begin
 	 ccif.dwait = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
 	 ccif.iwait = 1'b0;
 	 ccif.ramWEN = 1'b1;
 	 ccif.ramREN = 1'b0;
       end
-      else if (ccif.dREN) begin
+      else if (ccif.dREN[CPUID]) begin
 	 ccif.dwait = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
 	 ccif.iwait = 1'b0;
 	 ccif.ramWEN = 1'b0;
 	 ccif.ramREN = 1'b1;
       end
-      else if (ccif.iREN) begin
+      else if (ccif.iREN[CPUID]) begin
 	 ccif.iwait = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
 	 ccif.dwait = 1'b0;
 	 ccif.ramWEN = 1'b0;
@@ -62,10 +63,18 @@ module memory_control
       end // else: !if(ccif.iREN)
    end // always_comb
 
-   assign ccif.ramaddr = (ccif.dWEN | ccif.dREN) ? ccif.daddr : ccif.iaddr;
-   assign ccif.dload = ccif.ramload;
-   assign ccif.iload = ccif.ramload;
-   assign ccif.ramstore = ccif.dstore;
+//   assign ccif.ramaddr = (ccif.dWEN | ccif.dREN) ? ccif.daddr[CPUID] : ccif.iaddr[CPUID];
+   always_comb begin
+      casez ({ccif.dWEN, ccif.dREN})
+	2'b11, 2'b10,
+	2'b01: ccif.ramaddr = ccif.daddr[CPUID];
+	2'b00: ccif.ramaddr = ccif.iaddr[CPUID];
+	default: ccif.ramaddr = '0;	
+      endcase
+   end
+   assign ccif.dload[CPUID] = ccif.ramload;
+   assign ccif.iload[CPUID] = ccif.ramload;
+   assign ccif.ramstore = ccif.dstore[CPUID];
    
    
    /*
