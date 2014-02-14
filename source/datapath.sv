@@ -80,7 +80,7 @@ module datapath (
    assign pcif.branchmux = cuif.pc_src;
    assign pcif.jumpmux = 0; //cuif.jump_src;
    assign dpif.imemaddr = pcif.imemaddr;
-   assign pcif.pcEN = rqif.pcEN;
+   assign pcif.pcEN = dpif.ihit;
    assign pcif.halt = cuif.halt;   
    
    //control unit

@@ -32,13 +32,13 @@ add wave -noupdate /system_tb/DUT/CPU/DP/RF/rfif/WEN
 add wave -noupdate /system_tb/DUT/CPU/DP/RF/rfile
 add wave -noupdate /system_tb/DUT/CPU/dcif/dmemaddr
 add wave -noupdate /system_tb/DUT/CPU/dcif/dmemload
-add wave -noupdate -group RAM /system_tb/DUT/RAM/rstate
-add wave -noupdate -group RAM /system_tb/DUT/RAM/addr
-add wave -noupdate -group RAM /system_tb/DUT/RAM/ramif/ramaddr
-add wave -noupdate -group RAM /system_tb/DUT/CPU/CM/ccif/ramload
-add wave -noupdate -group RAM /system_tb/DUT/CPU/CM/ccif/ramstore
-add wave -noupdate -group RAM /system_tb/DUT/RAM/en
-add wave -noupdate -group RAM /system_tb/DUT/RAM/wren
+add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/rstate
+add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/addr
+add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/ramif/ramaddr
+add wave -noupdate -expand -group RAM /system_tb/DUT/CPU/CM/ccif/ramload
+add wave -noupdate -expand -group RAM /system_tb/DUT/CPU/CM/ccif/ramstore
+add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/en
+add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/wren
 add wave -noupdate /system_tb/DUT/CPU/ccif/ramWEN
 add wave -noupdate /system_tb/DUT/CPU/ccif/ramREN
 add wave -noupdate -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/regdst
@@ -53,7 +53,7 @@ add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pc_cnt
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pcif/imemaddr
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pcif/pcEN
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {694360 ps} 0}
+WaveRestoreCursors {{Cursor 1} {182672 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -69,4 +69,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {735 ns}
+WaveRestoreZoom {0 ps} {262500 ps}

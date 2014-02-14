@@ -22,39 +22,14 @@ module request_unit
       if (!nRST) begin
 	 rqif.dmemREN <= 0;
 	 rqif.dmemWEN <= 0;
-	 rqif.pcEN <= 0;	 
+//	 rqif.pcEN <= 0;	 
       end
       else begin
+	 //on next clock cycle, deassert dENs to mark end of dR/W
 	 rqif.dmemREN <= rqif.dhit ? 0 : rqif.dcuREN;
 	 rqif.dmemWEN <= rqif.dhit ? 0 : rqif.dcuWEN;
-	 rqif.pcEN <= rqif.ihit;	 
       end
    end
-   /*
-   always_ff @ (posedge CLK, negedge nRST) begin
-      if (!nRST) begin
-	 rqif.dmemREN <= 0;
-	 rqif.dmemWEN <= 0;
-	 rqif.imemREN <= 0;
-	 rqif.pcEN <= 0;
-      end      
-      else begin
-	 if (rqif.dhit) begin
-	    //on next clock cycle, deassert dENs to mark end of dR/W
-	    rqif.dmemREN <= 0;
-	    rqif.dmemWEN <= 0;
-	    rqif.imemREN <= rqif.icuREN;
-	    rqif.pcEN <= rqif.ihit;
-	 end
-	 else begin
-	    rqif.dmemREN <= rqif.dcuREN;
-	    rqif.dmemWEN <= rqif.dcuWEN;
-	    rqif.imemREN <= rqif.icuREN;	    
-	    rqif.pcEN <= rqif.ihit;
-	 end
-      end
-   end
-    */
 endmodule // request_unit
 
 
