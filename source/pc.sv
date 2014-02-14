@@ -36,7 +36,7 @@ module pc
 	      pc_cnt <= pc_cnt + 4;	    
 	 end
       end
-      else pc_cnt <= pc_cnt;      
+      else pc_cnt <= pc_cnt;
    end
    
 endmodule

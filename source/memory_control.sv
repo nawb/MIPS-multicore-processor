@@ -65,7 +65,7 @@ module memory_control
 
 //   assign ccif.ramaddr = (ccif.dWEN | ccif.dREN) ? ccif.daddr[CPUID] : ccif.iaddr[CPUID];
    always_comb begin
-      casez ({ccif.dWEN, ccif.dREN})
+      casez ({ccif.dWEN[CPUID], ccif.dREN[CPUID]})
 	2'b11, 2'b10,
 	2'b01: ccif.ramaddr = ccif.daddr[CPUID];
 	2'b00: ccif.ramaddr = ccif.iaddr[CPUID];
