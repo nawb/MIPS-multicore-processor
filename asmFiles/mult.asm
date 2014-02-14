@@ -15,12 +15,12 @@
 	#TEST VALUES:
 	ori $4, $0, 3
 	ori $5, $0, 2
-	#push $4
-	#push $5
+	push $4
+	push $5
 	##############
 mult:
-	#pop $4  //pop op2
-	#pop $5  //pop op1
+	pop $4  //pop op2
+	pop $5  //pop op1
 	and $2, $2, $0 //clear out $2
 
 	//add op1 an op2 number of times
