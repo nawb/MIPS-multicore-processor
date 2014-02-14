@@ -59,5 +59,5 @@ module caches (
   assign ccif.dstore[CPUID] = dcif.dmemstore;
   assign ccif.iaddr[CPUID] = dcif.imemaddr;
   assign ccif.daddr[CPUID] = dcif.dmemaddr;
-
+//  assign ccif.dstore[CPUID] = dcif.dmemstore;
 endmodule

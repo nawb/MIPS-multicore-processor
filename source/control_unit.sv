@@ -26,14 +26,13 @@ module control_unit
    assign cuif.shamt = cuif.instr[10:6];
    assign funct      = funct_t'(cuif.instr[5:0]);
    assign cuif.imm16 = cuif.instr[15:0];
-
+   
    always_comb begin : HALT_DETECT //had to convert this assign into casez to account for case of zs
       casez(op)
 	HALT: cuif.halt = 1;
 	default: cuif.halt = 0;      
       endcase
-   end
-
+   end   
    
    //CONTROL SIGNALS
    assign cuif.regdst  = (op == LW || ~(op == RTYPE)) ? 
@@ -52,10 +51,10 @@ module control_unit
 
    always_comb begin : PC_SRC
       casez (op)
-	BEQ:        cuif.pc_src = cuif.alu_flags[0];  //alu_flags[0] = zero flag
-	BNE:        cuif.pc_src = ~cuif.alu_flags[0];
 	J, JAL, JR: cuif.pc_src = 2;
-	default:    cuif.pc_src = 0;	
+	BEQ:        cuif.pc_src = cuif.zeroflag;  //alu_flags[0] = zero flag
+	BNE:        cuif.pc_src = ~cuif.zeroflag;
+	default:    cuif.pc_src = 0;
       endcase
    end
    /*

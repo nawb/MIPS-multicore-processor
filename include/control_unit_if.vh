@@ -20,7 +20,8 @@ interface control_unit_if;
    //IF STAGE
    logic [31:0] align; //for aligning my indentations in emacs. not used.
    word_t       instr;
-   logic [3:0] 	alu_flags;
+   logic [2:0] 	alu_flags;
+   logic 	zeroflag;   
    logic        halt;   
    //ID STAGE
    regbits_t    rs, rd, rt;
@@ -40,7 +41,7 @@ interface control_unit_if;
    // regular module ports
    modport cu
      (
-      input instr, alu_flags,
+      input instr, alu_flags, zeroflag,
       output halt, rs, rd, rt, imm16, regdst, extop, alu_op, shamt, alu_src, pc_src,
       memwr, memtoreg, regwr, icuREN, dcuWEN, dcuREN
       );
