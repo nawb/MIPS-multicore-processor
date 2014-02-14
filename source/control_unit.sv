@@ -109,7 +109,7 @@ module control_unit
 	   XORI: begin
 	      cuif.alu_op = ALU_XOR;
 	   end
-	   (BEQ | BNE): begin
+	   BEQ, BNE: begin
 	      cuif.alu_op = ALU_SUB;
 	   end
 	   default: cuif.alu_op = ALU_ADD; //(if LW/SW)
