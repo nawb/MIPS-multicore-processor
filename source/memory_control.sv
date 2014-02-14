@@ -32,30 +32,33 @@ module memory_control
    //so 1 x = d
    //   0 1 = i
    //   0 0 = 0
+
+   //Also, assert a wait high during RAM's BUSY state...until it reaches ACCESS state,
+   //that's when you want to pull it back low to let cache layer know that it has been done, and it can assert ihit/dhit
    always_comb begin
       if (ccif.dWEN) begin
-	 ccif.dwait = 1'b1;
+	 ccif.dwait = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
 	 ccif.iwait = 1'b0;
 	 ccif.ramWEN = 1'b1;
-	 ccif.ramREN = 1'bx;
+	 ccif.ramREN = 1'b0;
       end
       else if (ccif.dREN) begin
-	 ccif.dwait = 1'b1;
+	 ccif.dwait = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
 	 ccif.iwait = 1'b0;
 	 ccif.ramWEN = 1'b0;
 	 ccif.ramREN = 1'b1;
       end
       else if (ccif.iREN) begin
-	 ccif.iwait = 1'b1;
+	 ccif.iwait = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
 	 ccif.dwait = 1'b0;
-	 ccif.ramREN = 1'b1;
 	 ccif.ramWEN = 1'b0;
+	 ccif.ramREN = 1'b1;
       end
       else begin
 	 ccif.dwait = 1'b0;
 	 ccif.iwait = 1'b0;
-	 ccif.ramREN = 1'b0;
 	 ccif.ramWEN = 1'b0;
+	 ccif.ramREN = 1'b0;
       end // else: !if(ccif.iREN)
    end // always_comb
 

@@ -76,7 +76,7 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
       cycles++;
     end
     $display("Halted at %g time and ran for %d cycles.",$time, cycles);
-    // nRST = 0;
+    //nRST = 0;
     dump_memory();
     $finish;
   end // initial begin

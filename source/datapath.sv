@@ -67,6 +67,7 @@ module datapath (
 
    //request unit
    assign rqif.regwr = cuif.regwr;
+   assign rqif.icuREN = cuif.icuREN;   
    assign rqif.dcuREN = cuif.dcuREN;
    assign rqif.dcuWEN = cuif.dcuWEN;
    assign rqif.ihit = dpif.ihit;
@@ -83,7 +84,8 @@ module datapath (
    assign pcif.halt = cuif.halt;   
    
    //control unit
-   assign cuif.instr = dpif.imemload;
+//   assign cuif.instr = (nRST) ? dpif.imemload : '0; //give it default state, prevents red lines propagating throughout the system
+   assign cuif.instr = dpif.imemload;   
    assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
    assign dpif.halt = cuif.halt;
    

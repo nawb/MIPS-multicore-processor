@@ -35,7 +35,7 @@ interface control_unit_if;
    logic 	pc_src;	
    //MEM+WB STAGE
    logic 	memwr, memtoreg, regwr;
-   logic        dcuWEN, dcuREN;
+   logic        icuREN, dcuWEN, dcuREN;
    
          
    // regular module ports
@@ -43,7 +43,7 @@ interface control_unit_if;
      (
       input instr, alu_flags,
       output halt, rs, rd, rt, imm16, regdst, extop, alu_op, shamt, alu_src, pc_src,
-      memwr, memtoreg, regwr, dcuWEN, dcuREN
+      memwr, memtoreg, regwr, icuREN, dcuWEN, dcuREN
       );
    
 endinterface

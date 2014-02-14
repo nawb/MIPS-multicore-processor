@@ -15,35 +15,59 @@ module request_unit
    request_unit_if.req rqif
    );
 
-   logic       memfree; //flag for when memory is free to use   
-
    assign rqif.wreq = rqif.regwr;   
-   
+   // assign rqif.imemREN = ~rqif.dhit;
+   assign rqif.imemREN = 1'b1;
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST) begin
-	 rqif.pcEN <= 0;
+	 rqif.dmemREN <= 0;
+	 rqif.dmemWEN <= 0;
+	 rqif.pcEN <= 0;	 
+      end
+      else begin
+	 rqif.dmemREN <= rqif.dhit ? 0 : rqif.dmemREN;
+	 rqif.dmemWEN <= rqif.dhit ? 0 : rqif.dmemWEN;
+	 rqif.pcEN <= rqif.ihit;	 
+      end
+   end
+   /*
+   always_ff @ (posedge CLK, negedge nRST) begin
+      if (!nRST) begin
 	 rqif.dmemREN <= 0;
 	 rqif.dmemWEN <= 0;
 	 rqif.imemREN <= 0;
-	 memfree <= 0;	 
-      end
-      /*
-      else begin //PASS THROUGH
-	 rqif.pcEN <= 1;
-	 rqif.dmemREN <= rqif.dcuREN;
-	 rqif.dmemWEN <= rqif.dcuWEN;
-	 rqif.imemREN <= 1;	 
-      end*/
-      
-      else if (!(rqif.dcuWEN || rqif.dcuREN)) begin //when not at a lw/sw instruction
-	 rqif.dmemREN <= rqif.dcuREN;
-	 rqif.dmemWEN <= rqif.dcuWEN;
-	 rqif.pcEN <= rqif.ihit & !(rqif.dcuWEN || rqif.dcuREN);
-	 memfree <= 0;	 
-      end
+	 rqif.pcEN <= 0;
+      end      
       else begin
-	 if (!memfree) begin //processing a dren/dwen
+	 if (rqif.dhit) begin
+	    //on next clock cycle, deassert dENs to mark end of dR/W
+	    rqif.dmemREN <= 0;
+	    rqif.dmemWEN <= 0;
+	    rqif.imemREN <= rqif.icuREN;
+	    rqif.pcEN <= rqif.ihit;
+	 end
+	 else begin
 	    rqif.dmemREN <= rqif.dcuREN;
+	    rqif.dmemWEN <= rqif.dcuWEN;
+	    rqif.imemREN <= rqif.icuREN;	    
+	    rqif.pcEN <= rqif.ihit;
+	 end
+      end
+   end
+    */
+endmodule // request_unit
+
+
+	 /*
+	 else if (!(rqif.dcuWEN || rqif.dcuREN)) begin //when not at a lw/sw instruction
+	  rqif.dmemREN <= rqif.dcuREN;
+	  rqif.dmemWEN <= rqif.dcuWEN;	 
+	  rqif.imemREN <= 1;
+	  rqif.pcEN <= rqif.ihit & !(rqif.dcuWEN || rqif.dcuREN);
+      end
+	  
+	  if (!memfree) begin //processing a dren/dwen
+	  rqif.dmemREN <= rqif.dcuREN;
 	    rqif.dmemWEN <= rqif.dcuWEN;
 	    rqif.pcEN <= 0;
 	    memfree <= rqif.dhit;
@@ -54,6 +78,5 @@ module request_unit
 	    rqif.pcEN <= rqif.ihit; //move to next instruction
 	    memfree <= !rqif.ihit;
 	 end	 
-      end
-   end
-endmodule
+	  */
+
