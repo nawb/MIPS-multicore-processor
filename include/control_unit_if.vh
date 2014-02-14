@@ -31,8 +31,7 @@ interface control_unit_if;
    //EX STAGE
    aluop_t 	alu_op;
    regbits_t    shamt;   
-   logic [1:0]	alu_src;
-   logic 	pc_src;	
+   logic [1:0] 	alu_src, pc_src;   
    //MEM+WB STAGE
    logic 	memwr, memtoreg, regwr;
    logic        icuREN, dcuWEN, dcuREN;

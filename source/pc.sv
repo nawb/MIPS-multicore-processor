@@ -22,10 +22,22 @@ module pc
    assign pcif.imemaddr = pc_cnt;   
    
    always_ff @ (posedge CLK, negedge nRST) begin
-      if (!nRST || pcif.halt) begin
+      pc_cnt <= pc_cnt;
+      if (!nRST) begin
 	 pc_cnt <= PC_INIT;
       end
       else if (pcif.pcEN) begin
+	 casez (pcif.pc_src)
+	   0: pc_cnt <= pc_cnt + 4;
+	   1: pc_cnt <= pc_cnt + 4 + (pcif.imm16 << 2);
+	   2: pc_cnt <= pcif.imm26 << 2;	   
+	 endcase // casez (pcif.pcsrc)
+      end
+   end
+   
+endmodule
+
+/*
 	 if (pcif.jumpmux) begin
 	    pc_cnt <= pcif.imm26 << 2;	   
 	 end
@@ -33,10 +45,5 @@ module pc
 	    if (pcif.branchmux)
 	      pc_cnt <= pc_cnt + 4 + (pcif.immext << 2);
 	    else
-	      pc_cnt <= pc_cnt + 4;	    
-	 end
-      end
-      else pc_cnt <= pc_cnt;
-   end
-   
-endmodule
+	      pc_cnt <= pc_cnt + 4;
+	 end*/

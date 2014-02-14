@@ -15,14 +15,13 @@ module request_unit
    request_unit_if.req rqif
    );
 
-   assign rqif.wreq = rqif.regwr;   
-   // assign rqif.imemREN = ~rqif.dhit;
+   assign rqif.wreq = rqif.regwr;
    assign rqif.imemREN = 1'b1;
+   
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST) begin
 	 rqif.dmemREN <= 0;
-	 rqif.dmemWEN <= 0;
-//	 rqif.pcEN <= 0;	 
+	 rqif.dmemWEN <= 0;	 
       end
       else begin
 	 //on next clock cycle, deassert dENs to mark end of dR/W

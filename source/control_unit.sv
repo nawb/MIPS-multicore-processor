@@ -49,10 +49,20 @@ module control_unit
 			 (op == BEQ || op == BNE || op == ORI || op == ANDI || op == XORI || op == ADDIU || op == SLTI || op == SLTIU || op == SW || op == SC || op == LW) ? 1 : //all the things requiring a signexted/zeroextend
 			 (op == LUI) ? 2 : 0
 			 ;
-   
+
+   always_comb begin : PC_SRC
+      casez (op)
+	BEQ:        cuif.pc_src = cuif.alu_flags[0];  //alu_flags[0] = zero flag
+	BNE:        cuif.pc_src = ~cuif.alu_flags[0];
+	J, JAL, JR: cuif.pc_src = 2;
+	default:    cuif.pc_src = 0;	
+      endcase
+   end
+   /*
    assign cuif.pc_src  = (op == BEQ) ? 
 			 cuif.alu_flags[0] :  //alu_flags[0] = zero flag
-			 (op == BNE) ? ~cuif.alu_flags[0] : 0;
+			 (op == BNE) ? ~cuif.alu_flags[0] : 
+			 (op == J || op == JAL || op == JR) 2 : 0; */
    
    //   assign cuif.memwr   = (op == SW || op == SB || op == SH || op == BEQ || op == BNE) ?
    //idk what I'm doing here^

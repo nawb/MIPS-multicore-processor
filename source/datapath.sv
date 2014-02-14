@@ -77,10 +77,11 @@ module datapath (
    assign dpif.dmemWEN = rqif.dmemWEN;
 
    //pc
-   assign pcif.branchmux = cuif.pc_src;
-   assign pcif.jumpmux = 0; //cuif.jump_src;
+   assign pcif.pc_src = cuif.pc_src;
+   assign pcif.imm16 = $signed(cuif.imm16);
+   assign pcif.imm26 = $signed(dpif.imemload[25:0]);   
    assign dpif.imemaddr = pcif.imemaddr;
-   assign pcif.pcEN = dpif.ihit;
+   assign pcif.pcEN = ~cuif.halt & dpif.ihit;
    assign pcif.halt = cuif.halt;   
    
    //control unit

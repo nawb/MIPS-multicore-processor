@@ -13,16 +13,15 @@ interface pc_if;
    import cpu_types_pkg::*;
 
    logic [ADDR_W-1:0] imm26;
-   word_t  immext; //the extended address to go to
-   logic 	      branchmux; //pc_src from cu
-   logic 	      jumpmux;
+   word_t  imm16; //the extended address to go to
+   logic [1:0] 	      pc_src;
    word_t  imemaddr;
    logic 	      pcEN, halt;
-         
+   
    // register file ports
    modport pc 
      (
-      input  branchmux, jumpmux, immext, imm26, pcEN, halt,
+      input  imm16, imm26, pc_src, pcEN, halt,
       output imemaddr
       );
 
