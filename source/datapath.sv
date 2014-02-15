@@ -48,7 +48,6 @@ module datapath (
    assign rfif.wdat  = cuif.memtoreg ? dpif.dmemload : aluif.res;
    assign rfif.WEN   = rqif.wreq;
    assign dpif.dmemstore = rfif.rdat2;
-   assign rfif.wsel  = cuif.regdst ? cuif.rt : cuif.rd;
    always_comb begin : THREE_INPUT_MUX_FOR_RSEL
       casez (cuif.regdst)
 	0: rfif.wsel = cuif.rd;

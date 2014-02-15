@@ -43,8 +43,6 @@ module control_unit
 	default: cuif.regdst = 1;
       endcase
    end
-   assign cuif.regdst  = (op == LW || ~(op == RTYPE)) ? 
-			 1 : 0 ;
 
    assign cuif.extop   = (op == ORI || op == ANDI || op == XORI || op == LUI) ?
 			 0 : 1; //0=zeroextend, 1=signextend
