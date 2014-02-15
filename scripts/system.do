@@ -8,11 +8,11 @@ add wave -noupdate -expand -group {DP Layer} /system_tb/DUT/CPU/DP/dpif/imemload
 add wave -noupdate -expand -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/ihit
 add wave -noupdate -expand -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/dhit
 add wave -noupdate -expand -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/imemload
-add wave -noupdate -expand -group {Cache Layer} /system_tb/DUT/CPU/CM/ccif/iwait
+add wave -noupdate -expand -group {Cache Layer} {/system_tb/DUT/CPU/CM/ccif/iwait[0]}
 add wave -noupdate -expand -group {Cache Layer} {/system_tb/DUT/CPU/CM/ccif/iload[0]}
 add wave -noupdate -expand -group {Cache Layer} {/system_tb/DUT/CPU/CM/ccif/dload[0]}
-add wave -noupdate -expand -group {Memory Control} /system_tb/DUT/CPU/CC/ccif/iwait
-add wave -noupdate -expand -group {Memory Control} /system_tb/DUT/CPU/CC/ccif/dwait
+add wave -noupdate -expand -group {Memory Control} {/system_tb/DUT/CPU/CC/ccif/iwait[0]}
+add wave -noupdate -expand -group {Memory Control} {/system_tb/DUT/CPU/CC/ccif/dwait[0]}
 add wave -noupdate -expand -group {Memory Control} {/system_tb/DUT/CPU/CC/ccif/iload[0]}
 add wave -noupdate -expand -group {Memory Control} {/system_tb/DUT/CPU/CC/ccif/dload[0]}
 add wave -noupdate -group singlecycle /system_tb/DUT/CPU/CLK
@@ -32,6 +32,7 @@ add wave -noupdate /system_tb/DUT/CPU/DP/RF/rfif/WEN
 add wave -noupdate /system_tb/DUT/CPU/DP/RF/rfile
 add wave -noupdate /system_tb/DUT/CPU/dcif/dmemaddr
 add wave -noupdate /system_tb/DUT/CPU/dcif/dmemload
+add wave -noupdate /system_tb/DUT/CPU/dcif/imemaddr
 add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/rstate
 add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/addr
 add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/ramif/ramaddr
@@ -41,19 +42,19 @@ add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/en
 add wave -noupdate -expand -group RAM /system_tb/DUT/RAM/wren
 add wave -noupdate /system_tb/DUT/CPU/ccif/ramWEN
 add wave -noupdate /system_tb/DUT/CPU/ccif/ramREN
-add wave -noupdate -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/regdst
-add wave -noupdate -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/extop
-add wave -noupdate -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/alu_op
-add wave -noupdate -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/alu_src
-add wave -noupdate -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/pc_src
-add wave -noupdate -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/memwr
-add wave -noupdate -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/memtoreg
-add wave -noupdate -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/regwr
+add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/regdst
+add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/extop
+add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/alu_op
+add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/alu_src
+add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/pc_src
+add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/memwr
+add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/memtoreg
+add wave -noupdate -expand -group {Control Signals} /system_tb/DUT/CPU/DP/CU/cuif/regwr
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pc_cnt
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pcif/imemaddr
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pcif/pcEN
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {182672 ps} 0}
+WaveRestoreCursors {{Cursor 1} {707547 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -69,4 +70,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {262500 ps}
+WaveRestoreZoom {367500 ps} {1417500 ps}

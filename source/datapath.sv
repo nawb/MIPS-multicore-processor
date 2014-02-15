@@ -45,9 +45,17 @@ module datapath (
    //register file
    assign rfif.rsel1 = cuif.rs;
    assign rfif.rsel2 = cuif.rt;
-   assign rfif.wdat  = cuif.memtoreg ? dpif.dmemload : aluif.res;
    assign rfif.WEN   = rqif.wreq;
    assign dpif.dmemstore = rfif.rdat2;
+//   assign rfif.wdat  = cuif.memtoreg ? dpif.dmemload : aluif.res;
+   always_comb begin : THREE_INPUT_MUX_FOR_MEMTOREG
+      casez (cuif.memtoreg)
+	0: rfif.wdat = aluif.res;
+	1: rfif.wdat = dpif.dmemload;
+	2: rfif.wdat = pcif.imemaddr;      
+	default: rfif.wdat = aluif.res;	
+      endcase
+   end
    always_comb begin : THREE_INPUT_MUX_FOR_RSEL
       casez (cuif.regdst)
 	0: rfif.wsel = cuif.rd;
@@ -66,18 +74,19 @@ module datapath (
 	1: aluif.op2 = //EXTENDER BLOCK:
 		       (cuif.extop ? $signed(cuif.imm16) : {16'b0, cuif.imm16});
 	2: aluif.op2 = {cuif.imm16, 16'b0}; //for LUI specifically
-	default: aluif.op2 = rfif.rdat2;	
+	default: aluif.op2 = rfif.rdat2;
       endcase
    end
    assign aluif.opcode  = cuif.alu_op;
    assign aluif.shamt   = cuif.shamt;
+   /*
    always_comb begin
       casez (dpif.imemload[31:26])
 	LW, SW: dpif.dmemaddr = aluif.res;
 	default: dpif.dmemaddr = '0;	
       endcase
-   end
-//   assign dpif.dmemaddr = aluif.res;
+   end*/
+   assign dpif.dmemaddr = aluif.res;
 
    //request unit
    assign rqif.regwr = cuif.regwr;

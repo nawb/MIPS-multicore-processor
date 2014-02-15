@@ -48,7 +48,6 @@ module control_unit
 			 0 : 1; //0=zeroextend, 1=signextend
    //signextend on: ADDIU, LW, SLTI, SLTIU, SW, LL, SC
    
-   //assign cuif.luimux  = (op == LUI) ? 1 : 0; // Basically, ALUsrc[1] = LUI ? {imm16, 16'b0} : extender
    
    assign cuif.alu_src = (op == RTYPE) ? 0 :
 			 (op == BEQ || op == BNE || op == ORI || op == ANDI || op == XORI || op == ADDIU || op == SLTI || op == SLTIU || op == SW || op == SC || op == LW) ? 1 : //all the things requiring a signexted/zeroextend
@@ -58,8 +57,8 @@ module control_unit
    always_comb begin : PC_SRC
       casez (op)
 	J, JAL, JR: cuif.pc_src = 2;
-	BEQ:        cuif.pc_src = cuif.zeroflag;  //alu_flags[0] = zero flag
-	BNE:        cuif.pc_src = ~cuif.zeroflag;
+	BEQ:        cuif.pc_src = cuif.alu_flags[0]; //alu_flags[0]= zero flag
+	BNE:        cuif.pc_src = ~cuif.alu_flags[0];	
 	default:    cuif.pc_src = 0;
       endcase
    end
@@ -73,9 +72,14 @@ module control_unit
    //idk what I'm doing here^
    assign cuif.memwr   = (op == SW) ?
 			 1 : 0 ;
-   
-   assign cuif.memtoreg= (op == LW) ? //NOT ON LUI...LUI is more like ORI
-			 1 : 0;
+
+   always_comb begin : MEMTOREG
+      casez (op)
+	JAL: cuif.memtoreg = 2;
+	LW:  cuif.memtoreg = 1; //DON'T ASSERT ON LUI...LUI is more like ORI
+	default: cuif.memtoreg = 0;	
+      endcase
+   end
 
    assign cuif.regwr   = //(op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
 			 ~(op == SW || op == BEQ || op == BNE || op == SC || op == J) ?
