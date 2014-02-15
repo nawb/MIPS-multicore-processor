@@ -52,7 +52,8 @@ module datapath (
       casez (cuif.regdst)
 	0: rfif.wsel = cuif.rd;
 	1: rfif.wsel = cuif.rt;	
-	2: rfif.wsel = (5'd5);
+	2: rfif.wsel = (5'd5); //$31 for JAL
+	default: rfif.wsel = cuif.rd;	
       endcase
    end
 
