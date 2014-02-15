@@ -38,40 +38,42 @@ module memory_control
    //that's when you want to pull it back low to let cache layer know that it has been done, and it can assert ihit/dhit
    always_comb begin
       if (ccif.dWEN[CPUID]) begin
-	 ccif.dwait = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
-	 ccif.iwait = 1'b0;
-	 ccif.ramWEN = 1'b1;
-	 ccif.ramREN = 1'b0;
+	 ccif.dwait[CPUID] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	 ccif.iwait[CPUID] = 1'b1;
+	 ccif.ramWEN = ccif.dWEN[CPUID];
+	 ccif.ramREN = ccif.dREN[CPUID];
       end
       else if (ccif.dREN[CPUID]) begin
-	 ccif.dwait = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
-	 ccif.iwait = 1'b0;
+	 ccif.dwait[CPUID] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	 ccif.iwait[CPUID] = 1'b1;
 	 ccif.ramWEN = 1'b0;
-	 ccif.ramREN = 1'b1;
+	 ccif.ramREN = ccif.dREN[CPUID];
       end
       else if (ccif.iREN[CPUID]) begin
-	 ccif.iwait = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
-	 ccif.dwait = 1'b0;
+	 ccif.iwait[CPUID] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	 ccif.dwait[CPUID] = 1'b0;
 	 ccif.ramWEN = 1'b0;
 	 ccif.ramREN = 1'b1;
       end
       else begin
-	 ccif.dwait = 1'b0;
-	 ccif.iwait = 1'b0;
+	 ccif.dwait[CPUID] = 1'b0;
+	 ccif.iwait[CPUID] = 1'b0;
 	 ccif.ramWEN = 1'b0;
 	 ccif.ramREN = 1'b0;
       end // else: !if(ccif.iREN)
    end // always_comb
 
-//   assign ccif.ramaddr = (ccif.dWEN | ccif.dREN) ? ccif.daddr[CPUID] : ccif.iaddr[CPUID];
+   //assign ccif.ramaddr = (ccif.dWEN | ccif.dREN) ? ccif.daddr[CPUID] : ccif.iaddr[CPUID];
+   
    always_comb begin
       casez ({ccif.dWEN[CPUID], ccif.dREN[CPUID]})
 	2'b11, 2'b10,
 	2'b01: ccif.ramaddr = ccif.daddr[CPUID];
 	2'b00: ccif.ramaddr = ccif.iaddr[CPUID];
-	default: ccif.ramaddr = '0;	
+	default: ccif.ramaddr = '0;
       endcase
    end
+    
    assign ccif.dload[CPUID] = ccif.ramload;
    assign ccif.iload[CPUID] = ccif.ramload;
    assign ccif.ramstore = ccif.dstore[CPUID];

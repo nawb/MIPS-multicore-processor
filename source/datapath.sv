@@ -69,8 +69,14 @@ module datapath (
       endcase
    end
    assign aluif.opcode  = cuif.alu_op;
-   assign aluif.shamt   = cuif.shamt;   
-   assign dpif.dmemaddr = aluif.res;
+   assign aluif.shamt   = cuif.shamt;
+   always_comb begin
+      casez (dpif.imemload[31:26])
+	LW, SW: dpif.dmemaddr = aluif.res;
+	default: dpif.dmemaddr = '0;	
+      endcase
+   end
+//   assign dpif.dmemaddr = aluif.res;
 
    //request unit
    assign rqif.regwr = cuif.regwr;
@@ -94,8 +100,8 @@ module datapath (
    //control unit
 //   assign cuif.instr = (nRST) ? dpif.imemload : '0; //give it default state, prevents red lines propagating throughout the system
    assign cuif.instr = dpif.imemload;
-//   assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
-   assign cuif.zeroflag = aluif.flag_z;
+   assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
+//   assign cuif.zeroflag = aluif.flag_z;
    assign dpif.halt = cuif.halt;
    
 endmodule
