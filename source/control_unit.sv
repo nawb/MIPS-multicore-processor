@@ -38,7 +38,7 @@ module control_unit
    always_comb begin : REGDST
       casez (op)
 	RTYPE: cuif.regdst = 0;
-	LW: cuif.regdst = 1;
+	LW, LUI, SLTI, SLTIU: cuif.regdst = 1;
 	JAL: cuif.regdst = 2;
 	default: cuif.regdst = 1;
       endcase
@@ -48,11 +48,15 @@ module control_unit
 			 0 : 1; //0=zeroextend, 1=signextend
    //signextend on: ADDIU, LW, SLTI, SLTIU, SW, LL, SC
    
-   
-   assign cuif.alu_src = (op == RTYPE) ? 0 :
-			 (op == BEQ || op == BNE || op == ORI || op == ANDI || op == XORI || op == ADDIU || op == SLTI || op == SLTIU || op == SW || op == SC || op == LW) ? 1 : //all the things requiring a signexted/zeroextend
-			 (op == LUI) ? 2 : 0
-			 ;
+   always_comb begin : ALU_SRC
+      casez (op)
+	RTYPE: cuif.alu_src = 0;
+	// all the things requiring a signexted/zeroextend:
+	ORI, ANDI, XORI, ADDIU, SLTI, SLTIU, SW, LW: cuif.alu_src = 1; 
+	LUI: cuif.alu_src = 2;
+	default: cuif.alu_src = 0;
+      endcase
+   end
 
    always_comb begin : PC_SRC
       casez (op)
@@ -84,7 +88,7 @@ module control_unit
 
    assign cuif.regwr   = //(op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
 			 //~(op == SW || op == BEQ || op == BNE || op == SC || op == J) ?
-			 (op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTU) ?
+			 (op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTIU) ?
 			 1 : 0;
 
    assign cuif.icuREN  = ~(op == SW || op == LW) ? 1 : 0;
@@ -123,6 +127,12 @@ module control_unit
 	   end
 	   BEQ, BNE: begin
 	      cuif.alu_op = ALU_SUB;
+	   end
+	   SLTI: begin
+	      cuif.alu_op = ALU_SLT;	      
+	   end
+	   SLTIU: begin
+	      cuif.alu_op = ALU_SLTU;	      
 	   end
 	   default: cuif.alu_op = ALU_ADD; //(if LW/SW)
 	 endcase // casez (op)
