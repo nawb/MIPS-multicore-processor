@@ -45,10 +45,18 @@ module datapath (
    //register file
    assign rfif.rsel1 = cuif.rs;
    assign rfif.rsel2 = cuif.rt;
-   assign rfif.wsel  = cuif.regdst ? cuif.rt : cuif.rd;
    assign rfif.wdat  = cuif.memtoreg ? dpif.dmemload : aluif.res;
    assign rfif.WEN   = rqif.wreq;
-   assign dpif.dmemstore = rfif.rdat2;   
+   assign dpif.dmemstore = rfif.rdat2;
+   assign rfif.wsel  = cuif.regdst ? cuif.rt : cuif.rd;
+   always_comb begin : THREE_INPUT_MUX_FOR_RSEL
+      casez (cuif.regdst)
+	0: rfif.wsel = cuif.rd;
+	1: rfif.wsel = cuif.rt;	
+	2: rfif.wsel = (5'd5);
+      endcase
+   end
+
 
    //alu
    assign aluif.op1  = rfif.rdat1;

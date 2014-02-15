@@ -26,7 +26,7 @@ interface control_unit_if;
    //ID STAGE
    regbits_t    rs, rd, rt;
    logic [IMM_W-1:0] imm16;
-   logic 	regdst;
+   logic [1:0]	regdst;
    logic 	extop;
 //   logic        luimux;   
    //EX STAGE

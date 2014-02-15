@@ -35,6 +35,14 @@ module control_unit
    end   
    
    //CONTROL SIGNALS
+   always_comb begin : REGDST
+      casez (op)
+	RTYPE: cuif.regdst = 0;
+	LW: cuif.regdst = 1;
+	JAL: cuif.regdst = 2;
+	default: cuif.regdst = 1;
+      endcase
+   end
    assign cuif.regdst  = (op == LW || ~(op == RTYPE)) ? 
 			 1 : 0 ;
 
