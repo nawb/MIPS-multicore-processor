@@ -14,6 +14,7 @@ interface pc_if;
 
    logic [ADDR_W-1:0] imm26;
    word_t  imm16; //the extended address to go to
+   word_t  regval; //the new PC value from a reg [spefically for use by JR]   
    logic [1:0] 	      pc_src;
    word_t  imemaddr;
    logic 	      pcEN, halt;
@@ -21,7 +22,7 @@ interface pc_if;
    // register file ports
    modport pc 
      (
-      input  imm16, imm26, pc_src, pcEN, halt,
+      input  imm16, imm26, regval, pc_src, pcEN, halt,
       output imemaddr
       );
 

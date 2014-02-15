@@ -56,10 +56,11 @@ module control_unit
 
    always_comb begin : PC_SRC
       casez (op)
-	J, JAL, JR: cuif.pc_src = 2;
-	BEQ:        cuif.pc_src = cuif.alu_flags[0]; //alu_flags[0]= zero flag
-	BNE:        cuif.pc_src = ~cuif.alu_flags[0];	
-	default:    cuif.pc_src = 0;
+	J, JAL:  cuif.pc_src = 2;
+	BEQ:     cuif.pc_src = cuif.alu_flags[0]; //alu_flags[0]= zero flag
+	BNE:     cuif.pc_src = ~cuif.alu_flags[0];
+	RTYPE:   cuif.pc_src = (funct == JR) ? 3 : 0;
+	default: cuif.pc_src = 0;
       endcase
    end
    /*
@@ -82,7 +83,8 @@ module control_unit
    end
 
    assign cuif.regwr   = //(op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
-			 ~(op == SW || op == BEQ || op == BNE || op == SC || op == J) ?
+			 //~(op == SW || op == BEQ || op == BNE || op == SC || op == J) ?
+			 (op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTU) ?
 			 1 : 0;
 
    assign cuif.icuREN  = ~(op == SW || op == LW) ? 1 : 0;
@@ -104,7 +106,7 @@ module control_unit
 	   SRL:  cuif.alu_op = ALU_SRL;
 	   SLT:  cuif.alu_op = ALU_SLT;
 	   SLTU: cuif.alu_op = ALU_SLTU;	   
-	   //JR:   cuif.alu_op =
+	   JR:   cuif.alu_op = ALU_ADD;	   
 	   default: cuif.alu_op = ALU_ADD;	   
 	 endcase // casez	 
       end // if (op == RTYPE)

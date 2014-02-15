@@ -48,19 +48,19 @@ module datapath (
    assign rfif.WEN   = rqif.wreq;
    assign dpif.dmemstore = rfif.rdat2;
 //   assign rfif.wdat  = cuif.memtoreg ? dpif.dmemload : aluif.res;
-   always_comb begin : THREE_INPUT_MUX_FOR_MEMTOREG
+   always_comb begin : MEMTOREG
       casez (cuif.memtoreg)
-	0: rfif.wdat = aluif.res;
-	1: rfif.wdat = dpif.dmemload;
-	2: rfif.wdat = pcif.imemaddr;      
+	0: rfif.wdat = aluif.res;     //for everything else
+	1: rfif.wdat = dpif.dmemload; //for lw
+	2: rfif.wdat = pcif.imemaddr + 4; //for JAL, store next instruction address
 	default: rfif.wdat = aluif.res;	
       endcase
    end
-   always_comb begin : THREE_INPUT_MUX_FOR_RSEL
+   always_comb begin : REGDST
       casez (cuif.regdst)
-	0: rfif.wsel = cuif.rd;
-	1: rfif.wsel = cuif.rt;	
-	2: rfif.wsel = (5'd5); //$31 for JAL
+	0: rfif.wsel = cuif.rd; //for r-type
+	1: rfif.wsel = cuif.rt;	//for i-type
+	2: rfif.wsel = (5'd31); //store to $31 for JAL
 	default: rfif.wsel = cuif.rd;	
       endcase
    end
@@ -68,7 +68,7 @@ module datapath (
 
    //alu
    assign aluif.op1  = rfif.rdat1;
-   always_comb begin : THREE_INPUT_MUX_FOR_OP2
+   always_comb begin : ALU_SRC
       casez (cuif.alu_src)
 	0: aluif.op2 = rfif.rdat2;
 	1: aluif.op2 = //EXTENDER BLOCK:
@@ -101,6 +101,7 @@ module datapath (
 
    //pc
    assign pcif.pc_src = cuif.pc_src;
+   assign pcif.regval = aluif.res; //could have been op1 too...either way   
    assign pcif.imm16 = $signed(cuif.imm16);
    assign pcif.imm26 = $signed(dpif.imemload[25:0]);   
    assign dpif.imemaddr = pcif.imemaddr;
