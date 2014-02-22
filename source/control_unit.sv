@@ -67,14 +67,7 @@ module control_unit
 	default: cuif.pc_src = 0;
       endcase
    end
-   /*
-   assign cuif.pc_src  = (op == BEQ) ? 
-			 cuif.alu_flags[0] :  //alu_flags[0] = zero flag
-			 (op == BNE) ? ~cuif.alu_flags[0] : 
-			 (op == J || op == JAL || op == JR) 2 : 0; */
-   
-   //   assign cuif.memwr   = (op == SW || op == SB || op == SH || op == BEQ || op == BNE) ?
-   //idk what I'm doing here^
+
    assign cuif.memwr   = (op == SW) ?
 			 1 : 0 ;
 
@@ -86,9 +79,7 @@ module control_unit
       endcase
    end
 
-   assign cuif.regwr   = //(op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
-			 //~(op == SW || op == BEQ || op == BNE || op == SC || op == J) ?
-			 (op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTIU) ?
+   assign cuif.regwr   = (op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTIU) ?
 			 1 : 0;
 
    assign cuif.icuREN  = ~(op == SW || op == LW) ? 1 : 0;

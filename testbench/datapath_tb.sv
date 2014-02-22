@@ -28,6 +28,7 @@ module datapath_tb;
    
    initial begin
       //initial values
+      
       nRST = 0;
       #PERIOD;      
       nRST = 1;

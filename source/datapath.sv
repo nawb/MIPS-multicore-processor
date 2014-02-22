@@ -14,7 +14,7 @@
 `include "alu_if.vh"
 `include "pc_if.vh"
 `include "request_unit_if.vh"
-// alu op, mips op, and instruction type
+`include "pipeline_regs_if.vh"
 `include "cpu_types_pkg.vh"
 
 module datapath (
@@ -23,6 +23,7 @@ module datapath (
 		 );
    // import types
    import cpu_types_pkg::*;
+   import pipeline_regs_pkg::*; 
 
    // pc init
    parameter PC_INIT = 0;
@@ -32,7 +33,8 @@ module datapath (
    register_file_if   rfif ();
    alu_if             aluif ();
    pc_if              pcif ();
-   request_unit_if    rqif ();   
+   request_unit_if    rqif ();
+   pipeline_regs_if   ppif ();   
    
    //MAP BLOCKS
    control_unit    CU (cuif);
@@ -40,14 +42,21 @@ module datapath (
    alu             ALU (aluif);
    pc #(PC_INIT)   PC (CLK, nRST, pcif);
    request_unit    RQ (CLK, nRST, rqif);
+
+   //PIPELINE LATCHES
+   pipelinereg #(64)   IF_ID  (CLK, nRST, cuif.regEN, cuif.flush, ppif.FD_in, ppif.FD_out);
+   pipelinereg #(32*3) ID_EX  (CLK, nRST, cuif.regEN, cuif.flush, ppif.DE_in, ppif.DE_out);
+   pipelinereg #(32*3+1) EX_MEM (CLK, nRST, cuif.regEN, cuif.flush, ppif.EM_in, ppif.EM_out);
+   pipelinereg #(64+5) MEM_WB (CLK, nRST, cuif.regEN, cuif.flush, ppif.MW_in, ppif.MW_out);
    
-   //BLOCK CONNECTIONS
+   ////////////////////////////////////////////////////
+   // BLOCK CONNECTIONS
+   ////////////////////////////////////////////////////
    //register file
    assign rfif.rsel1 = cuif.rs;
    assign rfif.rsel2 = cuif.rt;
    assign rfif.WEN   = rqif.wreq;
    assign dpif.dmemstore = rfif.rdat2;
-//   assign rfif.wdat  = cuif.memtoreg ? dpif.dmemload : aluif.res;
    always_comb begin : MEMTOREG
       casez (cuif.memtoreg)
 	0: rfif.wdat = aluif.res;     //for everything else
@@ -65,7 +74,6 @@ module datapath (
       endcase
    end
 
-
    //alu
    assign aluif.op1  = rfif.rdat1;
    always_comb begin : ALU_SRC
@@ -79,15 +87,8 @@ module datapath (
    end
    assign aluif.opcode  = cuif.alu_op;
    assign aluif.shamt   = cuif.shamt;
-   /*
-   always_comb begin
-      casez (dpif.imemload[31:26])
-	LW, SW: dpif.dmemaddr = aluif.res;
-	default: dpif.dmemaddr = '0;	
-      endcase
-   end*/
    assign dpif.dmemaddr = aluif.res;
-
+   
    //request unit
    assign rqif.regwr = cuif.regwr;
    assign rqif.icuREN = cuif.icuREN;   
@@ -109,10 +110,31 @@ module datapath (
    assign pcif.halt = cuif.halt;   
    
    //control unit
-//   assign cuif.instr = (nRST) ? dpif.imemload : '0; //give it default state, prevents red lines propagating throughout the system
-   assign cuif.instr = dpif.imemload;
    assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
-//   assign cuif.zeroflag = aluif.flag_z;
    assign dpif.halt = cuif.halt;
+
+
+   ///////////////////////////////////////////////////////
+   //  PIPELINE LATCHES
+   //////////////////////////////////////////////////////
+
+   //STAGE 1: INSTRUCTION FETCH=========================   
+   //LATCH: IF/ID
+   assign  ppif.FD_in.instr = dpif.imemload;
+   assign  ppif.FD_in.pc_plus_4 = pcif.imemaddr;
+   assign  cuif.instr = ppif.FD_out.instr;
+
+   //STAGE 2: INSTRUCTION DECODE========================
+   //LATCH: ID/EX
+   assign  ppif.DE_in.pc_plus_4 = ppif.FD_out.pc_plus_4;
+   
+
+   //STAGE 3: EXECUTE==================================
+   assign ppif.EM_in.pc_plus_4 = ppif.DE_out.pc_plus_4;
+   
+
+   //STAGE 4: MEMORY===================================
+
+   //STAGE 5: WRITEBACK================================
    
 endmodule
