@@ -64,11 +64,7 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
     syif.addr = 0;
     syif.store = 0;
     syif.WEN = 0;
-<<<<<<< HEAD
     syif.REN = 0;     
-=======
-    syif.REN = 0;
->>>>>>> aa81c8bad88fc3c4584bef66e53c9444c32a8d72
     @(posedge CLK);
     $display("Starting Processor.");
     nRST = 1;
@@ -84,13 +80,9 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
     nRST = 0;
     dump_memory();
     $finish;
-<<<<<<< HEAD
   end // initial begin
    
-=======
-  end
 
->>>>>>> aa81c8bad88fc3c4584bef66e53c9444c32a8d72
   task automatic dump_memory();
     string filename = "memcpu.hex";
     int memfd;
