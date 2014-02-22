@@ -55,6 +55,7 @@ module datapath (
    //register file
    assign rfif.rsel1 = cuif.rs;
    assign rfif.rsel2 = cuif.rt;
+   assign rfif.wsel  = ppif.MW_out.wsel;
    assign rfif.WEN   = rqif.wreq;
    assign dpif.dmemstore = ppif.EM_out.dmemstore;//rfif.rdat2;
    always_comb begin : MEMTOREG
@@ -97,7 +98,7 @@ module datapath (
    assign pcif.imm26 = $signed(dpif.imemload[25:0]);   
    assign dpif.imemaddr = pcif.imemaddr;
    assign pcif.pcEN = ~cuif.halt & dpif.ihit;
-   assign pcif.halt = cuif.halt;   
+   assign pcif.halt = cuif.halt;
    
    //control unit
    assign cuif.instr = ppif.FD_out.instr;
