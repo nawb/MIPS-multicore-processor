@@ -56,38 +56,28 @@ module datapath (
    assign rfif.rsel1 = cuif.rs;
    assign rfif.rsel2 = cuif.rt;
    assign rfif.WEN   = rqif.wreq;
-   assign dpif.dmemstore = rfif.rdat2;
+   assign dpif.dmemstore = ppif.EM_out.dmemstore;//rfif.rdat2;
    always_comb begin : MEMTOREG
       casez (cuif.memtoreg)
-	0: rfif.wdat = aluif.res;     //for everything else
-	1: rfif.wdat = dpif.dmemload; //for lw
-	2: rfif.wdat = pcif.imemaddr + 4; //for JAL, store next instruction address
-	default: rfif.wdat = aluif.res;	
-      endcase
-   end
-   always_comb begin : REGDST
-      casez (cuif.regdst)
-	0: rfif.wsel = cuif.rd; //for r-type
-	1: rfif.wsel = cuif.rt;	//for i-type
-	2: rfif.wsel = (5'd31); //store to $31 for JAL
-	default: rfif.wsel = cuif.rd;	
+	0: rfif.wdat = ppif.WB_out.alu_res;  //for everything else
+	1: rfif.wdat = ppif.WB_out.dmemload; //for lw
+	2: rfif.wdat = ppif.pc_plus_4 +4;//pcif.imemaddr + 4; //for JAL, store next instruction address
+	default: rfif.wdat = ppif.WB_out.alu_res;	
       endcase
    end
 
    //alu
-   assign aluif.op1  = rfif.rdat1;
+   assign aluif.op1  = ppif.DE_out.rdat1;//rfif.rdat1;
    always_comb begin : ALU_SRC
-      casez (cuif.alu_src)
-	0: aluif.op2 = rfif.rdat2;
-	1: aluif.op2 = //EXTENDER BLOCK:
-		       (cuif.extop ? $signed(cuif.imm16) : {16'b0, cuif.imm16});
-	2: aluif.op2 = {cuif.imm16, 16'b0}; //for LUI specifically
-	default: aluif.op2 = rfif.rdat2;
+      casez (ppif.DE_out.alu_src)//cuif.alu_src)
+	0: aluif.op2 = ppif.DE_out.rdat2;//rfif.rdat2;
+	1: aluif.op2 = ppif.DE_out.imm16;	
+	2: aluif.op2 = {ppif.DE_out.imm16, 16'b0}; //for LUI specifically
+	default: aluif.op2 = ppif.DE_out.rdat2;//rfif.rdat2;
       endcase
    end
-   assign aluif.opcode  = cuif.alu_op;
-   assign aluif.shamt   = cuif.shamt;
-   assign dpif.dmemaddr = aluif.res;
+   assign aluif.opcode  = ppif.DE_out.alu_op;//cuif.alu_op;
+   assign aluif.shamt   = ppif.DE_out.shamt;//cuif.shamt;
    
    //request unit
    assign rqif.regwr = cuif.regwr;
@@ -110,31 +100,72 @@ module datapath (
    assign pcif.halt = cuif.halt;   
    
    //control unit
-   assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
+   assign cuif.instr = ppif.FD_out.instr;
+   //assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
+   assign dpif.dmemaddr = ppif.EM_out.alu_res;   
    assign dpif.halt = cuif.halt;
-
 
    ///////////////////////////////////////////////////////
    //  PIPELINE LATCHES
-   //////////////////////////////////////////////////////
+   ///////////////////////////////////////////////////////
 
-   //STAGE 1: INSTRUCTION FETCH=========================   
-   //LATCH: IF/ID
-   assign  ppif.FD_in.instr = dpif.imemload;
-   assign  ppif.FD_in.pc_plus_4 = pcif.imemaddr;
-   assign  cuif.instr = ppif.FD_out.instr;
+   //LATCH 1: INSTRUCTION FETCH/INSTRUCTION DECODE======== 
+   assign ppif.FD_in.instr = dpif.imemload;
+   assign ppif.FD_in.pc_plus_4 = pcif.imemaddr;
 
-   //STAGE 2: INSTRUCTION DECODE========================
-   //LATCH: ID/EX
-   assign  ppif.DE_in.pc_plus_4 = ppif.FD_out.pc_plus_4;
-   
+   //LATCH 2: INSTRUCTION DECODE/EXECUTE================
+   assign ppif.DE_in.pc_plus_4 = ppif.FD_out.pc_plus_4;
+   assign ppif.DE_in.rdat1 = rfif.rdat1;   
+   assign ppif.DE_in.rdat2 = rfif.rdat2;   
+   assign ppif.DE_in.imm16 = //EXTENDER BLOCK:
+			     (cuif.extop ? $signed(cuif.imm16) 
+			      : {16'b0, cuif.imm16});
+   assign ppif.DE_in.alu_op = cuif.alu_op;
+   assign ppif.DE_in.alu_src = cuif.alu_src;
+   assign ppif.DE_in.shamt = cuif.shamt;   
+   assign ppif.DE_in.rd = cuif.rd;   
+   assign ppif.DE_in.rt = cuif.rt;   
+   assign ppif.DE_in.regdst = cuif.regdst;   
+   assign ppif.DE_in.memwr = cuif.memwr;   
+   assign ppif.DE_in.memtoreg = cuif.memtoreg;   
+   assign ppif.DE_in.pc_src = cuif.pc_src;   
+   assign ppif.DE_in.regwr = cuif.regwr;   
+   assign ppif.DE_in.icuREN = cuif.icuREN;   
+   assign ppif.DE_in.dcuWEN = cuif.dcuWEN;   
+   assign ppif.DE_in.dcuREN = cuif.dcuREN;			   
 
-   //STAGE 3: EXECUTE==================================
+   //LATCH 3: EXECUTE/MEMORY===========================
    assign ppif.EM_in.pc_plus_4 = ppif.DE_out.pc_plus_4;
+   assign ppif.EM_in.dmemstore = aluif.op2;
+   assign ppif.EM_in.alu_res = aluif.res;
+   //assign ppif.EM_in.zflag = aluif.zeroflag; not implemented yet
+   assign ppif.EM_in.rd = ppif.DE_out.rd;   
+   assign ppif.EM_in.rt = ppif.DE_out.rt;   
+   assign ppif.EM_in.regdst = ppif.DE_out.regdst;   
+   assign ppif.EM_in.memwr = ppif.DE_out.memwr;   
+   assign ppif.EM_in.memtoreg = ppif.DE_out.memtoreg;   
+   assign ppif.EM_in.pc_src = ppif.DE_out.pc_src;   
+   assign ppif.EM_in.regwr = ppif.DE_out.regwr;   
+   assign ppif.EM_in.icuREN = ppif.DE_out.icuREN;   
+   assign ppif.EM_in.dcuWEN = ppif.DE_out.dcuWEN;   
+   assign ppif.EM_in.dcuREN = ppif.DE_out.dcuREN;
+
+   //LATCH 4: MEMORY/WRITEBACK=========================
+   assign ppif.WB_in.pc_plus_4 = ppif.EM_out.pc_plus_4;
+   assign ppif.WB_in.alu_res = ppif.EM_out.alu_res;
+   assign ppif.WB_in.dmemload = dpif.dmemload;
+   always_comb begin : REGDST
+      casez (ppif.EM_out.regdst)
+	0: ppif.WB_in.wsel = ppif.EM_out.rd; //for r-type
+	1: ppif.WB_in.wsel = ppif.EM_out.rt; //for i-type
+	2: ppif.WB_in.wsel = (5'd31); //store to $31 for JAL
+	default: ppif.WB_in.wsel = ppif.EM_out.rd;	
+      endcase
+   end
    
-
-   //STAGE 4: MEMORY===================================
-
-   //STAGE 5: WRITEBACK================================
+   assign ppif.WB_in.memtoreg = ppif.EM_out.memtoreg;   
+   assign ppif.WB_in.pc_src = ppif.EM_out.pc_src;   
+   assign ppif.WB_in.regwr = ppif.EM_out.regwr;   
+   assign ppif.WB_in.icuREN = ppif.EM_out.icuREN;
    
 endmodule

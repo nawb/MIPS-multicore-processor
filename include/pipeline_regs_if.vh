@@ -16,10 +16,11 @@ package pipeline_regs_pkg;
       word_t instr;
       word_t pc_plus_4;
       } FD_t;
+
    typedef struct packed {
-      word_t op1;
-      word_t op2;
-      word_t imm16;      
+      word_t rdat1;
+      word_t rdat2;
+      word_t imm16;
       word_t pc_plus_4;
       //control signals:
       //EX:
@@ -27,31 +28,38 @@ package pipeline_regs_pkg;
       aluop_t alu_op;
       regbits_t shamt;
       //MEM:
+      regbits_t rd, rt;	
       logic [1:0] regdst;
       logic memwr;
       //WB:
       logic [1:0] memtoreg, pc_src;
       logic regwr, icuREN, dcuWEN, dcuREN;
       } DE_t;
-   typedef struct packed {
-      word_t alures;
-      logic  zeroflag;
-      word_t pc_extended;
-      word_t dmemstore;
 
+   typedef struct packed {
+      word_t alu_res;
+      word_t rdat2;
+      logic zeroflag;
       //control signals:
       //MEM:
+      regbits_t rd, rt;
       logic [1:0] regdst;
       logic memwr, dcuWEN, dcuREN;
       //WB:
       logic [1:0] memtoreg, pc_src;
       logic regwr, icuREN;
       } EM_t;
+
    typedef struct packed {
-      word_t alures;
-      word_t wdat;
+      word_t alu_res;
+      word_t dmemload;
       regbits_t wsel;
+      //control signals:
+      //WB:
+      logic [1:0] memtoreg, pc_src;
+      logic regwr, icuREN;
       } MW_t;
+
 endpackage
 
 interface pipeline_regs_if;
