@@ -45,9 +45,9 @@ module datapath (
 
    //PIPELINE LATCHES
    pipelinereg #(64)   IF_ID  (CLK, nRST, cuif.regEN, cuif.flush, ppif.FD_in, ppif.FD_out);
-   pipelinereg #(32*3) ID_EX  (CLK, nRST, cuif.regEN, cuif.flush, ppif.DE_in, ppif.DE_out);
-   pipelinereg #(32*3+1) EX_MEM (CLK, nRST, cuif.regEN, cuif.flush, ppif.EM_in, ppif.EM_out);
-   pipelinereg #(64+5) MEM_WB (CLK, nRST, cuif.regEN, cuif.flush, ppif.MW_in, ppif.MW_out);
+   pipelinereg #(160) ID_EX  (CLK, nRST, cuif.regEN, cuif.flush, ppif.DE_in, ppif.DE_out);
+   pipelinereg #(118) EX_MEM (CLK, nRST, cuif.regEN, cuif.flush, ppif.EM_in, ppif.EM_out);
+   pipelinereg #(107) MEM_WB (CLK, nRST, cuif.regEN, cuif.flush, ppif.MW_in, ppif.MW_out);
    
    ////////////////////////////////////////////////////
    // BLOCK CONNECTIONS
@@ -59,10 +59,10 @@ module datapath (
    assign dpif.dmemstore = ppif.EM_out.dmemstore;//rfif.rdat2;
    always_comb begin : MEMTOREG
       casez (cuif.memtoreg)
-	0: rfif.wdat = ppif.WB_out.alu_res;  //for everything else
-	1: rfif.wdat = ppif.WB_out.dmemload; //for lw
-	2: rfif.wdat = ppif.pc_plus_4 +4;//pcif.imemaddr + 4; //for JAL, store next instruction address
-	default: rfif.wdat = ppif.WB_out.alu_res;	
+	0: rfif.wdat = ppif.MW_out.alu_res;  //for everything else
+	1: rfif.wdat = ppif.MW_out.dmemload; //for lw
+	2: rfif.wdat = ppif.MW_out.pc_plus_4 + 4;//pcif.imemaddr + 4; //for JAL, store next instruction address
+	default: rfif.wdat = ppif.MW_out.alu_res;	
       endcase
    end
 
@@ -136,7 +136,7 @@ module datapath (
 
    //LATCH 3: EXECUTE/MEMORY===========================
    assign ppif.EM_in.pc_plus_4 = ppif.DE_out.pc_plus_4;
-   assign ppif.EM_in.dmemstore = aluif.op2;
+   assign ppif.EM_in.dmemstore = ppif.DE_out.rdat2;
    assign ppif.EM_in.alu_res = aluif.res;
    //assign ppif.EM_in.zflag = aluif.zeroflag; not implemented yet
    assign ppif.EM_in.rd = ppif.DE_out.rd;   
@@ -151,21 +151,21 @@ module datapath (
    assign ppif.EM_in.dcuREN = ppif.DE_out.dcuREN;
 
    //LATCH 4: MEMORY/WRITEBACK=========================
-   assign ppif.WB_in.pc_plus_4 = ppif.EM_out.pc_plus_4;
-   assign ppif.WB_in.alu_res = ppif.EM_out.alu_res;
-   assign ppif.WB_in.dmemload = dpif.dmemload;
+   assign ppif.MW_in.pc_plus_4 = ppif.EM_out.pc_plus_4;
+   assign ppif.MW_in.alu_res = ppif.EM_out.alu_res;
+   assign ppif.MW_in.dmemload = dpif.dmemload;
    always_comb begin : REGDST
       casez (ppif.EM_out.regdst)
-	0: ppif.WB_in.wsel = ppif.EM_out.rd; //for r-type
-	1: ppif.WB_in.wsel = ppif.EM_out.rt; //for i-type
-	2: ppif.WB_in.wsel = (5'd31); //store to $31 for JAL
-	default: ppif.WB_in.wsel = ppif.EM_out.rd;	
+	0: ppif.MW_in.wsel = ppif.EM_out.rd; //for r-type
+	1: ppif.MW_in.wsel = ppif.EM_out.rt; //for i-type
+	2: ppif.MW_in.wsel = (5'd31); //store to $31 for JAL
+	default: ppif.MW_in.wsel = ppif.EM_out.rd;	
       endcase
    end
    
-   assign ppif.WB_in.memtoreg = ppif.EM_out.memtoreg;   
-   assign ppif.WB_in.pc_src = ppif.EM_out.pc_src;   
-   assign ppif.WB_in.regwr = ppif.EM_out.regwr;   
-   assign ppif.WB_in.icuREN = ppif.EM_out.icuREN;
+   assign ppif.MW_in.memtoreg = ppif.EM_out.memtoreg;   
+   assign ppif.MW_in.pc_src = ppif.EM_out.pc_src;   
+   assign ppif.MW_in.regwr = ppif.EM_out.regwr;   
+   assign ppif.MW_in.icuREN = ppif.EM_out.icuREN;
    
 endmodule
