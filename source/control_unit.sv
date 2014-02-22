@@ -33,6 +33,9 @@ module control_unit
 	default: cuif.halt = 0;      
       endcase
    end   
+
+   assign cuif.regEN = 1'b1;
+   assign cuif.flush = 1'b0;   
    
    //CONTROL SIGNALS
    always_comb begin : REGDST

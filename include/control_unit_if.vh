@@ -42,7 +42,8 @@ interface control_unit_if;
      (
       input instr, alu_flags, zeroflag,
       output halt, rs, rd, rt, imm16, regdst, extop, alu_op, shamt, alu_src, pc_src,
-      memwr, memtoreg, regwr, icuREN, dcuWEN, dcuREN
+      memwr, memtoreg, regwr, icuREN, dcuWEN, dcuREN,
+      regEN, flush
       );
    
 endinterface
