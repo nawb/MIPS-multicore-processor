@@ -86,7 +86,12 @@ module control_unit
 			 1 : 0;
 
    assign cuif.icuREN  = ~(op == SW || op == LW) ? 1 : 0;
-   assign cuif.dcuREN  = cuif.memtoreg;
+   always_comb begin : DCUREN
+      casez (cuif.memtoreg)
+	1: cuif.dcuREN = 1;
+	default: cuif.dcuREN = 0;
+      endcase
+   end
    assign cuif.dcuWEN  = cuif.memwr;
    
    always_comb begin : ALU_OP

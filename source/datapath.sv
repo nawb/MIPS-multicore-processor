@@ -59,7 +59,7 @@ module datapath (
    assign rfif.WEN   = rqif.wreq;
    assign dpif.dmemstore = ppif.EM_out.dmemstore;//rfif.rdat2;
    always_comb begin : MEMTOREG
-      casez (cuif.memtoreg)
+      casez (ppif.MW_out.memtoreg)
 	0: rfif.wdat = ppif.MW_out.alu_res;  //for everything else
 	1: rfif.wdat = ppif.MW_out.dmemload; //for lw
 	2: rfif.wdat = ppif.MW_out.pc_plus_4 + 4;//pcif.imemaddr + 4; //for JAL, store next instruction address
@@ -83,8 +83,8 @@ module datapath (
    //request unit
    assign rqif.regwr = cuif.regwr;
    assign rqif.icuREN = cuif.icuREN;   
-   assign rqif.dcuREN = cuif.dcuREN;
-   assign rqif.dcuWEN = cuif.dcuWEN;
+   assign rqif.dcuREN = ppif.DE_out.dcuREN;
+   assign rqif.dcuWEN = ppif.DE_out.dcuWEN;
    assign rqif.ihit = dpif.ihit;
    assign rqif.dhit = dpif.dhit;
    assign dpif.imemREN = rqif.imemREN;
@@ -97,7 +97,7 @@ module datapath (
    assign pcif.imm16 = $signed(cuif.imm16);
    assign pcif.imm26 = $signed(dpif.imemload[25:0]);   
    assign dpif.imemaddr = pcif.imemaddr;
-   assign pcif.pcEN = ~cuif.halt & dpif.ihit;
+   assign pcif.pcEN = ~cuif.halt & rqif.pcEN;//dpif.ihit;
    assign pcif.halt = cuif.halt;
    
    //control unit

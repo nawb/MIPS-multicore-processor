@@ -1,18 +1,10 @@
-/*
- Eric Villasenor
- evillase@gmail.com
+//File name: 	source/memory_control.sv
+//Created: 	02/05/2014
+//Author:	Nabeel Zaim (mg232)
+//Lab Section:	437-03
+//Description: 	
 
- Nabeel Zaim
- mg232
- 
- this block is the coherence protocol
- and arbitration for ram
- */
-
-// interface include
 `include "cache_control_if.vh"
-
-// memory types
 `include "cpu_types_pkg.vh"
 
 module memory_control 
@@ -64,7 +56,8 @@ module memory_control
    end // always_comb
 
    //assign ccif.ramaddr = (ccif.dWEN | ccif.dREN) ? ccif.daddr[CPUID] : ccif.iaddr[CPUID];
-   
+
+   //FOR CHOOSING THE ADDRESS:
    always_comb begin
       casez ({ccif.dWEN[CPUID], ccif.dREN[CPUID]})
 	2'b11, 2'b10,
@@ -77,21 +70,5 @@ module memory_control
    assign ccif.dload[CPUID] = ccif.ramload;
    assign ccif.iload[CPUID] = ccif.ramload;
    assign ccif.ramstore = ccif.dstore[CPUID];
-   
-   
-   /*
-    always_comb @(ccif.dWEN, ccif.dREN, ccif.iREN) begin
-    if (ccif.dWEN) begin
-    ccif.ramaddr = ccif.daddr;
-      end
-    else if (ccif.dREN) begin
-    ccif.ramaddr = ccif.daddr;
-    ccif.dload = ccif.ramload;
-      end
-    else begin
-    ccif.ramaddr = ccif.iaddr;
-    ccif.iload = ccif.ramload;
-      end
-   end*/
-   
+      
 endmodule

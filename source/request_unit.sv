@@ -15,21 +15,55 @@ module request_unit
    request_unit_if.req rqif
    );
 
+   logic       memfree;   
+   
    assign rqif.wreq = rqif.regwr;
    assign rqif.imemREN = 1'b1;
    
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST) begin
 	 rqif.dmemREN <= 0;
-	 rqif.dmemWEN <= 0;	 
+	 rqif.dmemWEN <= 0;
+	 memfree <= 0;
+	 rqif.pcEN <= rqif.ihit;	 
+      end
+      else begin
+	 //rqif.dmemREN <= rqif.dhit & ~rqif.dcuREN ? 0 : rqif.dcuREN;
+	 //rqif.dmemWEN <= rqif.dhit & ~rqif.dcuWEN ? 0 : rqif.dcuWEN;
+	 rqif.dmemREN <= rqif.dhit ? 0 : rqif.dcuREN;
+	 rqif.dmemWEN <= rqif.dhit ? 0 : rqif.dcuWEN;
+	 memfree <= 0;
+	 rqif.pcEN <= rqif.ihit; 
+      end
+      /*
+      else if (!(rqif.dcuWEN || rqif.dcuREN)) begin //when not at a lw/sw instruction
+	 rqif.dmemREN <= rqif.dcuREN;
+	 rqif.dmemWEN <= rqif.dcuWEN;
+	 rqif.pcEN <= rqif.ihit & !(rqif.dcuWEN || rqif.dcuREN);
+	 memfree <= !rqif.dhit;
+      end
+      else if (!memfree) begin
+	 rqif.dmemREN <= rqif.dcuREN;	 
+	 rqif.dmemWEN <= rqif.dcuWEN;
+	 rqif.pcEN <= 0;  //pause PC for a cycle, while using ram lines to get data	 
+	 memfree <= rqif.dhit; //will stay in this case until receive a dhit,
+	 //in which case it will go to the last case and proceed to deassert it
       end
       else begin
 	 //on next clock cycle, deassert dENs to mark end of dR/W
-	 rqif.dmemREN <= rqif.dhit ? 0 : rqif.dcuREN;
-	 rqif.dmemWEN <= rqif.dhit ? 0 : rqif.dcuWEN;
-      end
+	 rqif.dmemREN <= 0;
+	 rqif.dmemWEN <= 0;
+	 rqif.pcEN <= rqif.ihit; //reinstate PC.
+	 memfree <= rqif.dhit;
+      end*/
    end
 endmodule // request_unit
+
+
+
+
+
+
 
 
 	 /*
