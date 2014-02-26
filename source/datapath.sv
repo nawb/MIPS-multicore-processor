@@ -37,7 +37,7 @@ module datapath (
    pc_if              pcif ();
    request_unit_if    rqif ();
    hazard_unit_if     hzif ();
-   forwarding_unit    fwif ();
+   forwarding_unit_if fwif ();
    pipeline_regs_if   ppif ();   
    
    //MAP BLOCKS
@@ -50,7 +50,7 @@ module datapath (
    forwarding_unit FW (fwif);  
 
    //PIPELINE LATCHES
-   pipelinereg #(65)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
+   pipelinereg #(64)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
    pipelinereg #(161) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
    pipelinereg #(119) EX_MEM (CLK, nRST, hzif.EMen, hzif.EMflush, ppif.EM_in, ppif.EM_out);
    pipelinereg #(108) MEM_WB (CLK, nRST, hzif.MWen, hzif.MWflush, ppif.MW_in, ppif.MW_out);
@@ -117,7 +117,15 @@ module datapath (
    //hazard unit
    assign hzif.ihit = dpif.ihit;
    assign hzif.dhit = dpif.dhit;
-   assign hzif.halt = cuif.halt;   
+   assign hzif.halt = cuif.halt;
+
+   //forwarding unit
+   assign fwif.curr_rs = cuif.rs;
+   assign fwif.curr_rt = cuif.rt;
+   assign fwif.rd_mem = ppif.EM_out.rd;
+   assign fwif.rd_wb  = ppif.MW_out.wsel;
+   assign fwif.wr_mem = ppif.EM_out.regwr;
+   assign fwif.wr_wb  = ppif.MW_out.dcuREN;   
    
    //pc
    assign pcif.pc_src = cuif.pc_src;
