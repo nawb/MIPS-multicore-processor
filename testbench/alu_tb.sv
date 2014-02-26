@@ -45,12 +45,12 @@ module alu_tb;
       //initial values
       alum.op1 = '0;
       alum.op2 = '0;
-      alum.opcode = '0;
+      alum.opcode = aluop_t'('0);
       nRST = 0;
       //initial reset
       #PERIOD nRST = 1;
 
-      #PERIOD;
+      #PERIOD;      
       
       ///////////////////////////////////////////////
       //     ADDITION TESTS
@@ -247,7 +247,7 @@ module alu_tb;
       begin
 	 alum.op1 = op1_;
 	 alum.op2 = op2_;
-	 alum.opcode = opcode_;
+	 alum.opcode = aluop_t'(opcode_);
 	 #0.5ns;
 	 if (alum.res != desired_res) $display("====FAILED===");
 	 //$display("%b < %b", alum.op1, alum.op2);//UNCOMMENT TO SHOW OPERANDS
