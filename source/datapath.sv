@@ -169,8 +169,8 @@ module datapath (
    assign ppif.DE_in.rdat1 = rfif.rdat1;   
    assign ppif.DE_in.rdat2 = rfif.rdat2;   
    assign ppif.DE_in.imm16 = //EXTENDER BLOCK:
-			     (cuif.extop ? $signed(cuif.imm16) 
-			      : {16'b0, cuif.imm16});
+			     (cuif.extop ? {{16{cuif.imm16[15]}}, cuif.imm16} //sign extend
+			      : {16'b0, cuif.imm16}); //zero extend
    assign ppif.DE_in.alu_op = cuif.alu_op;
    assign ppif.DE_in.alu_src = cuif.alu_src;
    assign ppif.DE_in.shamt = cuif.shamt;   
