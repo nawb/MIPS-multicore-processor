@@ -34,7 +34,7 @@ module control_unit
       endcase
    end
 
-   assign cuif.regEN = (op == LW || op == SW) ? 0 : 1; //to stall first 2 latches
+   assign cuif.regEN = 1'b1;
    assign cuif.flush = 1'b0;
    
    //CONTROL SIGNALS

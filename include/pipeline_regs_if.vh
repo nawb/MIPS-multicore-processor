@@ -58,7 +58,7 @@ package pipeline_regs_pkg;
       //control signals:
       //WB:
       logic [1:0] memtoreg, pc_src;
-      logic regwr, icuREN;
+      logic dcuREN, icuREN;
       word_t pc_plus_4;
       } MW_t;
 

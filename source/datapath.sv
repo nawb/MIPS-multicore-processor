@@ -14,6 +14,7 @@
 `include "alu_if.vh"
 `include "pc_if.vh"
 `include "request_unit_if.vh"
+`include "hazard_unit_if.vh"
 `include "pipeline_regs_if.vh"
 `include "cpu_types_pkg.vh"
 
@@ -34,6 +35,7 @@ module datapath (
    alu_if             aluif ();
    pc_if              pcif ();
    request_unit_if    rqif ();
+   hazard_unit_if     hzif ();
    pipeline_regs_if   ppif ();   
    
    //MAP BLOCKS
@@ -42,12 +44,13 @@ module datapath (
    alu             ALU (aluif);
    pc #(PC_INIT)   PC (CLK, nRST, pcif);
    request_unit    RQ (CLK, nRST, rqif);
+   hazard_unit     HZ (hzif);  
 
    //PIPELINE LATCHES
-   pipelinereg #(64)  IF_ID  (CLK, nRST, cuif.regEN, cuif.flush, ppif.FD_in, ppif.FD_out);
-   pipelinereg #(160) ID_EX  (CLK, nRST, cuif.regEN, cuif.flush, ppif.DE_in, ppif.DE_out);
-   pipelinereg #(118) EX_MEM (CLK, nRST, cuif.regEN, cuif.flush, ppif.EM_in, ppif.EM_out);
-   pipelinereg #(107) MEM_WB (CLK, nRST, 1'b1, cuif.flush, ppif.MW_in, ppif.MW_out);
+   pipelinereg #(64)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
+   pipelinereg #(160) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
+   pipelinereg #(118) EX_MEM (CLK, nRST, hzif.EMen, hzif.EMflush, ppif.EM_in, ppif.EM_out);
+   pipelinereg #(107) MEM_WB (CLK, nRST, hzif.MWen, hzif.MWflush, ppif.MW_in, ppif.MW_out);
    
    ////////////////////////////////////////////////////
    // BLOCK CONNECTIONS
@@ -56,7 +59,7 @@ module datapath (
    assign rfif.rsel1 = cuif.rs;
    assign rfif.rsel2 = cuif.rt;
    assign rfif.wsel  = ppif.MW_out.wsel;
-   assign rfif.WEN   = rqif.wreq;
+   assign rfif.WEN   = ppif.MW_out.dcuREN;
    assign dpif.dmemstore = ppif.EM_out.dmemstore;//rfif.rdat2;
    always_comb begin : MEMTOREG
       casez (ppif.MW_out.memtoreg)
@@ -81,23 +84,30 @@ module datapath (
    assign aluif.shamt   = ppif.DE_out.shamt;//cuif.shamt;
    
    //request unit
-   assign rqif.regwr = cuif.regwr;
-   assign rqif.icuREN = cuif.icuREN;   
-   assign rqif.dcuREN = ppif.DE_out.dcuREN;
-   assign rqif.dcuWEN = ppif.DE_out.dcuWEN;
-   assign rqif.ihit = dpif.ihit;
-   assign rqif.dhit = dpif.dhit;
-   assign dpif.imemREN = rqif.imemREN;
-   assign dpif.dmemREN = rqif.dmemREN;
-   assign dpif.dmemWEN = rqif.dmemWEN;
+   //assign rqif.regwr = cuif.regwr;
+   //assign rqif.icuREN = cuif.icuREN;
+   assign dpif.imemREN = ppif.EM_out.icuREN;   
+   //assign rqif.dcuREN = ppif.DE_out.dcuREN;
+   //assign rqif.dcuWEN = ppif.DE_out.dcuWEN;
+   assign dpif.dmemREN = ppif.EM_out.dcuREN;
+   assign dpif.dmemWEN = ppif.EM_out.dcuWEN;   
+   //assign rqif.ihit = dpif.ihit;
+   //assign rqif.dhit = dpif.dhit;
+   //assign dpif.imemREN = rqif.imemREN;
+   //assign dpif.dmemREN = rqif.dmemREN;
+   //assign dpif.dmemWEN = rqif.dmemWEN;
 
+   //hazard unit
+   assign hzif.ihit = dpif.ihit;
+   assign hzif.dhit = dpif.dhit;   
+   
    //pc
    assign pcif.pc_src = cuif.pc_src;
    assign pcif.regval = aluif.res; //could have been op1 too...either way   
    assign pcif.imm16 = $signed(cuif.imm16);
    assign pcif.imm26 = $signed(dpif.imemload[25:0]);   
    assign dpif.imemaddr = pcif.imemaddr;
-   assign pcif.pcEN = ~cuif.halt & rqif.pcEN;//dpif.ihit;
+   assign pcif.pcEN = ~cuif.halt & dpif.ihit;//rqif.pcEN;
    assign pcif.halt = cuif.halt;
    
    //control unit
@@ -131,7 +141,7 @@ module datapath (
    assign ppif.DE_in.memtoreg = cuif.memtoreg;   
    assign ppif.DE_in.pc_src = cuif.pc_src;   
    assign ppif.DE_in.regwr = cuif.regwr;   
-   assign ppif.DE_in.icuREN = cuif.icuREN;   
+   assign ppif.DE_in.icuREN = cuif.icuREN;
    assign ppif.DE_in.dcuWEN = cuif.dcuWEN;   
    assign ppif.DE_in.dcuREN = cuif.dcuREN;			   
 
@@ -164,9 +174,9 @@ module datapath (
       endcase
    end
    
-   assign ppif.MW_in.memtoreg = ppif.EM_out.memtoreg;   
+   assign ppif.MW_in.memtoreg = ppif.EM_out.memtoreg;
    assign ppif.MW_in.pc_src = ppif.EM_out.pc_src;   
-   assign ppif.MW_in.regwr = ppif.EM_out.regwr;   
+   assign ppif.MW_in.dcuREN = ppif.EM_out.regwr;
    assign ppif.MW_in.icuREN = ppif.EM_out.icuREN;
    
 endmodule
