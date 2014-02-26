@@ -22,10 +22,10 @@ add wave -noupdate -expand -group MEMORY -expand -group {Cache Layer} {/system_t
 add wave -noupdate -expand -group MEMORY /system_tb/DUT/CPU/dcif/dmemaddr
 add wave -noupdate -expand -group MEMORY /system_tb/DUT/CPU/dcif/dmemload
 add wave -noupdate -expand -group MEMORY -label dmemstore /system_tb/DUT/CPU/DP/ppif/EM_out.dmemstore
-add wave -noupdate -expand -group MEMORY -expand -group {Request Unit} /system_tb/DUT/CPU/DP/rqif/dcuREN
-add wave -noupdate -expand -group MEMORY -expand -group {Request Unit} /system_tb/DUT/CPU/DP/RQ/rqif/dmemREN
-add wave -noupdate -expand -group MEMORY -expand -group {Request Unit} /system_tb/DUT/CPU/DP/rqif/dcuWEN
-add wave -noupdate -expand -group MEMORY -expand -group {Request Unit} /system_tb/DUT/CPU/DP/RQ/rqif/dmemWEN
+add wave -noupdate -expand -group MEMORY -group {Request Unit} /system_tb/DUT/CPU/DP/rqif/dcuREN
+add wave -noupdate -expand -group MEMORY -group {Request Unit} /system_tb/DUT/CPU/DP/RQ/rqif/dmemREN
+add wave -noupdate -expand -group MEMORY -group {Request Unit} /system_tb/DUT/CPU/DP/rqif/dcuWEN
+add wave -noupdate -expand -group MEMORY -group {Request Unit} /system_tb/DUT/CPU/DP/RQ/rqif/dmemWEN
 add wave -noupdate -expand -group MEMORY -expand -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/iREN[0]}
 add wave -noupdate -expand -group MEMORY -expand -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/dREN[0]}
 add wave -noupdate -expand -group MEMORY -expand -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/dWEN[0]}
@@ -39,7 +39,6 @@ add wave -noupdate -expand -group MEMORY -expand -group RegDst -label rd -radix 
 add wave -noupdate -expand -group MEMORY -expand -group RegDst -label rt -radix unsigned /system_tb/DUT/CPU/DP/ppif/EM_out.rt
 add wave -noupdate -expand -group MEMORY -expand -group RegDst -label wsel -radix unsigned /system_tb/DUT/CPU/DP/ppif/MW_in.wsel
 add wave -noupdate -expand -group WRITEBACK /system_tb/DUT/CPU/DP/RF/rfif/WEN
-add wave -noupdate -expand -group WRITEBACK -label regwr /system_tb/DUT/CPU/DP/ppif/MW_out.regwr
 add wave -noupdate -expand -group WRITEBACK -radix unsigned /system_tb/DUT/CPU/DP/ppif/MW_out.wsel
 add wave -noupdate -expand -group WRITEBACK -expand -group MemToReg -label memtoreg /system_tb/DUT/CPU/DP/ppif/MW_out.memtoreg
 add wave -noupdate -expand -group WRITEBACK -expand -group MemToReg -label alu_res /system_tb/DUT/CPU/DP/ppif/MW_out.alu_res
@@ -54,7 +53,7 @@ add wave -noupdate -group singlecycle /system_tb/DUT/CPU/nRST
 add wave -noupdate -group singlecycle /system_tb/DUT/CPU/halt
 add wave -noupdate /system_tb/CLK
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {383175 ps} 0}
+WaveRestoreCursors {{Cursor 1} {664598 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100

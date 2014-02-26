@@ -14,14 +14,12 @@ module register_file
    word_t [31:0] rfile;
 
    //READ ON FALLING EDGE
-   always_ff @(negedge CLK) begin
-      //read from reg0 must always return 0.
-      rfif.rdat1 <= rfif.rsel1 ? rfile[rfif.rsel1] : 0;
-      rfif.rdat2 <= rfif.rsel2 ? rfile[rfif.rsel2] : 0;
-   end
+   //read from reg0 must always return 0.
+   assign rfif.rdat1 = rfif.rsel1 ? rfile[rfif.rsel1] : 0;
+   assign rfif.rdat2 = rfif.rsel2 ? rfile[rfif.rsel2] : 0;
 
    //WRITE ON RISING EDGE
-   always_ff @(posedge CLK, negedge nRST) begin
+   always_ff @(negedge CLK, negedge nRST) begin
       if (!nRST)
 	rfile <= '0;
       else if (rfif.WEN && rfif.wsel) //wsel should not be 0
