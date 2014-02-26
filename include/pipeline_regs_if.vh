@@ -27,7 +27,7 @@ package pipeline_regs_pkg;
       aluop_t alu_op;
       regbits_t shamt;
       //MEM:
-      regbits_t rd, rt;	
+      regbits_t rd, rs, rt;	
       logic [1:0] regdst;
       logic memwr, dcuWEN, dcuREN;
       word_t pc_plus_4;
