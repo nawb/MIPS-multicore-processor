@@ -85,12 +85,9 @@ module datapath (
    
    //request unit
    //assign rqif.regwr = cuif.regwr;
-   //assign rqif.icuREN = cuif.icuREN;
-   assign dpif.imemREN = ppif.EM_out.icuREN;   
+   //assign rqif.icuREN = cuif.icuREN;  
    //assign rqif.dcuREN = ppif.DE_out.dcuREN;
    //assign rqif.dcuWEN = ppif.DE_out.dcuWEN;
-   assign dpif.dmemREN = ppif.EM_out.dcuREN;
-   assign dpif.dmemWEN = ppif.EM_out.dcuWEN;   
    //assign rqif.ihit = dpif.ihit;
    //assign rqif.dhit = dpif.dhit;
    //assign dpif.imemREN = rqif.imemREN;
@@ -114,6 +111,9 @@ module datapath (
    assign cuif.instr = ppif.FD_out.instr;
    //assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
    assign dpif.dmemaddr = ppif.EM_out.alu_res;   
+   assign dpif.imemREN = ppif.EM_out.icuREN; 
+   assign dpif.dmemREN = ppif.EM_out.dcuREN;
+   assign dpif.dmemWEN = ppif.EM_out.dcuWEN;
    assign dpif.halt = cuif.halt;
 
    ///////////////////////////////////////////////////////
