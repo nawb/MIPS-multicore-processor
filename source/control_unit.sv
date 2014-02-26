@@ -32,10 +32,10 @@ module control_unit
 	HALT: cuif.halt = 1;
 	default: cuif.halt = 0;      
       endcase
-   end   
+   end
 
-   assign cuif.regEN = 1'b1;
-   assign cuif.flush = 1'b0;   
+   assign cuif.regEN = (op == LW || op == SW) ? 0 : 1; //to stall first 2 latches
+   assign cuif.flush = 1'b0;
    
    //CONTROL SIGNALS
    always_comb begin : REGDST
@@ -78,7 +78,7 @@ module control_unit
       casez (op)
 	JAL: cuif.memtoreg = 2;
 	LW:  cuif.memtoreg = 1; //DON'T ASSERT ON LUI...LUI is more like ORI
-	default: cuif.memtoreg = 0;	
+	default: cuif.memtoreg = 0;
       endcase
    end
 

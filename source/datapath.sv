@@ -44,10 +44,10 @@ module datapath (
    request_unit    RQ (CLK, nRST, rqif);
 
    //PIPELINE LATCHES
-   pipelinereg #(64)   IF_ID  (CLK, nRST, cuif.regEN, cuif.flush, ppif.FD_in, ppif.FD_out);
+   pipelinereg #(64)  IF_ID  (CLK, nRST, cuif.regEN, cuif.flush, ppif.FD_in, ppif.FD_out);
    pipelinereg #(160) ID_EX  (CLK, nRST, cuif.regEN, cuif.flush, ppif.DE_in, ppif.DE_out);
    pipelinereg #(118) EX_MEM (CLK, nRST, cuif.regEN, cuif.flush, ppif.EM_in, ppif.EM_out);
-   pipelinereg #(107) MEM_WB (CLK, nRST, cuif.regEN, cuif.flush, ppif.MW_in, ppif.MW_out);
+   pipelinereg #(107) MEM_WB (CLK, nRST, 1'b1, cuif.flush, ppif.MW_in, ppif.MW_out);
    
    ////////////////////////////////////////////////////
    // BLOCK CONNECTIONS
