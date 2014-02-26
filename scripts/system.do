@@ -9,6 +9,7 @@ add wave -noupdate -height 20 -expand -group RFILE -expand -group rs /system_tb/
 add wave -noupdate -height 20 -expand -group RFILE -expand -group rt -radix unsigned /system_tb/DUT/CPU/DP/RF/rfif/rsel2
 add wave -noupdate -height 20 -expand -group RFILE -expand -group rt /system_tb/DUT/CPU/DP/RF/rfif/rdat2
 add wave -noupdate /system_tb/DUT/CPU/DP/RF/rfile
+add wave -noupdate -expand -group ALU -label ALU_src /system_tb/DUT/CPU/DP/ppif/DE_out.alu_src
 add wave -noupdate -expand -group ALU -radix symbolic /system_tb/DUT/CPU/DP/ALU/aluif/opcode
 add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/ALU/aluif/op1
 add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/ALU/aluif/op2
@@ -53,7 +54,7 @@ add wave -noupdate -group singlecycle /system_tb/DUT/CPU/nRST
 add wave -noupdate -group singlecycle /system_tb/DUT/CPU/halt
 add wave -noupdate /system_tb/CLK
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {664598 ps} 0}
+WaveRestoreCursors {{Cursor 1} {221723 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100

@@ -11,14 +11,14 @@
 interface hazard_unit_if;
    import cpu_types_pkg::*;
 
-   logic ihit, dhit;
+   logic ihit, dhit, halt;
    logic FDen, DEen, EMen, MWen;
    logic FDflush, DEflush, EMflush, MWflush;
    
    modport haz (
-		input  ihit, dhit, 
+		input  ihit, dhit, halt, 
 		output FDen, DEen, EMen, MWen,
-		FDflush, DEflush, EMflush, MWflush
+		       FDflush, DEflush, EMflush, MWflush
 		);
       
 endinterface

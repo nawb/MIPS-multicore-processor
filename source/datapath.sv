@@ -15,6 +15,7 @@
 `include "pc_if.vh"
 `include "request_unit_if.vh"
 `include "hazard_unit_if.vh"
+`include "forwarding_unit_if.vh"
 `include "pipeline_regs_if.vh"
 `include "cpu_types_pkg.vh"
 
@@ -36,6 +37,7 @@ module datapath (
    pc_if              pcif ();
    request_unit_if    rqif ();
    hazard_unit_if     hzif ();
+   forwarding_unit    fwif ();
    pipeline_regs_if   ppif ();   
    
    //MAP BLOCKS
@@ -44,13 +46,14 @@ module datapath (
    alu             ALU (aluif);
    pc #(PC_INIT)   PC (CLK, nRST, pcif);
    request_unit    RQ (CLK, nRST, rqif);
-   hazard_unit     HZ (hzif);  
+   hazard_unit     HZ (hzif);
+   forwarding_unit FW (fwif);  
 
    //PIPELINE LATCHES
-   pipelinereg #(64)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
-   pipelinereg #(160) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
-   pipelinereg #(118) EX_MEM (CLK, nRST, hzif.EMen, hzif.EMflush, ppif.EM_in, ppif.EM_out);
-   pipelinereg #(107) MEM_WB (CLK, nRST, hzif.MWen, hzif.MWflush, ppif.MW_in, ppif.MW_out);
+   pipelinereg #(65)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
+   pipelinereg #(161) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
+   pipelinereg #(119) EX_MEM (CLK, nRST, hzif.EMen, hzif.EMflush, ppif.EM_in, ppif.EM_out);
+   pipelinereg #(108) MEM_WB (CLK, nRST, hzif.MWen, hzif.MWflush, ppif.MW_in, ppif.MW_out);
    
    ////////////////////////////////////////////////////
    // BLOCK CONNECTIONS
@@ -71,10 +74,27 @@ module datapath (
    end
 
    //alu
-   assign aluif.op1  = ppif.DE_out.rdat1;//rfif.rdat1;
+   //assign aluif.op1  = ppif.DE_out.rdat1;//rfif.rdat1;
+   always_comb begin : FWD_MUX_1
+      casez (fwif.fwd_op1)
+	0: aluif.op1 = ppif.DE_out.rdat1;	
+	1: aluif.op1 = ppif.EM_out.alu_res;	
+	2: aluif.op1 = rfif.wdat;
+	default: aluif.op1 = ppif.DE_out.rdat1;
+      endcase
+   end
+   word_t op2_tmp;   
+   always_comb begin : FWD_MUX_2
+      casez (fwif.fwd_op2)
+	0: op2_tmp = ppif.DE_out.rdat2;
+	1: op2_tmp = ppif.EM_out.alu_res;
+	2: op2_tmp = rfif.wdat;
+	default: op2_tmp = ppif.DE_out.rdat2;	
+      endcase
+   end
    always_comb begin : ALU_SRC
       casez (ppif.DE_out.alu_src)//cuif.alu_src)
-	0: aluif.op2 = ppif.DE_out.rdat2;//rfif.rdat2;
+	0: aluif.op2 = op2_tmp;//ppif.DE_out.rdat2;//rfif.rdat2;
 	1: aluif.op2 = ppif.DE_out.imm16;	
 	2: aluif.op2 = {ppif.DE_out.imm16, 16'b0}; //for LUI specifically
 	default: aluif.op2 = ppif.DE_out.rdat2;//rfif.rdat2;
@@ -96,7 +116,8 @@ module datapath (
 
    //hazard unit
    assign hzif.ihit = dpif.ihit;
-   assign hzif.dhit = dpif.dhit;   
+   assign hzif.dhit = dpif.dhit;
+   assign hzif.halt = cuif.halt;   
    
    //pc
    assign pcif.pc_src = cuif.pc_src;
@@ -114,7 +135,7 @@ module datapath (
    assign dpif.imemREN = ppif.EM_out.icuREN; 
    assign dpif.dmemREN = ppif.EM_out.dcuREN;
    assign dpif.dmemWEN = ppif.EM_out.dcuWEN;
-   assign dpif.halt = cuif.halt;
+   assign dpif.halt = ppif.MW_out.halt;
 
    ///////////////////////////////////////////////////////
    //  PIPELINE LATCHES
@@ -143,7 +164,8 @@ module datapath (
    assign ppif.DE_in.regwr = cuif.regwr;   
    assign ppif.DE_in.icuREN = cuif.icuREN;
    assign ppif.DE_in.dcuWEN = cuif.dcuWEN;   
-   assign ppif.DE_in.dcuREN = cuif.dcuREN;			   
+   assign ppif.DE_in.dcuREN = cuif.dcuREN;
+   assign ppif.DE_in.halt   = cuif.halt;   
 
    //LATCH 3: EXECUTE/MEMORY===========================
    assign ppif.EM_in.pc_plus_4 = ppif.DE_out.pc_plus_4;
@@ -160,6 +182,8 @@ module datapath (
    assign ppif.EM_in.icuREN = ppif.DE_out.icuREN;   
    assign ppif.EM_in.dcuWEN = ppif.DE_out.dcuWEN;   
    assign ppif.EM_in.dcuREN = ppif.DE_out.dcuREN;
+   assign ppif.EM_in.halt = ppif.DE_out.halt;
+   
 
    //LATCH 4: MEMORY/WRITEBACK=========================
    assign ppif.MW_in.pc_plus_4 = ppif.EM_out.pc_plus_4;
@@ -178,5 +202,6 @@ module datapath (
    assign ppif.MW_in.pc_src = ppif.EM_out.pc_src;   
    assign ppif.MW_in.dcuREN = ppif.EM_out.regwr;
    assign ppif.MW_in.icuREN = ppif.EM_out.icuREN;
+   assign ppif.MW_in.halt = ppif.EM_out.halt;
    
 endmodule

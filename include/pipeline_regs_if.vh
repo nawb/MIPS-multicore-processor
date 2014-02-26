@@ -33,7 +33,8 @@ package pipeline_regs_pkg;
       word_t pc_plus_4;
       //WB:
       logic [1:0] memtoreg, pc_src;
-      logic regwr, icuREN;
+      logic 	  regwr, icuREN;
+      logic 	  halt;
       } DE_t;
 
    typedef struct packed {
@@ -49,6 +50,7 @@ package pipeline_regs_pkg;
       //WB:
       logic [1:0] memtoreg, pc_src;
       logic regwr, icuREN;
+      logic halt;
       } EM_t;
 
    typedef struct packed {
@@ -60,6 +62,7 @@ package pipeline_regs_pkg;
       logic [1:0] memtoreg, pc_src;
       logic dcuREN, icuREN;
       word_t pc_plus_4;
+      logic halt;
       } MW_t;
 
 endpackage

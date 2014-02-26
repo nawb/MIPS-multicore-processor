@@ -16,4 +16,4 @@
 
 mydata:
   org 0x0080
-  cfw   10
+  cfw   0x10
