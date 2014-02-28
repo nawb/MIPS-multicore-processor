@@ -146,7 +146,10 @@ module datapath (
    assign dpif.imemaddr = pcif.imemaddr;
    assign pcif.pcEN = ~cuif.halt & dpif.ihit;//rqif.pcEN;
    assign pcif.halt = cuif.halt;
-   
+   assign pcif.branchmux = ((ppif.FD_out.instr[31:26] == BEQ) && (rfif.rdat1 == rfif.rdat2) ||
+			    (ppif.FD_out.instr[31:26] == BNE) && (rfif.rdat2 != rfif.rdat2)) ?
+			   1 : 0 ;
+      
    //control unit
    assign cuif.instr = ppif.FD_out.instr;
    //assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};

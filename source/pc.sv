@@ -29,7 +29,8 @@ module pc
       else if (pcif.pcEN) begin
 	 casez (pcif.pc_src)
 	   0: pc_cnt <= pc_cnt + 4;                     //normal
-	   1: pc_cnt <= pc_cnt + 4 + (pcif.imm16 << 2); //beq/bne
+	   1: pc_cnt <= pcif.branchmux ? pc_cnt + 4 + (pcif.imm16 << 2) : 
+			pc_cnt + 4; //beq/bne
 	   2: pc_cnt <= pcif.imm26 << 2;                //j, jal
 	   3: pc_cnt <= pcif.regval;                    //jr	   
 	 endcase // casez (pcif.pcsrc)

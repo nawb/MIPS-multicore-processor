@@ -1,8 +1,9 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -group PC /system_tb/DUT/CPU/DP/PC/pc_cnt
-add wave -noupdate -group PC /system_tb/DUT/CPU/DP/PC/pcif/imemaddr
-add wave -noupdate -group PC /system_tb/DUT/CPU/DP/PC/pcif/pcEN
+add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pc_cnt
+add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pcif/imemaddr
+add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pcif/pcEN
+add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/pcif/branchmux
 add wave -noupdate -expand -group {DP Layer} /system_tb/DUT/CPU/DP/dpif/imemload
 add wave -noupdate -height 20 -expand -group RFILE -expand -group rs -radix unsigned /system_tb/DUT/CPU/DP/RF/rfif/rsel1
 add wave -noupdate -height 20 -expand -group RFILE -expand -group rs /system_tb/DUT/CPU/DP/RF/rfif/rdat1
@@ -16,20 +17,20 @@ add wave -noupdate -expand -group ALU -radix symbolic /system_tb/DUT/CPU/DP/ALU/
 add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/ALU/aluif/op1
 add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/ALU/aluif/op2
 add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/ALU/aluif/res
-add wave -noupdate -expand -group MEMORY -expand -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/ihit
-add wave -noupdate -expand -group MEMORY -expand -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/dhit
-add wave -noupdate -expand -group MEMORY -expand -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/imemload
-add wave -noupdate -expand -group MEMORY -expand -group {Cache Layer} {/system_tb/DUT/CPU/CM/ccif/iwait[0]}
-add wave -noupdate -expand -group MEMORY -expand -group {Cache Layer} {/system_tb/DUT/CPU/CM/ccif/iload[0]}
-add wave -noupdate -expand -group MEMORY -expand -group {Cache Layer} {/system_tb/DUT/CPU/CM/ccif/dload[0]}
+add wave -noupdate -expand -group MEMORY -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/ihit
+add wave -noupdate -expand -group MEMORY -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/dhit
+add wave -noupdate -expand -group MEMORY -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/imemload
+add wave -noupdate -expand -group MEMORY -group {Cache Layer} {/system_tb/DUT/CPU/CM/ccif/iwait[0]}
+add wave -noupdate -expand -group MEMORY -group {Cache Layer} {/system_tb/DUT/CPU/CM/ccif/iload[0]}
+add wave -noupdate -expand -group MEMORY -group {Cache Layer} {/system_tb/DUT/CPU/CM/ccif/dload[0]}
 add wave -noupdate -expand -group MEMORY /system_tb/DUT/CPU/dcif/dmemaddr
 add wave -noupdate -expand -group MEMORY /system_tb/DUT/CPU/dcif/dmemload
 add wave -noupdate -expand -group MEMORY -label dmemstore /system_tb/DUT/CPU/DP/ppif/EM_out.dmemstore
-add wave -noupdate -expand -group MEMORY -expand -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/iREN[0]}
-add wave -noupdate -expand -group MEMORY -expand -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/dREN[0]}
-add wave -noupdate -expand -group MEMORY -expand -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/dWEN[0]}
-add wave -noupdate -expand -group MEMORY -expand -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/iaddr[0]}
-add wave -noupdate -expand -group MEMORY -expand -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/daddr[0]}
+add wave -noupdate -expand -group MEMORY -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/iREN[0]}
+add wave -noupdate -expand -group MEMORY -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/dREN[0]}
+add wave -noupdate -expand -group MEMORY -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/dWEN[0]}
+add wave -noupdate -expand -group MEMORY -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/iaddr[0]}
+add wave -noupdate -expand -group MEMORY -group addresshandlin {/system_tb/DUT/CPU/CC/ccif/daddr[0]}
 add wave -noupdate -expand -group MEMORY /system_tb/DUT/CPU/CC/ccif/ramaddr
 add wave -noupdate -expand -group MEMORY /system_tb/DUT/CPU/ccif/ramWEN
 add wave -noupdate -expand -group MEMORY /system_tb/DUT/CPU/ccif/ramREN
@@ -52,7 +53,7 @@ add wave -noupdate -group singlecycle /system_tb/DUT/CPU/nRST
 add wave -noupdate -group singlecycle /system_tb/DUT/CPU/halt
 add wave -noupdate /system_tb/CLK
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {247739 ps} 0}
+WaveRestoreCursors {{Cursor 1} {356304 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -68,4 +69,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {434951 ps}
+WaveRestoreZoom {0 ps} {997803 ps}

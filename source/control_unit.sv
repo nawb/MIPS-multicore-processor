@@ -64,13 +64,14 @@ module control_unit
    always_comb begin : PC_SRC
       casez (op)
 	J, JAL:  cuif.pc_src = 2;
-	BEQ:     cuif.pc_src = cuif.alu_flags[0]; //alu_flags[0]= zero flag
-	BNE:     cuif.pc_src = ~cuif.alu_flags[0];
+//	BEQ:     cuif.pc_src = cuif.alu_flags[0]; //alu_flags[0]= zero flag
+//	BNE:     cuif.pc_src = ~cuif.alu_flags[0];
+	BEQ, BNE:cuif.pc_src = 1;	
 	RTYPE:   cuif.pc_src = (funct == JR) ? 3 : 0;
 	default: cuif.pc_src = 0;
       endcase
    end
-
+   
    assign cuif.memwr   = (op == SW) ?
 			 1 : 0 ;
 
