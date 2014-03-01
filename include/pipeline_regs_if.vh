@@ -37,6 +37,7 @@ package pipeline_regs_pkg;
       logic [1:0] memtoreg, pc_src;
       logic 	  regwr, icuREN;
       logic 	  halt;
+      logic [1:0] beq;
       } DE_t;
 
    typedef struct packed {

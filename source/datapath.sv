@@ -55,7 +55,7 @@ module datapath (
 
    //PIPELINE LATCHES
    pipelinereg #(64)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
-   pipelinereg #(195) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
+   pipelinereg #(197) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
    pipelinereg #(119) EX_MEM (CLK, nRST, hzif.EMen, hzif.EMflush, ppif.EM_in, ppif.EM_out);
    pipelinereg #(108) MEM_WB (CLK, nRST, hzif.MWen, hzif.MWflush, ppif.MW_in, ppif.MW_out);
    
@@ -128,7 +128,7 @@ module datapath (
    assign hzif.ihit = dpif.ihit;
    assign hzif.dhit = dpif.dhit;
    assign hzif.halt = ppif.DE_out.halt;
-   assign hzif.branching = ppif.DE_out.branchmux;
+   assign hzif.branching = pcif.branchmux;
    assign hzif.jumping = (ppif.DE_out.pc_src == 2 || ppif.DE_out.pc_src == 3) ? 1 : 0;   
 
    //forwarding unit
@@ -151,10 +151,14 @@ module datapath (
    //may have been a mispredict and we had actually meant to TAKE the branch
    
    //assign pcif.halt = cuif.halt;
-   assign pcif.branchmux = ppif.DE_out.branchmux;   
-   assign ppif.DE_in.branchmux = ((ppif.FD_out.instr[31:26] == BEQ) && (rfif.rdat1 == rfif.rdat2) ||
-				  (ppif.FD_out.instr[31:26] == BNE) && (rfif.rdat2 != rfif.rdat2)) ?
-				 1 : 0 ;
+   //assign pcif.branchmux = ppif.DE_out.branchmux;
+   always_comb begin : BRANCHMUX
+      casez(ppif.DE_out.beq)
+	2: pcif.branchmux = (aluif.op1 == aluif.op2) ? 1:0; //BEQ
+	1: pcif.branchmux = (aluif.op1 != aluif.op2) ? 1:0; //BNE
+	default: pcif.branchmux = 0;
+      endcase
+   end 
       
    //control unit
    assign cuif.instr = ppif.FD_out.instr;
@@ -195,7 +199,11 @@ module datapath (
    assign ppif.DE_in.icuREN = cuif.icuREN;
    assign ppif.DE_in.dcuWEN = cuif.dcuWEN;   
    assign ppif.DE_in.dcuREN = cuif.dcuREN;
-   assign ppif.DE_in.halt   = cuif.halt;   
+   assign ppif.DE_in.halt   = cuif.halt;
+
+   assign ppif.DE_in.beq = (ppif.FD_out.instr[31:26] == BEQ) ? 2 :
+			   (ppif.FD_out.instr[31:26] == BNE) ? 1 : 0;
+   
 
    //LATCH 3: EXECUTE/MEMORY===========================
    assign ppif.EM_in.pc_plus_4 = ppif.DE_out.pc_plus_4;
