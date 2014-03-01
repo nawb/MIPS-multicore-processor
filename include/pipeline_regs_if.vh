@@ -21,11 +21,13 @@ package pipeline_regs_pkg;
       word_t rdat1;
       word_t rdat2;
       word_t imm16;
+      logic [25:0] imm26;
       //control signals:
       //EX:
       logic [1:0] alu_src;
       aluop_t alu_op;
       regbits_t shamt;
+      logic branchmux, branching, jumping;
       //MEM:
       regbits_t rd, rs, rt;	
       logic [1:0] regdst;

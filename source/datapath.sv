@@ -39,23 +39,23 @@ module datapath (
    register_file_if   rfif ();
    alu_if             aluif ();
    pc_if              pcif ();
-   request_unit_if    rqif ();
+   //request_unit_if    rqif ();
    hazard_unit_if     hzif ();
    forwarding_unit_if fwif ();
    pipeline_regs_if   ppif ();   
    
-   //MAP BLOCKS
+   //BLOCK PORTMAPPINGS
    control_unit    CU (cuif);
    register_file   RF (CLK, nRST, rfif);
    alu             ALU (aluif);
    pc #(PC_INIT)   PC (CLK, nRST, pcif);
-   request_unit    RQ (CLK, nRST, rqif);
+   //request_unit    RQ (CLK, nRST, rqif);
    hazard_unit     HZ (hzif);
    forwarding_unit FW (fwif);  
 
    //PIPELINE LATCHES
    pipelinereg #(64)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
-   pipelinereg #(166) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
+   pipelinereg #(195) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
    pipelinereg #(119) EX_MEM (CLK, nRST, hzif.EMen, hzif.EMflush, ppif.EM_in, ppif.EM_out);
    pipelinereg #(108) MEM_WB (CLK, nRST, hzif.MWen, hzif.MWflush, ppif.MW_in, ppif.MW_out);
    
@@ -79,7 +79,7 @@ module datapath (
       casez (ppif.MW_out.memtoreg)
 	0: rfif.wdat = ppif.MW_out.alu_res;  //for everything else
 	1: rfif.wdat = ppif.MW_out.dmemload; //for lw
-	2: rfif.wdat = ppif.MW_out.pc_plus_4 + 4;//pcif.imemaddr + 4; //for JAL, store next instruction address
+	2: rfif.wdat = ppif.MW_out.pc_plus_4;//pcif.imemaddr + 4; //for JAL, store next instruction address
 	default: rfif.wdat = ppif.MW_out.alu_res;	
       endcase
    end
@@ -127,7 +127,9 @@ module datapath (
    //hazard unit
    assign hzif.ihit = dpif.ihit;
    assign hzif.dhit = dpif.dhit;
-   assign hzif.halt = cuif.halt;
+   assign hzif.halt = ppif.DE_out.halt;
+   assign hzif.branching = ppif.DE_out.branchmux;
+   assign hzif.jumping = (ppif.DE_out.pc_src == 2 || ppif.DE_out.pc_src == 3) ? 1 : 0;   
 
    //forwarding unit
    assign fwif.curr_rs = ppif.DE_out.rs;
@@ -139,16 +141,20 @@ module datapath (
    assign fwif.wm_mem = ppif.EM_out.dcuWEN;   
    
    //pc
-   assign pcif.pc_src = cuif.pc_src;
-   assign pcif.regval = aluif.res; //could have been op1 too...either way   
-   assign pcif.imm16 = $signed(cuif.imm16);
-   assign pcif.imm26 = $signed(dpif.imemload[25:0]);   
+   assign pcif.pc_src = ppif.DE_out.pc_src;
+   assign pcif.regval = aluif.op1;
+   assign pcif.imm16 = ppif.DE_out.pc_plus_4 + (ppif.DE_out.imm16 << 2);
+   assign pcif.imm26 = ppif.DE_out.imm26;
    assign dpif.imemaddr = pcif.imemaddr;
-   assign pcif.pcEN = ~cuif.halt & dpif.ihit;//rqif.pcEN;
-   assign pcif.halt = cuif.halt;
-   assign pcif.branchmux = ((ppif.FD_out.instr[31:26] == BEQ) && (rfif.rdat1 == rfif.rdat2) ||
-			    (ppif.FD_out.instr[31:26] == BNE) && (rfif.rdat2 != rfif.rdat2)) ?
-			   1 : 0 ;
+   assign pcif.pcEN = (~cuif.halt | hzif.jumping | hzif.branching) & dpif.ihit;//rqif.ihit
+   //added OR branching so that PC doesn't shut down as soon as it sees a halt, because the halt
+   //may have been a mispredict and we had actually meant to TAKE the branch
+   
+   //assign pcif.halt = cuif.halt;
+   assign pcif.branchmux = ppif.DE_out.branchmux;   
+   assign ppif.DE_in.branchmux = ((ppif.FD_out.instr[31:26] == BEQ) && (rfif.rdat1 == rfif.rdat2) ||
+				  (ppif.FD_out.instr[31:26] == BNE) && (rfif.rdat2 != rfif.rdat2)) ?
+				 1 : 0 ;
       
    //control unit
    assign cuif.instr = ppif.FD_out.instr;
@@ -165,7 +171,7 @@ module datapath (
 
    //LATCH 1: INSTRUCTION FETCH/INSTRUCTION DECODE======== 
    assign ppif.FD_in.instr = dpif.imemload;
-   assign ppif.FD_in.pc_plus_4 = pcif.imemaddr;
+   assign ppif.FD_in.pc_plus_4 = pcif.imemaddr + 4;
 
    //LATCH 2: INSTRUCTION DECODE/EXECUTE================
    assign ppif.DE_in.pc_plus_4 = ppif.FD_out.pc_plus_4;
@@ -174,6 +180,7 @@ module datapath (
    assign ppif.DE_in.imm16 = //EXTENDER BLOCK:
 			     (cuif.extop ? {{16{cuif.imm16[15]}}, cuif.imm16} //sign extend
 			      : {16'b0, cuif.imm16}); //zero extend
+   assign ppif.DE_in.imm26 = {{5{ppif.FD_out.instr[25:0]}}, ppif.FD_out.instr[25:0]}; 
    assign ppif.DE_in.alu_op = cuif.alu_op;
    assign ppif.DE_in.alu_src = cuif.alu_src;
    assign ppif.DE_in.shamt = cuif.shamt;   

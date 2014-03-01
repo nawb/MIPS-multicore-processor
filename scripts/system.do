@@ -3,7 +3,19 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pc_cnt
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pcif/imemaddr
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pcif/pcEN
+add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/pcif/pc_src
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/pcif/branchmux
+add wave -noupdate /system_tb/DUT/CPU/DP/ppif/DE_out.imm16
+add wave -noupdate /system_tb/DUT/CPU/DP/ppif/DE_out.imm26
+add wave -noupdate /system_tb/DUT/CPU/DP/pcif/imm26
+add wave -noupdate /system_tb/DUT/CPU/DP/pcif/imm16
+add wave -noupdate /system_tb/DUT/CPU/DP/hzif/branching
+add wave -noupdate /system_tb/DUT/CPU/DP/hzif/jumping
+add wave -noupdate -expand -group FLUSHES /system_tb/DUT/CPU/DP/hzif/FDflush
+add wave -noupdate -expand -group FLUSHES /system_tb/DUT/CPU/DP/hzif/DEflush
+add wave -noupdate -expand -group FLUSHES /system_tb/DUT/CPU/DP/hzif/EMflush
+add wave -noupdate -expand -group FLUSHES /system_tb/DUT/CPU/DP/hzif/MWflush
+add wave -noupdate -expand -group FLUSHES /system_tb/DUT/CPU/DP/hzif/halt
 add wave -noupdate -expand -group {DP Layer} /system_tb/DUT/CPU/DP/dpif/imemload
 add wave -noupdate -height 20 -expand -group RFILE -expand -group rs -radix unsigned /system_tb/DUT/CPU/DP/RF/rfif/rsel1
 add wave -noupdate -height 20 -expand -group RFILE -expand -group rs /system_tb/DUT/CPU/DP/RF/rfif/rdat1
@@ -53,7 +65,7 @@ add wave -noupdate -group singlecycle /system_tb/DUT/CPU/nRST
 add wave -noupdate -group singlecycle /system_tb/DUT/CPU/halt
 add wave -noupdate /system_tb/CLK
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {356304 ps} 0}
+WaveRestoreCursors {{Cursor 1} {577142 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -69,4 +81,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {997803 ps}
+WaveRestoreZoom {0 ps} {1050 ns}

@@ -1,8 +1,9 @@
 #--------------------------------------
-# Test branch and jumps
+# Test random other things
 #--------------------------------------
   org 0x0000
-  ori   $1, $zero, 0xBA5C
+  or   $1, $17, $22     #use uninitialized registers
+			#should be 0s
   ori   $2, $zero, 0x0080
   ori   $15, $zero, jmpR
   beq   $zero, $zero, braZ
@@ -19,7 +20,5 @@ braR:
   jal   jmpR
   sw    $1, 12($2)
 jmpR:
-  bne   $ra, $3, end  #!!!JAL not finished writing value to $31 when BNE needs it. Need to implement forwarding for branches.
+  bne   $ra, $3, end
   halt
-
-#$ra = $31
