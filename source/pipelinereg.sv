@@ -20,7 +20,9 @@ module pipelinereg
    assign out = outreg;
    
    always_ff @ (posedge CLK, negedge nRST) begin
-      if (!nRST | flush)
+      if (!nRST)
+	outreg <= '0;
+      else if (flush)
 	outreg <= '0;
       else if (EN)
 	outreg <= in;
