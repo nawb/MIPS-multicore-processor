@@ -16,12 +16,12 @@ interface forwarding_unit_if;
    logic wr_mem, wr_wb; //register write
    logic wm_mem; //memory write
    logic [1:0] fwd_op1, fwd_op2;
-//   logic       fwd_mem; //not needed anymore
+   logic       fwd_mem;
 
    modport fwd (
 		input  rd_mem, rd_wb, curr_rs, curr_rt,
 		       wr_mem, wr_wb, wm_mem, mem_rt,
-		output fwd_op1, fwd_op2   //, fwd_mem -- not needed anymore
+		output fwd_op1, fwd_op2, fwd_mem
 		);
 
 endinterface

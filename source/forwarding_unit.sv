@@ -27,7 +27,7 @@ module forwarding_unit ( forwarding_unit_if.fwd fwif );
       if (fwif.wr_mem && (fwif.rd_mem == fwif.curr_rt) && (fwif.curr_rt != 0)) begin
 	 //MEM has a new value
 	 fwif.fwd_op2 = 1;
-      end
+      end      
       else if (fwif.wr_wb && (fwif.rd_wb == fwif.curr_rt) && (fwif.curr_rt != 0)) begin
 	//WB has a new value
 	 fwif.fwd_op2 = 2;
@@ -45,8 +45,7 @@ module forwarding_unit ( forwarding_unit_if.fwd fwif );
 /*      else if (fwif.wr_wb && (fwif.rd_wb == fwif.mem_rt) && (fwif.mem_rt != 0)) begin
 	//WB has a new value
 	 fwif.fwd_mem = 1;
-      end
- */
+      end*/
       else
 	fwif.fwd_mem = 0;
    end
