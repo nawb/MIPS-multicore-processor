@@ -216,7 +216,6 @@ module datapath (
    assign ppif.EM_in.pc_plus_4 = ppif.DE_out.pc_plus_4;
    assign ppif.EM_in.dmemstore = op2_tmp;
    assign ppif.EM_in.alu_res = aluif.res;
-   //assign ppif.EM_in.zflag = aluif.zeroflag; not implemented yet
    assign ppif.EM_in.rd = ppif.DE_out.rd;
    assign ppif.EM_in.rt = ppif.DE_out.rt;
    assign ppif.EM_in.regdst = ppif.DE_out.regdst;
