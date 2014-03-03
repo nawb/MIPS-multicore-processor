@@ -127,10 +127,15 @@ module datapath (
    //hazard unit
    assign hzif.ihit = dpif.ihit;
    assign hzif.dhit = dpif.dhit;
+   assign hzif.dREN = ppif.EM_out.dcuREN;   
+   assign hzif.dWEN = ppif.EM_out.dcuWEN;
    assign hzif.halt = ppif.DE_out.halt;
+   assign hzif.pc_src = ppif.DE_out.pc_src;   
+   //assign hzif.specialcase = //
    assign hzif.branching = pcif.branchmux;
    assign hzif.jumping = (ppif.DE_out.pc_src == 2 || ppif.DE_out.pc_src == 3) ? 1 : 0;
-
+   //2=J,JAL ... 3=JR
+   
    //forwarding unit
    assign fwif.curr_rs = ppif.DE_out.rs;
    assign fwif.curr_rt = ppif.DE_out.rt;

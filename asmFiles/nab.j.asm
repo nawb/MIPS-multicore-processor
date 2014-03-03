@@ -20,9 +20,9 @@
 
 subroutine:
 	#add $26, $25, $24
-  push $26
+  	push $26
+	nop
 	jr $31
-
 
 main:
 	jal subroutine  #backward jump

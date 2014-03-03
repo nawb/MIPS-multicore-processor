@@ -10,9 +10,10 @@ import cpu_types_pkg::*;
 
 module hazard_unit ( hazard_unit_if.haz hzif );
 
-   assign hzif.FDen = (~hzif.halt | hzif.branching | hzif.jumping) & 1'b1;
-   assign hzif.DEen = 1'b1;
-   assign hzif.EMen = 1'b1;
+   assign hzif.FDen = hzif.DEen | ((~hzif.halt | hzif.branching | hzif.jumping) & hzif.ihit);
+   assign hzif.DEen = hzif.EMen;
+   assign hzif.EMen = ((hzif.dREN||hzif.dWEN) && !hzif.dhit) || (!hzif.ihit && hzif.pc_src != 2'b00) ?
+		      0 : 1; //~(hzif.jumping & ~hzif.ihit);
    assign hzif.MWen = 1'b1; //MW latch always enabled
 
    //insert a bubble when:
