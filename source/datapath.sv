@@ -67,8 +67,8 @@ module datapath (
    assign rfif.rsel2 = cuif.rt;
    assign rfif.wsel  = ppif.MW_out.wsel;
    assign rfif.WEN   = ppif.MW_out.dcuREN;
-  // assign dpif.dmemstore = ppif.EM_out.dmemstore;//rfif.rdat2;
-   always_comb begin : FWD_MUX3
+   // assign dpif.dmemstore = ppif.EM_out.dmemstore;//rfif.rdat2;
+   always_comb begin : FWD_MUX_3
       casez (fwif.fwd_mem)
 	0: dpif.dmemstore = ppif.EM_out.dmemstore;
 	1: dpif.dmemstore = rfif.wdat;
