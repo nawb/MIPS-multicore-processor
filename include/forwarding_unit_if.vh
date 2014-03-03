@@ -10,20 +10,20 @@
 
 interface forwarding_unit_if;
    import cpu_types_pkg::*;
-   
+
    regbits_t rd_mem, rd_wb; //rd from 2 instructions ago; rd from 1 instruction ago
-   regbits_t curr_rs, curr_rt;   
+   regbits_t curr_rs, curr_rt, mem_rt;
    logic wr_mem, wr_wb; //register write
    logic wm_mem; //memory write
    logic [1:0] fwd_op1, fwd_op2;
-   logic       fwd_mem;   
-   
+   logic       fwd_mem;
+
    modport fwd (
 		input  rd_mem, rd_wb, curr_rs, curr_rt,
-		       wr_mem, wr_wb, wm_mem,
+		       wr_mem, wr_wb, wm_mem, mem_rt,
 		output fwd_op1, fwd_op2, fwd_mem
 		);
-      
+
 endinterface
 
 `endif //FORWARDING_UNIT_IF_VH

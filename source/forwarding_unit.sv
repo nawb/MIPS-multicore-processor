@@ -12,17 +12,17 @@ module forwarding_unit ( forwarding_unit_if.fwd fwif );
    always_comb begin : OP1_handling
       if (fwif.wr_mem && (fwif.rd_mem == fwif.curr_rs) && (fwif.curr_rs != 0)) begin
 	 //MEM has a new value
-	 fwif.fwd_op1 = 1;	 
+	 fwif.fwd_op1 = 1;
       end
       else if (fwif.wr_wb && (fwif.rd_wb == fwif.curr_rs) && (fwif.curr_rs != 0)) begin
 	//WB has a new value
 	 fwif.fwd_op1 = 2;
       end
       else begin
-	 fwif.fwd_op1 = 0;	 
+	 fwif.fwd_op1 = 0;
       end
    end // block: OP1_handling
-   
+
    always_comb begin : OP2_handling
       if (fwif.wr_mem && (fwif.rd_mem == fwif.curr_rt) && (fwif.curr_rt != 0)) begin
 	 //MEM has a new value
@@ -33,16 +33,21 @@ module forwarding_unit ( forwarding_unit_if.fwd fwif );
 	 fwif.fwd_op2 = 2;
       end
       else begin
-	 fwif.fwd_op2 = 0;	 
+	 fwif.fwd_op2 = 0;
       end
    end // block: OP2_handling
-   
+
    always_comb begin : ITYPE_handling
       //if writing to memory, and register you're writing from has a newer value
-      if (fwif.wm_mem && (fwif.rd_mem == fwif.rd_wb))
+      if (fwif.wm_mem && (fwif.rd_mem == fwif.rd_wb)) begin
 	fwif.fwd_mem = 1;
+  end
+      else if (fwif.wr_wb && (fwif.rd_wb == fwif.mem_rt) && (fwif.mem_rt != 0)) begin
+	//WB has a new value
+	 fwif.fwd_mem = 1;
+      end
       else
-	fwif.fwd_mem = 0;      
+	fwif.fwd_mem = 0;
    end
 
 endmodule

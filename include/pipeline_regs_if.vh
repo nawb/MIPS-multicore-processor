@@ -11,13 +11,15 @@
 
 package pipeline_regs_pkg;
    import cpu_types_pkg::*;
-   
+
    typedef struct packed {
+      opcode_t opcode;
       word_t instr;
       word_t pc_plus_4;
       } FD_t;
 
    typedef struct packed {
+      opcode_t opcode;
       word_t rdat1;
       word_t rdat2;
       word_t imm16;
@@ -27,9 +29,10 @@ package pipeline_regs_pkg;
       logic [1:0] alu_src;
       aluop_t alu_op;
       regbits_t shamt;
-      logic branchmux, branching, jumping;
+      //unused:
+      //logic branchmux, branching, jumping;
       //MEM:
-      regbits_t rd, rs, rt;	
+      regbits_t rd, rs, rt;
       logic [1:0] regdst;
       logic memwr, dcuWEN, dcuREN;
       word_t pc_plus_4;
@@ -41,9 +44,12 @@ package pipeline_regs_pkg;
       } DE_t;
 
    typedef struct packed {
+      opcode_t opcode;
       word_t alu_res;
       word_t dmemstore;
-      logic zeroflag;
+      //unused:
+      //logic zeroflag;
+
       //control signals:
       //MEM:
       regbits_t rd, rt;
@@ -57,6 +63,7 @@ package pipeline_regs_pkg;
       } EM_t;
 
    typedef struct packed {
+      opcode_t opcode;
       word_t alu_res;
       word_t dmemload;
       regbits_t wsel;
@@ -72,7 +79,7 @@ endpackage
 
 interface pipeline_regs_if;
    import cpu_types_pkg::*;
-   import pipeline_regs_pkg::*;   
+   import pipeline_regs_pkg::*;
 
    //STAGES: F (IF), D (ID), E (EX), M (MEM), W (WB)
    FD_t   FD_in, FD_out;
