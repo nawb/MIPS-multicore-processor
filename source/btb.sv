@@ -5,7 +5,7 @@
 //Description:Branch Predictor Table
 
 `include "cpu_types_pkg.vh"
-`include "btb.vh"
+`include "btb_if.vh"
 
 import cpu_types_pkg::*;
 import btb_pkg::*;
