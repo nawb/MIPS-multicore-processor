@@ -19,7 +19,7 @@ package btb_pkg;
     STRONG_NOT_TAKEN
   } btb_state_t;
 
-  typedef struct {
+  typedef struct packed {
     logic valid;  //encountered in the program ourselves
     btb_state_t state;
     word_t target;
@@ -32,7 +32,8 @@ interface btb_if;
   import cpu_types_pkg::*;
   import btb_pkg::*;
 
-  btb_entry_t entries[3:0];
+   btb_entry_t [3:0] entries;
+   
   word_t pc, pc_w;
   word_t target, target_w;
   logic taken, taken_w;
@@ -40,8 +41,6 @@ interface btb_if;
 
   modport btbport
   (
-   output entries,
-
    //READ PORTION:
    input  pc,
    output target,

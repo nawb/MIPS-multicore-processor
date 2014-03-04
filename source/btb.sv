@@ -14,19 +14,19 @@ module btb
    input logic CLK, nRST,
    btb_if bpif
    );
-
+   
    btb_state_t nstate;
    logic [1:0] tag, tag_w;
    assign tag = bpif.pc[3:2];
    assign tag_w = bpif.pc_w[3:2];
-     
+   
    //logic for writing to the BTB
    always_ff @(posedge CLK, negedge nRST) begin
       if (!nRST) begin
 	 bpif.entries = '0;
       end
       else if (bpif.WEN) begin
-	 //only update state machine if this PC is already in the entries
+	 //only update state machine if this PC is already in the bpif.entries
 	 if (bpif.pc_w == bpif.entries[tag_w].pc) begin
 	    //state machine for predictor
 	    casez (bpif.entries[tag_w].state)
