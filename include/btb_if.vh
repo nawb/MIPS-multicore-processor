@@ -20,7 +20,7 @@ package btb_pkg;
   } btb_state_t;
 
   typedef struct {
-    logic valid;
+    logic valid;  //encountered in the program ourselves
     btb_state_t state;
     word_t target;
     word_t pc;
@@ -38,24 +38,20 @@ interface btb_if;
   logic taken, taken_w;
   logic WEN;
 
-  modport read
+  modport btbport
   (
-    input pc,
-    output target,
-    output taken
-  );
+   output entries,
 
-  modport write
-  (
-    input WEN,
-    input pc_w,
-    input target_w,
-    input taken_w
-  );
+   //READ PORTION:
+   input  pc,
+   output target,
+   output taken,
 
-  modport btb
-  (
-    output entries
+   //WRITE PORTION:
+   input  WEN,
+   input  pc_w,
+   input  target_w,
+   input  taken_w
   );
 
 endinterface
