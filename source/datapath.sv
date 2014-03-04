@@ -151,7 +151,7 @@ module datapath (
 
    //branch target buffer
    //reading occurs in decode stage:
-   assign btbif.pc = ppic.FD_out.pc_plus_4 - 4;   
+   assign btbif.pc = ppif.FD_out.pc_plus_4 - 4;   
    
    //writing occurs in execute stage:
    assign btbif.WEN = (ppif.DE_out.pc_src == 2)?1:0; //there is a BEQ/BNE
@@ -168,7 +168,7 @@ module datapath (
    //pc
    assign pcif.pc_src = ppif.DE_out.pc_src;
    assign pcif.regval = aluif.op1;
-   assign pcif.imm16 = ppif.DE_out.pc_plus_4 + (ppif.DE_out.imm16 << 2);
+   assign pcif.imm16 = ppif.FD_out.pc_plus_4 + (ppif.DE_in.imm16 << 2);
    //^does this need to be btbif.target instead of DE_out.imm16?
    //does target in the BTB ever change?
    assign pcif.imm26 = ppif.DE_out.imm26;
