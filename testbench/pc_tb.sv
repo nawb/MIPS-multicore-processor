@@ -40,9 +40,8 @@ module pc_tb;
       //initial values
       nRST = 1;
       pcif.imm26 = '0;
-      pcif.immext = '0;
-      pcif.branchmux = 0;
-      pcif.jumpmux = 0;
+      pcif.imm16 = '0;
+      pcif.pcsrc = 0;
       $monitor("%h", pcif.imemaddr);
       
       $display("Initial reset");      
@@ -57,22 +56,22 @@ module pc_tb;
       else $display("PC is off by %d instructions! [at %.3d]", targetaddr/4, $time);
 
       $display("Branching fwd to an instruction");
-      pcif.immext = 32'h07778;
-      pcif.branchmux = 1;
+      pcif.imm16 = 32'h07778;
+      pcif.pcsrc = 1;
       targetaddr = pcif.imemaddr + 4 + (32'h07778 << 2);      
       #(PERIOD);
       if (pcif.imemaddr == targetaddr) $display ("cool.");
       else $display("PC did not branch to correct instruction %h! [at %.3d]", targetaddr, $time);
-      @(posedge CLK) pcif.branchmux = 0; 
+      @(posedge CLK) pcif.pcsrc = 0; 
 
       $display("Branching back to an instruction by 2 instructions");
       targetaddr = pcif.imemaddr + 4 + (-64 << 2);
-      pcif.immext = -64;
-      pcif.branchmux = 1;
+      pcif.imm16 = -64;
+      pcif.pcsrc = 1;
       #(PERIOD);
       if (pcif.imemaddr == targetaddr) $display ("cool.");
       else $display("PC did not branch to correct instruction %h! [at %.3d]", targetaddr, $time);
-      @(posedge CLK) pcif.branchmux = 0; 
+      @(posedge CLK) pcif.pcsrc = 0; 
       
       
    end   

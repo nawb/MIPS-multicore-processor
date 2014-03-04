@@ -1,0 +1,14 @@
+#!/bin/bash
+
+sim -t > /dev/null
+
+./hex.py meminit.hex > tmp
+cp tmp init.hex
+
+./hex.py memsim.hex > tmp
+cp tmp sim.hex
+
+./hex.py memcpu.hex > tmp
+mv tmp cpu.hex
+
+vimdiff cpu.hex sim.hex

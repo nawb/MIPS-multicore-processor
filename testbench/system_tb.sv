@@ -82,6 +82,7 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
     $finish;
   end // initial begin
    
+
   task automatic dump_memory();
     string filename = "memcpu.hex";
     int memfd;
@@ -97,7 +98,7 @@ program test(input logic CLK, output logic nRST, system_if.tb syif);
     else
       begin $display("Failed to open %s.",filename); $finish; end
 
-    for (int unsigned i = 0; memfd && i < 8192; i++)
+    for (int unsigned i = 0; memfd && i < 16384; i++)
     begin
       int chksum = 0;
       bit [7:0][7:0] values;

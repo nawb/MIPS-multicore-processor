@@ -32,7 +32,10 @@ module control_unit
 	HALT: cuif.halt = 1;
 	default: cuif.halt = 0;      
       endcase
-   end   
+   end
+
+   assign cuif.regEN = 1'b1;
+   assign cuif.flush = 1'b0;
    
    //CONTROL SIGNALS
    always_comb begin : REGDST
@@ -61,20 +64,14 @@ module control_unit
    always_comb begin : PC_SRC
       casez (op)
 	J, JAL:  cuif.pc_src = 2;
-	BEQ:     cuif.pc_src = cuif.alu_flags[0]; //alu_flags[0]= zero flag
-	BNE:     cuif.pc_src = ~cuif.alu_flags[0];
+//	BEQ:     cuif.pc_src = cuif.alu_flags[0]; //alu_flags[0]= zero flag
+//	BNE:     cuif.pc_src = ~cuif.alu_flags[0];
+	BEQ, BNE:cuif.pc_src = 1;	
 	RTYPE:   cuif.pc_src = (funct == JR) ? 3 : 0;
 	default: cuif.pc_src = 0;
       endcase
    end
-   /*
-   assign cuif.pc_src  = (op == BEQ) ? 
-			 cuif.alu_flags[0] :  //alu_flags[0] = zero flag
-			 (op == BNE) ? ~cuif.alu_flags[0] : 
-			 (op == J || op == JAL || op == JR) 2 : 0; */
    
-   //   assign cuif.memwr   = (op == SW || op == SB || op == SH || op == BEQ || op == BNE) ?
-   //idk what I'm doing here^
    assign cuif.memwr   = (op == SW) ?
 			 1 : 0 ;
 
@@ -82,17 +79,20 @@ module control_unit
       casez (op)
 	JAL: cuif.memtoreg = 2;
 	LW:  cuif.memtoreg = 1; //DON'T ASSERT ON LUI...LUI is more like ORI
-	default: cuif.memtoreg = 0;	
+	default: cuif.memtoreg = 0;
       endcase
    end
 
-   assign cuif.regwr   = //(op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI) ?
-			 //~(op == SW || op == BEQ || op == BNE || op == SC || op == J) ?
-			 (op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTIU) ?
+   assign cuif.regwr   = (op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTIU) ?
 			 1 : 0;
 
    assign cuif.icuREN  = ~(op == SW || op == LW) ? 1 : 0;
-   assign cuif.dcuREN  = cuif.memtoreg;
+   always_comb begin : DCUREN
+      casez (cuif.memtoreg)
+	1: cuif.dcuREN = 1;
+	default: cuif.dcuREN = 0;
+      endcase
+   end
    assign cuif.dcuWEN  = cuif.memwr;
    
    always_comb begin : ALU_OP
