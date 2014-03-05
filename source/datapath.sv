@@ -37,11 +37,12 @@ module datapath (
    //BLOCK INTERFACES
    control_unit_if    cuif ();
    register_file_if   rfif ();
-   alu_if             aluif ();
+   alu_if             aluif();
    pc_if              pcif ();
-   //request_unit_if    rqif ();
+   //request_unit_if  rqif ();
    hazard_unit_if     hzif ();
    forwarding_unit_if fwif ();
+   btb_if             btbif();   
    pipeline_regs_if   ppif ();
 
    //BLOCK PORTMAPPINGS
@@ -52,6 +53,7 @@ module datapath (
    //request_unit    RQ (CLK, nRST, rqif);
    hazard_unit     HZ (hzif);
    forwarding_unit FW (fwif);
+   btb             BTB (CLK, nRST, btbif);   
 
    //PIPELINE LATCHES
    pipelinereg #(70)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
