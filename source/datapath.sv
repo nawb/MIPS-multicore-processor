@@ -168,8 +168,15 @@ module datapath (
    assign dpif.imemREN = ppif.EM_out.icuREN;
    assign dpif.dmemREN = ppif.EM_out.dcuREN;
    assign dpif.dmemWEN = ppif.EM_out.dcuWEN;
-   assign dpif.halt = ppif.MW_out.halt;
-
+   
+   //keep halt latched high after program ends
+   always_ff @ (posedge CLK, negedge nRST) begin
+      if (!nRST)
+	dpif.halt = 0;
+      else if (ppif.MW_out.halt)
+	dpif.halt = 1;	
+   end
+   
    ///////////////////////////////////////////////////////
    //  PIPELINE LATCHES
    ///////////////////////////////////////////////////////
@@ -246,4 +253,5 @@ module datapath (
    assign ppif.MW_in.icuREN = ppif.EM_out.icuREN;
    assign ppif.MW_in.halt = ppif.EM_out.halt;
    assign ppif.MW_in.opcode = ppif.EM_out.opcode;
+
 endmodule
