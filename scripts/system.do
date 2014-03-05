@@ -17,11 +17,13 @@ add wave -noupdate -expand -group FLUSHES /system_tb/DUT/CPU/DP/hzif/EMflush
 add wave -noupdate -expand -group FLUSHES /system_tb/DUT/CPU/DP/hzif/MWflush
 add wave -noupdate -expand -group FLUSHES /system_tb/DUT/CPU/DP/hzif/halt
 add wave -noupdate -expand -group {DP Layer} /system_tb/DUT/CPU/DP/dpif/imemload
+add wave -noupdate /system_tb/DUT/CPU/DP/ppif/FD_out.opcode
 add wave -noupdate -height 20 -expand -group RFILE -expand -group rs -radix unsigned /system_tb/DUT/CPU/DP/RF/rfif/rsel1
 add wave -noupdate -height 20 -expand -group RFILE -expand -group rs /system_tb/DUT/CPU/DP/RF/rfif/rdat1
 add wave -noupdate -height 20 -expand -group RFILE -expand -group rt -radix unsigned /system_tb/DUT/CPU/DP/RF/rfif/rsel2
 add wave -noupdate -height 20 -expand -group RFILE -expand -group rt /system_tb/DUT/CPU/DP/RF/rfif/rdat2
 add wave -noupdate /system_tb/DUT/CPU/DP/RF/rfile
+add wave -noupdate /system_tb/DUT/CPU/DP/ppif/DE_out.opcode
 add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/fwif/fwd_op1
 add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/fwif/fwd_op2
 add wave -noupdate -expand -group ALU -label ALU_src /system_tb/DUT/CPU/DP/ppif/DE_out.alu_src
@@ -29,6 +31,7 @@ add wave -noupdate -expand -group ALU -radix symbolic /system_tb/DUT/CPU/DP/ALU/
 add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/ALU/aluif/op1
 add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/ALU/aluif/op2
 add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/ALU/aluif/res
+add wave -noupdate /system_tb/DUT/CPU/DP/ppif/EM_out.opcode
 add wave -noupdate -expand -group MEMORY -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/ihit
 add wave -noupdate -expand -group MEMORY -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/dhit
 add wave -noupdate -expand -group MEMORY -group {Cache Layer} /system_tb/DUT/CPU/CM/dcif/imemload
@@ -50,6 +53,7 @@ add wave -noupdate -expand -group MEMORY -expand -group RegDst -label RegDst /sy
 add wave -noupdate -expand -group MEMORY -expand -group RegDst -label rd -radix unsigned /system_tb/DUT/CPU/DP/ppif/EM_out.rd
 add wave -noupdate -expand -group MEMORY -expand -group RegDst -label rt -radix unsigned /system_tb/DUT/CPU/DP/ppif/EM_out.rt
 add wave -noupdate -expand -group MEMORY -expand -group RegDst -label wsel -radix unsigned /system_tb/DUT/CPU/DP/ppif/MW_in.wsel
+add wave -noupdate /system_tb/DUT/CPU/DP/ppif/MW_out.opcode
 add wave -noupdate -expand -group WRITEBACK /system_tb/DUT/CPU/DP/RF/rfif/WEN
 add wave -noupdate -expand -group WRITEBACK -radix unsigned /system_tb/DUT/CPU/DP/ppif/MW_out.wsel
 add wave -noupdate -expand -group WRITEBACK -expand -group MemToReg -label memtoreg /system_tb/DUT/CPU/DP/ppif/MW_out.memtoreg
@@ -65,7 +69,7 @@ add wave -noupdate -group singlecycle /system_tb/DUT/CPU/nRST
 add wave -noupdate -group singlecycle /system_tb/DUT/CPU/halt
 add wave -noupdate /system_tb/CLK
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {577142 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1132642 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -81,4 +85,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {1050 ns}
+WaveRestoreZoom {630 ns} {1680 ns}
