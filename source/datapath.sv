@@ -87,13 +87,23 @@ module datapath (
       endcase
    end
 
+
+   word_t wdat_latched;
+   always_ff @ (posedge CLK, negedge nRST) begin : WDAT_LATCHED
+      if (!nRST)
+	wdat_latched <= '0;
+      else if (!hzif.EMflush)
+	wdat_latched <= rfif.wdat;
+      else
+	wdat_latched <= wdat_latched;      
+   end
    //alu
    //assign aluif.op1  = ppif.DE_out.rdat1;//rfif.rdat1;
    always_comb begin : FWD_MUX_1
       casez (fwif.fwd_op1)
 	0: aluif.op1 = ppif.DE_out.rdat1;
 	1: aluif.op1 = ppif.EM_out.alu_res;
-	2: aluif.op1 = rfif.wdat;
+	2: aluif.op1 = wdat_latched;	
 	default: aluif.op1 = ppif.DE_out.rdat1;
       endcase
    end
@@ -101,7 +111,7 @@ module datapath (
       casez (fwif.fwd_op2)
 	0: op2_tmp = ppif.DE_out.rdat2;
 	1: op2_tmp = ppif.EM_out.alu_res;
-	2: op2_tmp = rfif.wdat;
+	2: op2_tmp = wdat_latched;
 	default: op2_tmp = ppif.DE_out.rdat2;
       endcase
    end
@@ -133,6 +143,7 @@ module datapath (
    assign hzif.halt = ppif.DE_out.halt;
    assign hzif.mispredict = btbif.WEN && (ppif.DE_out.taken != btbif.taken_w) ? 1:0;//pcif.branchmux;
    assign hzif.jumping = (ppif.DE_out.pc_src == 2 || ppif.DE_out.pc_src == 3) ? 1 : 0;
+   assign hzif.lwinmem_fwdtoex = (ppif.EM_out.opcode == LW) && (fwif.fwd_op1==1 || fwif.fwd_op2==1) ? 1 : 0;
 
    //forwarding unit
    assign fwif.curr_rs = ppif.DE_out.rs;
@@ -173,7 +184,7 @@ module datapath (
    end
    assign pcif.imm26 = ppif.DE_out.imm26;
    assign dpif.imemaddr = pcif.imemaddr;
-   assign pcif.pcEN = (~cuif.halt & dpif.ihit) | (hzif.jumping | hzif.mispredict);//rqif.ihit
+   assign pcif.pcEN = ((~cuif.halt & dpif.ihit) | (hzif.jumping | hzif.mispredict)) & ~hzif.lwinmem_fwdtoex;//rqif.ihit
    //added OR mispredict so that PC doesn't shut down as soon as it sees a halt, because the halt
    //may have been a mispredict and we had actually meant to TAKE the branch
 /*

@@ -14,10 +14,10 @@ interface hazard_unit_if;
    logic ihit, dhit, halt;
    logic FDen, DEen, EMen, MWen;
    logic FDflush, DEflush, EMflush, MWflush;
-   logic mispredict, jumping;
+   logic mispredict, jumping, lwinmem_fwdtoex;
    
    modport haz (
-		input  ihit, dhit, halt, mispredict, jumping,
+		input  ihit, dhit, halt, mispredict, jumping, lwinmem_fwdtoex,
 		output FDen, DEen, EMen, MWen,
 		       FDflush, DEflush, EMflush, MWflush
 		);
