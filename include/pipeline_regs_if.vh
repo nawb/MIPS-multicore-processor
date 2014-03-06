@@ -15,7 +15,8 @@ package pipeline_regs_pkg;
    typedef struct packed {
       opcode_t opcode;
       word_t instr;
-      word_t pc_plus_4;
+      word_t pc_not_plus_4;
+	logic taken; //whether or not a branch was taken
       } FD_t;
 
    typedef struct packed {
@@ -35,12 +36,13 @@ package pipeline_regs_pkg;
       regbits_t rd, rs, rt;
       logic [1:0] regdst;
       logic memwr, dcuWEN, dcuREN;
-      word_t pc_plus_4;
+      word_t pc_not_plus_4;
       //WB:
       logic [1:0] memtoreg, pc_src;
       logic 	  regwr, icuREN;
       logic 	  halt;
       logic [1:0] beq;
+	logic taken;
       } DE_t;
 
    typedef struct packed {
@@ -55,7 +57,7 @@ package pipeline_regs_pkg;
       regbits_t rd, rt;
       logic [1:0] regdst;
       logic memwr, dcuWEN, dcuREN;
-      word_t pc_plus_4;
+      word_t pc_not_plus_4;
       //WB:
       logic [1:0] memtoreg, pc_src;
       logic regwr, icuREN;
@@ -71,7 +73,7 @@ package pipeline_regs_pkg;
       //WB:
       logic [1:0] memtoreg, pc_src;
       logic dcuREN, icuREN;
-      word_t pc_plus_4;
+      word_t pc_not_plus_4;
       logic halt;
       } MW_t;
 

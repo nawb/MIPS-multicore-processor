@@ -3,13 +3,24 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pc_cnt
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pcif/imemaddr
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/PC/pcif/pcEN
+add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/pcif/imm16
+add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/pcif/imm26
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/pcif/pc_src
 add wave -noupdate -expand -group PC /system_tb/DUT/CPU/DP/pcif/branchmux
+add wave -noupdate -expand -group BTB /system_tb/DUT/CPU/DP/btbif/entries
+add wave -noupdate -expand -group BTB /system_tb/DUT/CPU/DP/btbif/pc
+add wave -noupdate -expand -group BTB /system_tb/DUT/CPU/DP/btbif/pc_w
+add wave -noupdate -expand -group BTB /system_tb/DUT/CPU/DP/btbif/target
+add wave -noupdate -expand -group BTB /system_tb/DUT/CPU/DP/btbif/target_w
+add wave -noupdate -expand -group BTB /system_tb/DUT/CPU/DP/btbif/taken
+add wave -noupdate -expand -group BTB /system_tb/DUT/CPU/DP/btbif/taken_w
+add wave -noupdate -expand -group BTB /system_tb/DUT/CPU/DP/btbif/WEN
+add wave -noupdate /system_tb/DUT/CPU/DP/ppif/DE_in.imm16
 add wave -noupdate /system_tb/DUT/CPU/DP/ppif/DE_out.imm16
 add wave -noupdate /system_tb/DUT/CPU/DP/ppif/DE_out.imm26
 add wave -noupdate /system_tb/DUT/CPU/DP/pcif/imm26
 add wave -noupdate /system_tb/DUT/CPU/DP/pcif/imm16
-add wave -noupdate /system_tb/DUT/CPU/DP/hzif/branching
+add wave -noupdate /system_tb/DUT/CPU/DP/hzif/mispredict
 add wave -noupdate /system_tb/DUT/CPU/DP/hzif/jumping
 add wave -noupdate -expand -group FLUSHES /system_tb/DUT/CPU/DP/hzif/FDflush
 add wave -noupdate -expand -group FLUSHES /system_tb/DUT/CPU/DP/hzif/DEflush
@@ -69,7 +80,7 @@ add wave -noupdate -group singlecycle /system_tb/DUT/CPU/nRST
 add wave -noupdate -group singlecycle /system_tb/DUT/CPU/halt
 add wave -noupdate /system_tb/CLK
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1132642 ps} 0}
+WaveRestoreCursors {{Cursor 1} {2115128 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -85,4 +96,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {630 ns} {1680 ns}
+WaveRestoreZoom {1462770 ps} {2437958 ps}

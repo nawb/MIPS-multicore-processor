@@ -16,6 +16,7 @@
 `include "request_unit_if.vh"
 `include "hazard_unit_if.vh"
 `include "forwarding_unit_if.vh"
+`include "btb_if.vh"
 `include "pipeline_regs_if.vh"
 `include "cpu_types_pkg.vh"
 
@@ -56,8 +57,8 @@ module datapath (
    btb             BTB (CLK, nRST, btbif);   
 
    //PIPELINE LATCHES
-   pipelinereg #(70)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
-   pipelinereg #(200) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
+   pipelinereg #(71)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
+   pipelinereg #(201) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
    pipelinereg #(124) EX_MEM (CLK, nRST, hzif.EMen, hzif.EMflush, ppif.EM_in, ppif.EM_out);
    pipelinereg #(114) MEM_WB (CLK, nRST, hzif.MWen, hzif.MWflush, ppif.MW_in, ppif.MW_out);
 
@@ -81,7 +82,7 @@ module datapath (
       casez (ppif.MW_out.memtoreg)
 	0: rfif.wdat = ppif.MW_out.alu_res;  //for everything else
 	1: rfif.wdat = ppif.MW_out.dmemload; //for lw
-	2: rfif.wdat = ppif.MW_out.pc_plus_4;//pcif.imemaddr + 4; //for JAL, store next instruction address
+	2: rfif.wdat = ppif.MW_out.pc_not_plus_4 + 4;//pcif.imemaddr + 4; //for JAL, store next instruction address
 	default: rfif.wdat = ppif.MW_out.alu_res;
       endcase
    end
@@ -130,7 +131,7 @@ module datapath (
    assign hzif.ihit = dpif.ihit;
    assign hzif.dhit = dpif.dhit;
    assign hzif.halt = ppif.DE_out.halt;
-   assign hzif.branching = pcif.branchmux;
+   assign hzif.mispredict = btbif.WEN && (ppif.DE_out.taken != btbif.taken_w) ? 1:0;//pcif.branchmux;
    assign hzif.jumping = (ppif.DE_out.pc_src == 2 || ppif.DE_out.pc_src == 3) ? 1 : 0;
 
    //forwarding unit
@@ -143,16 +144,39 @@ module datapath (
    assign fwif.wr_wb  = ppif.MW_out.dcuREN;
    assign fwif.wm_mem = ppif.EM_out.dcuWEN;
 
+   //branch target buffer
+   assign btbif.pc = pcif.imemaddr;
+   assign btbif.WEN = (ppif.DE_out.beq == 2 || ppif.DE_out.beq == 1)? 1:0;
+   assign btbif.pc_w = ppif.DE_out.pc_not_plus_4;
+   assign btbif.target_w = ppif.DE_out.pc_not_plus_4 + 4 + (ppif.DE_out.imm16 << 2);
+   always_comb begin : TAKEN_W
+      casez(ppif.DE_out.beq)
+	2: btbif.taken_w =  aluif.flag_z? 1:0; //BEQ
+	1: btbif.taken_w = !aluif.flag_z? 1:0; //BNE
+	default: btbif.taken_w = 0;
+      endcase
+   end
+   
    //pc
-   assign pcif.pc_src = ppif.DE_out.pc_src;
+   assign pcif.pc_src = (btbif.taken || hzif.mispredict)? 1 : ppif.DE_out.pc_src;
    assign pcif.regval = aluif.op1;
-   assign pcif.imm16 = ppif.DE_out.pc_plus_4 + (ppif.DE_out.imm16 << 2);
+   always_comb begin
+      if (hzif.mispredict) begin
+	 if (ppif.DE_out.taken)
+	   pcif.imm16 = ppif.DE_out.pc_not_plus_4+4; //the old pc we would have gone to
+	 else
+	   pcif.imm16 = btbif.target_w; //the calculated imm16 sitting in EX
+      end
+      else begin
+	 pcif.imm16 = btbif.target; //from FETCH 
+      end
+   end
    assign pcif.imm26 = ppif.DE_out.imm26;
    assign dpif.imemaddr = pcif.imemaddr;
-   assign pcif.pcEN = (~cuif.halt & dpif.ihit) | (hzif.jumping | hzif.branching);//rqif.ihit
-   //added OR branching so that PC doesn't shut down as soon as it sees a halt, because the halt
+   assign pcif.pcEN = (~cuif.halt & dpif.ihit) | (hzif.jumping | hzif.mispredict);//rqif.ihit
+   //added OR mispredict so that PC doesn't shut down as soon as it sees a halt, because the halt
    //may have been a mispredict and we had actually meant to TAKE the branch
-
+/*
    //assign pcif.halt = cuif.halt;
    //assign pcif.branchmux = ppif.DE_out.branchmux;
    always_comb begin : BRANCHMUX
@@ -162,7 +186,8 @@ module datapath (
 	default: pcif.branchmux = 0;
       endcase
    end
-
+*/
+   
    //control unit
    assign cuif.instr = ppif.FD_out.instr;
    //assign cuif.alu_flags = {aluif.flag_n, aluif.flag_v, aluif.flag_z};
@@ -172,7 +197,7 @@ module datapath (
    assign dpif.dmemWEN = ppif.EM_out.dcuWEN;
    
    //keep halt latched high after program ends
-   always_ff @ (posedge CLK, negedge nRST) begin
+   always_ff @ (posedge CLK, negedge nRST) begin : HALT_LATCH
       if (!nRST)
 	dpif.halt = 0;
       else if (ppif.MW_out.halt)
@@ -185,11 +210,13 @@ module datapath (
 
    //LATCH 1: INSTRUCTION FETCH/INSTRUCTION DECODE========
    assign ppif.FD_in.instr = dpif.imemload;
-   assign ppif.FD_in.pc_plus_4 = pcif.imemaddr + 4;
+   assign ppif.FD_in.pc_not_plus_4 = pcif.imemaddr;
    assign ppif.FD_in.opcode = opcode_t'(dpif.imemload[31:26]);
+   assign ppif.FD_in.taken = btbif.taken;
 
    //LATCH 2: INSTRUCTION DECODE/EXECUTE================
-   assign ppif.DE_in.pc_plus_4 = ppif.FD_out.pc_plus_4;
+   assign ppif.DE_in.pc_not_plus_4 = ppif.FD_out.pc_not_plus_4;
+   assign ppif.DE_in.taken = ppif.FD_out.taken;
    assign ppif.DE_in.rdat1 = rfif.rdat1;
    assign ppif.DE_in.rdat2 = rfif.rdat2;
    assign ppif.DE_in.imm16 = //EXTENDER BLOCK:
@@ -217,7 +244,7 @@ module datapath (
 
 
    //LATCH 3: EXECUTE/MEMORY===========================
-   assign ppif.EM_in.pc_plus_4 = ppif.DE_out.pc_plus_4;
+   assign ppif.EM_in.pc_not_plus_4 = ppif.DE_out.pc_not_plus_4;
    assign ppif.EM_in.dmemstore = op2_tmp;
    assign ppif.EM_in.alu_res = aluif.res;
    //assign ppif.EM_in.zflag = aluif.zeroflag; not implemented yet
@@ -235,7 +262,7 @@ module datapath (
    assign ppif.EM_in.opcode = ppif.DE_out.opcode;
 
    //LATCH 4: MEMORY/WRITEBACK=========================
-   assign ppif.MW_in.pc_plus_4 = ppif.EM_out.pc_plus_4;
+   assign ppif.MW_in.pc_not_plus_4 = ppif.EM_out.pc_not_plus_4;
    assign ppif.MW_in.alu_res = ppif.EM_out.alu_res;
    assign ppif.MW_in.dmemload = dpif.dmemload;
 
