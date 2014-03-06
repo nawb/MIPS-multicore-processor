@@ -89,26 +89,36 @@ module datapath (
 
 
    word_t wdat_latched;
+   logic fwd_op1_latched, fwd_op2_latched;   
    always_ff @ (posedge CLK, negedge nRST) begin : WDAT_LATCHED
-      if (!nRST)
-	wdat_latched <= '0;
-      else if (!hzif.EMflush)
-	wdat_latched <= rfif.wdat;
-      else
-	wdat_latched <= wdat_latched;      
+      if (!nRST) begin
+	 wdat_latched <= '0;
+	 fwd_op1_latched <= '0;
+	 fwd_op2_latched <= '0;	 
+      end
+      else if (!hzif.EMflush) begin
+	 wdat_latched <= rfif.wdat;
+	 fwd_op1_latched <= fwif.fwd_op1;
+	 fwd_op2_latched <= fwif.fwd_op2;
+      end
+      else begin
+	 wdat_latched <= wdat_latched;
+	 fwd_op1_latched <= fwd_op1_latched;
+	 fwd_op2_latched <= fwd_op2_latched;
+      end
    end
    //alu
    //assign aluif.op1  = ppif.DE_out.rdat1;//rfif.rdat1;
    always_comb begin : FWD_MUX_1
-      casez (fwif.fwd_op1)
+      casez (fwd_op1_latched)
 	0: aluif.op1 = ppif.DE_out.rdat1;
 	1: aluif.op1 = ppif.EM_out.alu_res;
-	2: aluif.op1 = wdat_latched;	
+	2: aluif.op1 = wdat_latched;
 	default: aluif.op1 = ppif.DE_out.rdat1;
       endcase
    end
    always_comb begin : FWD_MUX_2
-      casez (fwif.fwd_op2)
+      casez (fwd_op2_latched)
 	0: op2_tmp = ppif.DE_out.rdat2;
 	1: op2_tmp = ppif.EM_out.alu_res;
 	2: op2_tmp = wdat_latched;
