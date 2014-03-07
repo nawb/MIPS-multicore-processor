@@ -8,7 +8,7 @@
 import cpu_types_pkg::*;
 
 module pipelinereg
-  #(parameter RSIZE = 64)  
+  #(parameter RSIZE = 64)
    //default value of 64, in case not overridden upon instantiation
   (
    input logic CLK, nRST, EN, flush,
@@ -18,7 +18,7 @@ module pipelinereg
 
    logic [RSIZE-1:0] 	   outreg;
    assign out = outreg;
-   
+
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST)
 	outreg <= '0;
@@ -29,5 +29,5 @@ module pipelinereg
       else
 	outreg <= outreg;
    end
-   
+
 endmodule

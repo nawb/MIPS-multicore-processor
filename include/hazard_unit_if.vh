@@ -15,9 +15,12 @@ interface hazard_unit_if;
    logic FDen, DEen, EMen, MWen;
    logic FDflush, DEflush, EMflush, MWflush;
    logic branching, jumping;
+   logic dREN, dWEN;
+   logic [1:0] pc_src;  
+   
    
    modport haz (
-		input  ihit, dhit, halt, branching, jumping,
+		input  ihit, dhit, halt, branching, jumping, dREN, dWEN, pc_src,
 		output FDen, DEen, EMen, MWen,
 		       FDflush, DEflush, EMflush, MWflush
 		);

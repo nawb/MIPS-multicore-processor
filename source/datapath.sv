@@ -16,6 +16,7 @@
 `include "request_unit_if.vh"
 `include "hazard_unit_if.vh"
 `include "forwarding_unit_if.vh"
+`include "btb_if.vh"
 `include "pipeline_regs_if.vh"
 `include "cpu_types_pkg.vh"
 
@@ -37,11 +38,12 @@ module datapath (
    //BLOCK INTERFACES
    control_unit_if    cuif ();
    register_file_if   rfif ();
-   alu_if             aluif ();
+   alu_if             aluif();
    pc_if              pcif ();
-   //request_unit_if    rqif ();
+   //request_unit_if  rqif ();
    hazard_unit_if     hzif ();
    forwarding_unit_if fwif ();
+   btb_if             btbif();   
    pipeline_regs_if   ppif ();
 
    //BLOCK PORTMAPPINGS
@@ -52,6 +54,7 @@ module datapath (
    //request_unit    RQ (CLK, nRST, rqif);
    hazard_unit     HZ (hzif);
    forwarding_unit FW (fwif);
+   btb             BTB (CLK, nRST, btbif);
 
    //PIPELINE LATCHES
    pipelinereg #(70)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
@@ -67,8 +70,8 @@ module datapath (
    assign rfif.rsel2 = cuif.rt;
    assign rfif.wsel  = ppif.MW_out.wsel;
    assign rfif.WEN   = ppif.MW_out.dcuREN;
-  // assign dpif.dmemstore = ppif.EM_out.dmemstore;//rfif.rdat2;
-   always_comb begin : FWD_MUX3
+   // assign dpif.dmemstore = ppif.EM_out.dmemstore;//rfif.rdat2;
+   always_comb begin : FWD_MUX_3
       casez (fwif.fwd_mem)
 	0: dpif.dmemstore = ppif.EM_out.dmemstore;
 	1: dpif.dmemstore = rfif.wdat;
@@ -127,10 +130,15 @@ module datapath (
    //hazard unit
    assign hzif.ihit = dpif.ihit;
    assign hzif.dhit = dpif.dhit;
+   assign hzif.dREN = ppif.EM_out.dcuREN;   
+   assign hzif.dWEN = ppif.EM_out.dcuWEN;
    assign hzif.halt = ppif.DE_out.halt;
+   assign hzif.pc_src = ppif.DE_out.pc_src;   
+   //assign hzif.specialcase = //
    assign hzif.branching = pcif.branchmux;
    assign hzif.jumping = (ppif.DE_out.pc_src == 2 || ppif.DE_out.pc_src == 3) ? 1 : 0;
-
+   //2=J,JAL ... 3=JR
+   
    //forwarding unit
    assign fwif.curr_rs = ppif.DE_out.rs;
    assign fwif.curr_rt = ppif.DE_out.rt;
@@ -141,10 +149,28 @@ module datapath (
    assign fwif.wr_wb  = ppif.MW_out.dcuREN;
    assign fwif.wm_mem = ppif.EM_out.dcuWEN;
 
+   //branch target buffer
+   //reading occurs in decode stage:
+   assign btbif.pc = ppif.FD_out.pc_plus_4 - 4;   
+   
+   //writing occurs in execute stage:
+   assign btbif.WEN = (ppif.DE_out.pc_src == 2)?1:0; //there is a BEQ/BNE
+   assign btbif.pc_w = ppif.DE_out.pc_plus_4 - 4;
+   assign btbif.target_w = ppif.DE_out.imm16;
+   always_comb begin : BRANCH_RESOLUTION //branch target resolved in EX
+      casez(ppif.DE_out.beq)
+	2: btbif.taken_w = (aluif.op1 == aluif.op2) ? 1:0; //BEQ
+	1: btbif.taken_w = (aluif.op1 != aluif.op2) ? 1:0; //BNE
+	default: btbif.taken_w = 0;
+      endcase
+   end
+   
    //pc
    assign pcif.pc_src = ppif.DE_out.pc_src;
    assign pcif.regval = aluif.op1;
-   assign pcif.imm16 = ppif.DE_out.pc_plus_4 + (ppif.DE_out.imm16 << 2);
+   assign pcif.imm16 = ppif.FD_out.pc_plus_4 + (ppif.DE_in.imm16 << 2);
+   //^does this need to be btbif.target instead of DE_out.imm16?
+   //does target in the BTB ever change?
    assign pcif.imm26 = ppif.DE_out.imm26;
    assign dpif.imemaddr = pcif.imemaddr;
    assign pcif.pcEN = (~cuif.halt & dpif.ihit) | (hzif.jumping | hzif.branching);//rqif.ihit
@@ -152,14 +178,14 @@ module datapath (
    //may have been a mispredict and we had actually meant to TAKE the branch
 
    //assign pcif.halt = cuif.halt;
-   //assign pcif.branchmux = ppif.DE_out.branchmux;
-   always_comb begin : BRANCHMUX
+   assign pcif.branchmux = btbif.taken; //PREDICTION
+/*   always_comb begin : BRANCHMUX //branch target is resolved here
       casez(ppif.DE_out.beq)
 	2: pcif.branchmux = (aluif.op1 == aluif.op2) ? 1:0; //BEQ
 	1: pcif.branchmux = (aluif.op1 != aluif.op2) ? 1:0; //BNE
 	default: pcif.branchmux = 0;
       endcase
-   end
+   end*/
 
    //control unit
    assign cuif.instr = ppif.FD_out.instr;
@@ -218,7 +244,6 @@ module datapath (
    assign ppif.EM_in.pc_plus_4 = ppif.DE_out.pc_plus_4;
    assign ppif.EM_in.dmemstore = op2_tmp;
    assign ppif.EM_in.alu_res = aluif.res;
-   //assign ppif.EM_in.zflag = aluif.zeroflag; not implemented yet
    assign ppif.EM_in.rd = ppif.DE_out.rd;
    assign ppif.EM_in.rt = ppif.DE_out.rt;
    assign ppif.EM_in.regdst = ppif.DE_out.regdst;
