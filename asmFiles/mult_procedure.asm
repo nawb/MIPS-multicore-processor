@@ -55,7 +55,5 @@ mult_loop:
 	j mult_loop
 mult_exit:
 	push $2		//push return value from return register
-	#nop
 	jr $31
-	add $11, $11, $11
 
