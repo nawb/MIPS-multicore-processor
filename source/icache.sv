@@ -9,8 +9,8 @@
 
 module icache (
   input logic CLK, nRST,
-  datapath_cache_if.cache dcif,
-  cache_control_if.caches ccif
+  datapath_cache_if.icache dcif,
+  cache_control_if.icache ccif
 );
   // import types
   import cpu_types_pkg::*;
@@ -29,11 +29,11 @@ module icache (
   assign tag = dcif.imemaddr[31:6];
   assign index = dcif.imemaddr[5:2];
 
-  always_ff @(posedge CLK)
+  always_ff @(posedge CLK, negedge nRST)
   begin
     if (!nRST) begin
       cache <= '0;
-    end else if ((!dcif.ihit) && (!ccif.iwait)) begin
+    end else if ((!dcif.ihit) && (!ccif.iwait[CPUID])) begin
 	    cache[index].tag = tag;
 	    cache[index].valid = 1;
 	    cache[index].data = ccif.iload[CPUID];
