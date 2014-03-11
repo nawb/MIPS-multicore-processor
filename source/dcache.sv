@@ -34,12 +34,24 @@ module dcache (
    logic [25:0]    tag;
    logic [3:0] 	   index;
    logic 	   offset;   
-	logic set;
+   logic 	   set;
 
    assign tag = dcif.dmemaddr[31:7];
    assign index = dcif.dmemaddr[6:3];
    assign offset = dcif.dmemaddr[2];
 
+   assign set = (cache[index][1].tag == tag)? 1:0;
+   assign dcif.dmemload = cache[index][set].data;//[offset];
+   assign dcif.dhit = (cache[index][set].tag == tag) && cache[index][set].valid;// && !ccif.iwait;
+
+   always_comb begin : DADDR
+      casez(cstate) 
+	FETCH1, WRITEBACK1: ccif.daddr[CPUID] = dcif.dmemaddr;
+	FETCH2, WRITEBACK2: ccif.daddr[CPUID] = dcif.dmemaddr+4;
+	default: ccif.daddr[CPUID] = dcif.dmemaddr;	
+      endcase
+   end
+   
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST) begin
 	 cstate <= IDLE;
@@ -47,12 +59,23 @@ module dcache (
       end
       else
 	cstate <= nstate;
-      if (cstate == FETCH2)
-	cache[index][set].data[offset] <= ccif.dload[CPUID];
+      if (cstate == FETCH1) begin
+	 cache[index][set].data[0] <= ccif.dload[CPUID];
+	 cache[index][set].valid <= 1;
+	 cache[index][set].tag <= tag;	 
+      end
+      if (cstate == FETCH2) begin
+	 cache[index][set].data[1] <= ccif.dload[CPUID];
+	 cache[index][set].valid <= 1;
+	 cache[index][set].tag <= tag;	 
+      end
+      if (cstate == HIT && ccif.dWEN[CPUID]) begin
+	 cache[index][set].dirty <= 1;
+      end
    end
    
    always_comb begin : STATE_LOGIC
-      casez (cstate)	
+      casez (cstate)
 	IDLE: begin
 	   nstate = IDLE;
 	   if (dcif.dmemWEN|dcif.dmemREN)
@@ -68,23 +91,23 @@ module dcache (
 	     nstate = FETCH1;
 	end	
 	WRITEBACK1: begin
-	   if (ccif.dwait)
+	   if (ccif.dwait[CPUID])
 	     nstate = WRITEBACK1;
 	   else
 	     nstate = WRITEBACK2;
 	end	
 	WRITEBACK2: begin
-	   nstate = FETCH1;	   
+	   nstate = FETCH1;
 	end	
 	FETCH1: begin
-	   if (ccif.dwait)
+	   if (ccif.dwait[CPUID])
 	     nstate = FETCH1;
 	   else
-	     nstate = FETCH2;	   
+	     nstate = FETCH2;
 	end	
-	FETCH2: nstate = HIT;	   	
-	HIT: nstate = IDLE;	   	
-	default: nstate = IDLE;	    
+	FETCH2: nstate = HIT;
+	HIT: nstate = IDLE;
+	default: nstate = IDLE;
       endcase
    end
 
@@ -93,6 +116,10 @@ module dcache (
 	IDLE: begin
 	   ccif.dWEN[CPUID] = 0;
 	   ccif.dREN[CPUID] = 0;	   
+	end
+	SELECT: begin
+	   ccif.dWEN[CPUID] = dcif.dmemWEN;
+	   ccif.dREN[CPUID] = dcif.dmemREN; 
 	end
 	WRITEBACK1: begin
 	   ccif.dWEN[CPUID] = 1;
@@ -127,10 +154,5 @@ module dcache (
 	     cache[index].data[offset] <= ccif.dload[CPUID];
 	  end
   */
-   assign set = (cache[index][1].tag == tag)? 1:0;
-   assign dcif.dmemload = cache[index][set].data[offset];
-   assign dcif.dhit = (cache[index][set].tag == tag) && cache[index][set].valid;// && !ccif.iwait;
-   
-   assign ccif.daddr[CPUID] = dcif.dmemaddr;
    
 endmodule
