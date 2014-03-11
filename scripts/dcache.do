@@ -17,9 +17,11 @@ add wave -noupdate -expand -group {MEMORY CONTROL} {/dcache_tb/DUT/ccif/dREN[0]}
 add wave -noupdate -expand -group {MEMORY CONTROL} {/dcache_tb/DUT/ccif/dWEN[0]}
 add wave -noupdate -expand -group {MEMORY CONTROL} {/dcache_tb/DUT/ccif/dload[0]}
 add wave -noupdate -expand -group {MEMORY CONTROL} {/dcache_tb/DUT/ccif/dstore[0]}
+add wave -noupdate -expand -group {MEMORY CONTROL} {/dcache_tb/MCTL/ccif/daddr[0]}
 add wave -noupdate /dcache_tb/DUT/cache
+add wave -noupdate /dcache_tb/DUT/cstate
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {97619 ps} 0}
+WaveRestoreCursors {{Cursor 1} {113387 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
