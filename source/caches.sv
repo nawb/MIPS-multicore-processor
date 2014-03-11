@@ -2,6 +2,10 @@
   Eric Villasenor
   evillase@gmail.com
 
+ Nabeel Zaim
+ mg232
+ 03/07/2014
+ 
   this block holds the i and d cache
 */
 
@@ -26,9 +30,9 @@ module caches (
   word_t instr;
 
   // icache
-  //icache  ICACHE(dcif, ccif);
+  icache  ICACHE(dcif.icache, ccif.icache);
   // dcache
-  //dcache  DCACHE(dcif, ccif);
+  dcache  DCACHE(dcif.dcache, ccif.dcache);
 
   // single cycle instr saver (for memory ops)
   always_ff @(posedge CLK)
