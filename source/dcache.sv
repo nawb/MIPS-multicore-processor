@@ -24,18 +24,19 @@ module dcache (
    states cstate, nstate;   
    
    typedef struct packed {
-      logic [25:0][2] tag;
-      word_t      [2] data;
+      logic [25:0] tag;
+      word_t [1:0] data;
       logic 	      valid;
       logic 	      dirty;
    } cache_block;
    
-   cache_block [8] cache;
+   cache_block [8][2] cache; //2-way set associative
    logic [25:0]    tag;
    logic [3:0] 	   index;
    logic 	   offset;   
+	logic set;
 
-   assign tag = dcif.dmemaddr[31:6];
+   assign tag = dcif.dmemaddr[31:7];
    assign index = dcif.dmemaddr[6:3];
    assign offset = dcif.dmemaddr[2];
 
@@ -46,6 +47,8 @@ module dcache (
       end
       else
 	cstate <= nstate;
+      if (cstate == FETCH2)
+	cache[index][set].data[offset] <= ccif.dload[CPUID];
    end
    
    always_comb begin : STATE_LOGIC
@@ -59,13 +62,13 @@ module dcache (
 	   nstate = SELECT;
 	   if (dcif.dhit) //hit
 	     nstate = HIT;
-	   else if (cache[index].dirty) //miss and dirty
+	   else if (cache[index][set].dirty) //miss and dirty
 	     nstate = WRITEBACK1;
 	   else //miss but not dirty
 	     nstate = FETCH1;
 	end	
 	WRITEBACK1: begin
-	   if (dmemwait)
+	   if (ccif.dwait)
 	     nstate = WRITEBACK1;
 	   else
 	     nstate = WRITEBACK2;
@@ -74,7 +77,7 @@ module dcache (
 	   nstate = FETCH1;	   
 	end	
 	FETCH1: begin
-	   if (dmemwait)
+	   if (ccif.dwait)
 	     nstate = FETCH1;
 	   else
 	     nstate = FETCH2;	   
@@ -91,13 +94,21 @@ module dcache (
 	   ccif.dWEN[CPUID] = 0;
 	   ccif.dREN[CPUID] = 0;	   
 	end
-	WRITEBACK1, WRITEBACK2: begin
+	WRITEBACK1: begin
 	   ccif.dWEN[CPUID] = 1;
-	   ccif.dREN[CPUID] = 0;	   
+	   ccif.dREN[CPUID] = 0;
 	end
-	FETCH1, FETCH2: begin
+	WRITEBACK2: begin
+	   ccif.dWEN[CPUID] = 1;
+	   ccif.dREN[CPUID] = 0;
+	end
+	FETCH1: begin
 	   ccif.dWEN[CPUID] = 0;
 	   ccif.dREN[CPUID] = 1;
+	end
+	FETCH2: begin
+	   ccif.dWEN[CPUID] = 0;
+	   ccif.dREN[CPUID] = 1;	   
 	end
 	HIT: begin
 	   //nothing
@@ -116,9 +127,9 @@ module dcache (
 	     cache[index].data[offset] <= ccif.dload[CPUID];
 	  end
   */
-   
-   assign dcif.dhit = (cache[index].tag[offset] == tag) && cache[index].valid;// && !ccif.iwait;
-   assign dcif.dmemload = cache[index].data[offset];
+   assign set = (cache[index][1].tag == tag)? 1:0;
+   assign dcif.dmemload = cache[index][set].data[offset];
+   assign dcif.dhit = (cache[index][set].tag == tag) && cache[index][set].valid;// && !ccif.iwait;
    
    assign ccif.daddr[CPUID] = dcif.dmemaddr;
    
