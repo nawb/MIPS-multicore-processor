@@ -28,17 +28,22 @@ module dcache (
       word_t [1:0] data;
       logic 	      valid;
       logic 	      dirty;
-   } cache_block;
+   } cache_block;   
+      
    
    cache_block [8][2] cache; //2-way set associative
-   logic [25:0]    tag;
-   logic [3:0] 	   index;
-   logic 	   offset;   
-   logic 	   set;
+   logic [DTAG_W-1:0]    tag;
+   logic [DIDX_W-1:0] 	 index;
+   logic [DBLK_W-1:0] 	 offset;   //block offset
+   logic 		 set; //block_select
+   
+   //table storing recently used info
+   logic [15:0]    used;   
 
-   assign tag = dcif.dmemaddr[31:7];
-   assign index = dcif.dmemaddr[6:3];
-   assign offset = dcif.dmemaddr[2];
+   dcachef_t addr = dcachef_t'(dcif.dmemaddr);
+   assign tag = addr.tag;
+   assign index = addr.idx;
+   assign offset = addr.blkoff;
 
    assign set = (cache[index][1].tag == tag)? 1:0;
    assign dcif.dmemload = cache[index][set].data;//[offset];
