@@ -38,15 +38,16 @@ module dcache (
    logic 		 set; //block_select
    
    //table storing recently used info
-   logic [15:0]    used;   
+   logic [7:0]    used;   
 
-   dcachef_t addr = dcachef_t'(dcif.dmemaddr);
+   dcachef_t addr;
+   assign addr = dcachef_t'(dcif.dmemaddr);
    assign tag = addr.tag;
    assign index = addr.idx;
    assign offset = addr.blkoff;
 
    assign set = (cache[index][1].tag == tag)? 1:0;
-   assign dcif.dmemload = cache[index][set].data;//[offset];
+   assign dcif.dmemload = cache[index][set].data[offset];
    assign dcif.dhit = (cache[index][set].tag == tag) && cache[index][set].valid;// && !ccif.iwait;
 
    always_comb begin : DADDR
