@@ -20,7 +20,7 @@ module dcache_tb;
    parameter CPUID = 0;
    parameter WORDS = 10; //# data words to load into cache
    int 	 i;
-   
+
 
    //interfaces
    datapath_cache_if dcif ();
@@ -28,8 +28,8 @@ module dcache_tb;
 
    ////////
    //Comment out this portion to test dcache in isolation
-   cpu_ram_if ramif();   
-   ram CPURAM (CLK, nRST, ramif);
+   cpu_ram_if ramif();
+   ram #(.LAT(10)) CPURAM (CLK, nRST, ramif);
    memory_control MCTL(CLK, nRST, ccif.cc);
    //connections
    assign ccif.ramstate = ramif.ramstate;
@@ -37,80 +37,80 @@ module dcache_tb;
    assign ramif.ramWEN = ccif.ramWEN;
    assign ramif.ramstore = ccif.ramstore;
    assign ramif.ramREN = ccif.ramREN;
-   assign ramif.ramaddr = ccif.ramaddr;   
+   assign ramif.ramaddr = ccif.ramaddr;
    ///////
-   
+
    //blocks
 `ifndef MAPPED
    dcache #(0) DUT (CLK, nRST, dcif.dcache, ccif.dcache);
 `else
    dcache DUT ( );
 `endif
-   
-   always #(PERIOD/2) CLK++;   
-   
+
+   always #(PERIOD/2) CLK++;
+
    initial begin
       //initial values
       nRST = 0;
-      dcif.imemaddr = '0; dcif.imemREN = 0; //so they dont interfere with memctl      
+      dcif.imemaddr = '0; dcif.imemREN = 0; //so they dont interfere with memctl
       dcif.dmemWEN = 0; dcif.dmemREN = 0;
       dcif.dmemaddr = '0;
-      dcif.dmemstore = '0;      
+      dcif.dmemstore = '0;
       //initial reset
       #PERIOD nRST = 1;
-      
+
 
       $display("\nChecking if everything reset to 0.");
       //Check it.
 
-      
+
       $display("\nRequesting data that is not loaded: compulsory miss test.");
       load_word(32'h04);
-      load_word(32'h00);      
+      load_word(32'h00);
 
-      
+
       $display("\nRequesting data that is in cache.");
 
-		      
-      
+
+
       $display("\nRequesting same data continuously. -> cache hits");
 
 
 
       $display("\nRequesting data in closeby addresses. -> cache hits");
-            
 
-      
+
+
       $display("\nRequesting data with same index -> conflict miss test.");
 
-     
+
 
       $display("\nRequesting data outside of index -> capacity miss test.");
 
-            
+
 
       $display("\nMISC: Requesting data with correct tag but incorrect index -> cache miss");
 
-      
+
       $display("Resetting.");
-      nRST = 0; #0.1ns; @(posedge CLK) nRST = 1;
+      nRST = 0; #1ns; nRST = 1;
       #PERIOD;
-      
+
       $display("\nFilling cache by generating misses.");
       for (i = 0; i < WORDS*4; i=i+8) begin
 	 dcif.dmemaddr = i;
 	 dcif.dmemREN = 1;
-	 #(2*PERIOD);
-	 if (ccif.dwait[CPUID]) #(2*PERIOD);
-	 dcif.dmemREN = 0;	 
+	 #(PERIOD);
+	 while (!dcif.dhit) #(2*PERIOD);
+	 dcif.dmemREN = 0;
 	 $display("Loaded data: [0x%h]: %h", ccif.daddr[CPUID], dcif.dmemload);
       end
       $display("Check .wav to see if correct data has been uploaded.");
 
-      
-      $finish();      
+
+      $finish();
    end // initial begin
-   
+
    task load_word;
       input [31:0] address;
       begin
@@ -121,7 +121,7 @@ module dcache_tb;
 	   $display("cache hit. %3d", $time);
 	 else if (ccif.daddr[CPUID] == 32'h04 && ccif.dREN[CPUID] == 1) begin
 	    $display("cache miss. %3d", $time);
-	    #(2*PERIOD);	    
+	    #(2*PERIOD);
 	 end
 	 #(PERIOD);
 	 $display("Received data: %h", dcif.dmemload);
@@ -137,7 +137,7 @@ module dcache_tb;
 	$display("Generated cache miss. Going to RAM. %d", $time);
       #(PERIOD);
       $display("Received data: %h", dcif.imemload);
-      dcif.imemREN = 0;*/      
+      dcif.imemREN = 0;*/
    endtask
 
 endmodule
