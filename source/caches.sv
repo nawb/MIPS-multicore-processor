@@ -32,4 +32,7 @@ module caches (
   // dcache
   dcache  DCACHE(CLK, nRST, dcif.dcache, ccif.dcache);
 
+   assign dcif.flushed = dcif.halt;
+   
+
 endmodule
