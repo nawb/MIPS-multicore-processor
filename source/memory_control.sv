@@ -2,12 +2,12 @@
 //Created: 	02/05/2014
 //Author:	Nabeel Zaim (mg232)
 //Lab Section:	437-03
-//Description: 	
+//Description:
 
 `include "cache_control_if.vh"
 `include "cpu_types_pkg.vh"
 
-module memory_control 
+module memory_control
   (
    input CLK, nRST,
    cache_control_if.cc ccif
@@ -18,7 +18,7 @@ module memory_control
    // number of cpus for cc
    parameter CPUS = 2;
    localparam CPUID = 0;
-   
+
    //priority mux,
    //dWEN|dREN has highest priority
    //iREN has second priority
@@ -66,9 +66,9 @@ module memory_control
 	default: ccif.ramaddr = '0;
       endcase
    end
-    
+
    assign ccif.dload[CPUID] = ccif.ramload;
    assign ccif.iload[CPUID] = ccif.ramload;
    assign ccif.ramstore = ccif.dstore[CPUID];
-      
+
 endmodule
