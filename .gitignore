@@ -18,3 +18,5 @@ db
 *.qws
 *.qsf
 singlecycle.sof
+profile.out
+docs
