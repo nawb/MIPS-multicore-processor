@@ -22,7 +22,7 @@ module icache (
     logic valid;
   } cache_block;
 
-  cache_block [16] cache;
+  cache_block [15:0] cache;
   logic [25:0] tag;
   logic [3:0] index;
 
