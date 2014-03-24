@@ -31,7 +31,7 @@ typedef struct packed {
 } cache_block;
 
 
-cache_block [8][2] cache; //2-way set associative
+cache_block [7:0][1:0] cache; //2-way set associative
 logic [DTAG_W-1:0]    tag;
 logic [DIDX_W-1:0] 	 index;
 logic [DBLK_W-1:0] 	 offset;   //block offset
@@ -66,7 +66,7 @@ end
       cache <= '0;
       used <= '0;
     end
-    else
+    else begin
       cstate <= nstate;
       if (cstate == FETCH1) begin
         //cache[index][set].valid <= 1;
@@ -86,6 +86,7 @@ end
     end
     if (cstate == WRITEBACK2) begin
       cache[index][set].dirty <= 0;
+    end
     end
   end
 
@@ -124,8 +125,6 @@ end
         else
           nstate <= FETCH2;
       end
-      FETCHWAIT: begin
-      end
       FETCH2: begin
         if (ccif.dwait[CPUID])
           nstate <= FETCH2;
@@ -137,11 +136,11 @@ end
       end
       default: nstate <= IDLE;
     endcase
-    if(dcif.halt[CPUID]) nstate <= FLUSHING;
+    if(dcif.halt) nstate = FLUSHING;
   end
 
   always_comb begin : OUTPUT_LOGIC
-	assign dcif.flushed = (cstate == FLUSHING);
+	dcif.flushed = (cstate == FLUSHING);
   /*
   casez(cstate)
     IDLE: begin
