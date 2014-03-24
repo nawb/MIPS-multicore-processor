@@ -20,7 +20,7 @@ module dcache (
 import cpu_types_pkg::*;
 parameter CPUID = 0;
 
-typedef enum  {IDLE, SELECT, WRITEBACK1, WRITEBACK2, WRITEBACK3, FETCH1, FETCHWAIT, FETCH2, FETCH3} states;
+typedef enum  {IDLE, SELECT, WRITEBACK1, WRITEBACK2, WRITEBACK3, FETCH1, FETCHWAIT, FETCH2, FETCH3, FLUSHING, FLUSHED} states;
 states cstate, nstate;
 
 typedef struct packed {
@@ -94,53 +94,54 @@ end
     casez (cstate)
       IDLE: begin
         if (dcif.dhit) //hit
-          nstate = IDLE;
+          nstate <= IDLE;
         else if (cache[index][set].dirty) //miss and dirty
-          nstate = WRITEBACK1;
+          nstate <= WRITEBACK1;
         else //miss but not dirty
-          nstate = FETCH1;
+          nstate <= FETCH1;
       end
       WRITEBACK1: begin
-        set = !used[index];
+        set <= !used[index];
         if (ccif.dwait[CPUID])
-          nstate = WRITEBACK1;
+          nstate <= WRITEBACK1;
         else
-          nstate = WRITEBACK2;
+          nstate <= WRITEBACK2;
       end
       WRITEBACK2: begin
-        set = !used[index];
+        set <= !used[index];
         if (ccif.dwait[CPUID])
-          nstate = WRITEBACK2;
+          nstate <= WRITEBACK2;
         else
-          nstate = IDLE;
+          nstate <= IDLE;
       end
       WRITEBACK3: begin
-        nstate = FETCH1;
-        set = !used[index];
+        nstate <= FETCH1;
+        set <= !used[index];
       end
       FETCH1: begin
         if (ccif.dwait[CPUID])
-          nstate = FETCH1;
+          nstate <= FETCH1;
         else
-          nstate = FETCH2;
+          nstate <= FETCH2;
       end
       FETCHWAIT: begin
-
       end
       FETCH2: begin
         if (ccif.dwait[CPUID])
-          nstate = FETCH2;
+          nstate <= FETCH2;
         else
-          nstate = FETCH3;
+          nstate <= FETCH3;
       end
       FETCH3: begin
-        nstate = IDLE;
+        nstate <= IDLE;
       end
-      default: nstate = IDLE;
+      default: nstate <= IDLE;
     endcase
+    if(dcif.halt[CPUID]) nstate <= FLUSHING;
   end
 
   always_comb begin : OUTPUT_LOGIC
+	assign dcif.flushed = (cstate == FLUSHING);
   /*
   casez(cstate)
     IDLE: begin
