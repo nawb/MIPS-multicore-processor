@@ -30,7 +30,9 @@ module dcache (
       logic 	   valid;
       logic 	   dirty;
    } cache_block;
-   
+
+   //internal signal
+   logic 	   dhit_t;   
    
    cache_block [7:0][1:0] cache; //2-way set associative
    logic [DTAG_W-1:0] tag;
@@ -80,7 +82,7 @@ module dcache (
 	      nstate = FLUSH1;	      
 	   end
 	   else if (dcif.dmemREN || dcif.dmemWEN) begin
-              if (dcif.dhit) begin
+              if (dhit_t) begin
 		 nstate = IDLE;
 		 hitcount++;
 	      end
@@ -168,9 +170,11 @@ module dcache (
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] = dcif.dmemaddr;
-	   if (dcif.dhit) begin
-	      if (dcif.dmemREN)
-		dcif.dmemload <= cache[index][set].data[offset];
+	   if (dhit_t) begin
+	      if (dcif.dmemREN) begin
+		 dcif.dmemload <= cache[index][set].data[offset];
+		 dcif.dhit <= 1;		 
+	      end
 	      else if (dcif.dmemWEN) begin
 		 cache[index][set].data[offset] <= dcif.dmemstore;
 		 cache[index][set].dirty <= 1;
@@ -234,7 +238,7 @@ module dcache (
 	(cstate == WRITEBACK1) || (cstate == WRITEBACK2) || (cstate == WRITEBACK3)) && (dcif.dmemREN && !dcif.dhit);
     */
 
-   assign dcif.dhit = (dcif.dmemREN || dcif.dmemWEN) && (cache[index][set].tag == tag) && cache[index][set].valid;
+   assign dhit_t = (dcif.dmemREN || dcif.dmemWEN) && (cache[index][set].tag == tag) && cache[index][set].valid;
   
    always_comb begin : DCIFFLUSHED
       casez(cstate)
