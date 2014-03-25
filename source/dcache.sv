@@ -38,7 +38,8 @@ module dcache (
    logic [DTAG_W-1:0] tag;
    logic [DIDX_W-1:0] index;
    logic [DBLK_W-1:0] offset;   //block offset
-   logic 	      set; //block_select
+   //logic 	      set; //block_select
+   logic 	      wset, rset;
    
    int 		      hitcount = 0; 
    logic [3:0] 	      flush_block, flush_block_next;   
@@ -58,6 +59,40 @@ module dcache (
    assign index = addr.idx;
    assign offset = addr.blkoff;
 
+   /* choosing which set to load into in LRU:
+    * index matches. so have to check tag to pick which set.
+    * - if tag matches one of them (and it is valid), return that one.  [dhit_t]
+    * - if tag does not match either,                                   [!dhit_t]
+    *   - if set0 is empty (valid=0), pick set0.
+    *   - if set0 is not empty, and set1 is empty, pick set1.
+    *   - if both are not empty,
+    *     - check used[index]. it will tell which set was last used (it is either 0 or 1), so pick THE OTHER.
+    *     - here it should already have gone into WRITEBACK, so we should provide the right set#.
+    */
+
+   // Divided set into two set selects: rset, wset. rset is used in IDLE (when we're only reading from a set.) wset otherwise.
+   
+   assign rset = ((cache[index][1].tag == tag) && cache[index][1].valid)? 1:0;   
+   always_comb begin: WSET_LOGIC
+      casez(cstate)
+	RESET: begin
+	   wset = 0;	   
+	end
+	IDLE, WRITEBACK1, FETCH1: begin
+	   if (cache[index][0].valid == 0) begin
+	      wset = 0;
+	   end
+	   else if (cache[index][1].valid == 0) begin
+	      wset = 1;
+	   end
+	   else begin
+	      wset = ~used[index];	      
+	   end
+	end
+	//set should only be altered these 4 states...it is latched on for the rest.
+	default: wset = wset;
+      endcase
+   end
 
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST) begin
@@ -86,7 +121,7 @@ module dcache (
 		 nstate = IDLE;
 		 hitcount++;
 	      end
-              else if (cache[index][set].dirty) begin //miss and dirty
+              else if (cache[index][rset].dirty) begin //miss and dirty
 		 nstate = WRITEBACK1; end
               else begin //miss but not dirty	      
 		 nstate = FETCH1; end
@@ -157,9 +192,7 @@ module dcache (
 
       endcase
       //if(dcif.halt && (cstate != FLUSH1)) nstate = FLUSH1;
-   end
-
-   assign set = ((cache[index][1].tag == tag) && (cache[index][1].valid))? 1:0;
+   end   
    
    always_comb begin : OUTPUT_LOGIC            
       casez(cstate)
@@ -180,14 +213,14 @@ module dcache (
 	   dcif.dhit <= 0;	   
 	   if (dhit_t) begin
 	      if (dcif.dmemREN) begin
-		 dcif.dmemload <= cache[index][set].data[offset];
+		 dcif.dmemload <= cache[index][rset].data[offset];
 		 dcif.dhit <= 1;
-		 used[index] <= set;
+		 used[index] <= rset;
 	      end
 	      else if (dcif.dmemWEN) begin
-		 cache[index][set].data[offset] <= dcif.dmemstore;
-		 cache[index][set].dirty <= 1;
-		 used[index] <= set;
+		 cache[index][rset].data[offset] <= dcif.dmemstore;
+		 cache[index][rset].dirty <= 1;
+		 used[index] <= rset;
 		 dcif.dhit <= 1;		 
 	      end
 	   end
@@ -196,42 +229,42 @@ module dcache (
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 1;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
-	   ccif.dstore[CPUID] <= cache[index][(!used[index])].data[0];
-	   cache[index][set].dirty <= 0;
+	   ccif.dstore[CPUID] <= cache[index][wset].data[0];//(~used[index])].data[0];
+	   cache[index][wset].dirty <= 0;
 	end
 	WRITEBACK2: begin
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 1;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
-	   ccif.dstore[CPUID] <= cache[index][(!used[index])].data[1];
+	   ccif.dstore[CPUID] <= cache[index][wset].data[1];//(!used[index])].data[1];
 	end
       	FETCH1: begin
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
-	   cache[index][set].tag <= tag;
-	   cache[index][set].data[0] <= ccif.dload[CPUID];
-	   $display("dload: %h | %h", ccif.dload[CPUID], cache[index][set].data[offset]);
-	   cache[index][set].valid <= 1;
+	   cache[index][wset].tag <= tag;
+	   cache[index][wset].data[0] <= ccif.dload[CPUID];
+	   $display("dload: %h | %h", ccif.dload[CPUID], cache[index][wset].data[offset]);	   
 	end
 	FETCH1DONE: begin
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
+	   cache[index][wset].valid <= 1;
 	end
 	FETCH2: begin
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
-	   cache[index][set].data[1] <= ccif.dload[CPUID];
+	   cache[index][wset].data[1] <= ccif.dload[CPUID];
 	   dcif.dhit <= ~ccif.dwait[CPUID];
 	end
 	FETCH2DONE: begin
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
-	   dcif.dmemload <= cache[index][set].data[offset]; //return the one asked for
-	   used[index] <= set;
+	   dcif.dmemload <= cache[index][wset].data[offset]; //return the one asked for
+	   used[index] <= wset;
 	   dcif.dhit <= 0;	   
-	   $display("[%s]dmemload: %h", cstate, cache[index][set].data[offset]);
+	   $display("[%s]dmemload: %h", cstate, cache[index][wset].data[offset]);
 	end
 	FLUSH1: begin
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b000};
@@ -248,22 +281,13 @@ module dcache (
    end // block: OUTPUT_LOGIC
 
 /*
-   always_comb begin : DREN
-      if (cstate == FETCH1) begin
-	 ccif.dREN[CPUID] = dcif.dmemREN && !dcif.dhit;	 
-      end
-      else if (cstate == FETCH2) begin
-	 ccif.dREN[CPUID] = !dcif.dhit;
-      end
-      else begin
-	 ccif.dREN[CPUID] = 0;	 
-      end
-   end   
    assign ccif.dWEN[CPUID] = ( ((cstate == FLUSH2) && flushing_block.dirty) || ((cstate == FLUSH1) && flushing_block.dirty) ||
 	(cstate == WRITEBACK1) || (cstate == WRITEBACK2) || (cstate == WRITEBACK3)) && (dcif.dmemREN && !dcif.dhit);
     */
 
-   assign dhit_t = (dcif.dmemREN || dcif.dmemWEN) && (cache[index][set].tag == tag) && cache[index][set].valid;
+   assign dhit_t = (dcif.dmemREN || dcif.dmemWEN) && 
+		   (((cache[index][0].tag == tag) && cache[index][0].valid) ||
+		   ((cache[index][1].tag == tag) && cache[index][1].valid));
   
    always_comb begin : DCIFFLUSHED
       casez(cstate)

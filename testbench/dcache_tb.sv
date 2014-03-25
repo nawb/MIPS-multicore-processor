@@ -73,11 +73,20 @@ module dcache_tb;
       load_word(32'h18); //hit
       #PERIOD;
 
+      load_word(32'h00000200); //miss, load into other set (must keep both 32'h00 and this)
+      #PERIOD;
+            
+      load_word(32'h00);  //make set0 the most recently used again
+      #PERIOD;      
+      
+      load_word(32'h00000400); //hit, loading into same set, must pick last used to replace
+      #PERIOD;      
+
       store_word(32'h18, 32'hDEAD); //hit
       #PERIOD;
       
       store_word(32'h08, 32'hDED2); //miss
-      #PERIOD;      
+      #PERIOD;
       
       
       $display("\nRequesting data that is in cache.");
