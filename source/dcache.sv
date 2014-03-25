@@ -272,9 +272,13 @@ module dcache (
 	end
 	FLUSH1: begin
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b000};
+	   ccif.dWEN[CPUID] <= 1;
+	   ccif.dstore[CPUID] = flushing_block.data[0];
 	end
 	FLUSH2: begin
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b100};
+	   ccif.dWEN[CPUID] <= 1;
+	   ccif.dstore[CPUID] = flushing_block.data[1];
 	end
 	default: begin
 	   ccif.dREN[CPUID] <= 0;

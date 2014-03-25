@@ -114,6 +114,8 @@ module datapath (
    assign hzif.halt = ppif.DE_out.halt;
    assign hzif.branching = pcif.branchmux;
    assign hzif.jumping = (ppif.DE_out.pc_src == 2 || ppif.DE_out.pc_src == 3) ? 1 : 0;
+   assign hzif.dREN = ppif.EM_out.dcuREN;
+   assign hzif.dWEN = ppif.EM_out.dcuWEN;
 
    //forwarding unit
    assign fwif.curr_rs = ppif.DE_out.rs;
@@ -131,7 +133,7 @@ module datapath (
    assign pcif.imm16 = ppif.DE_out.pc_plus_4 + (ppif.DE_out.imm16 << 2);
    assign pcif.imm26 = ppif.DE_out.imm26;
    assign dpif.imemaddr = pcif.imemaddr;
-   assign pcif.pcEN = (~cuif.halt & dpif.ihit) | (hzif.jumping | hzif.branching);
+   assign pcif.pcEN = (~cuif.halt & dpif.ihit) & hzif.FDen;
    //added OR branching so that PC doesn't shut down as soon as it sees a halt, because the halt
    //may have been a mispredict and we had actually meant to TAKE the branch 
    always_comb begin : BRANCHMUX
