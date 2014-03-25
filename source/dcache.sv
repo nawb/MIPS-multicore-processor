@@ -173,11 +173,13 @@ module dcache (
 	   if (dhit_t) begin
 	      if (dcif.dmemREN) begin
 		 dcif.dmemload <= cache[index][set].data[offset];
-		 dcif.dhit <= 1;		 
+		 dcif.dhit <= 1;
+		 used[index] <= set;
 	      end
 	      else if (dcif.dmemWEN) begin
 		 cache[index][set].data[offset] <= dcif.dmemstore;
 		 cache[index][set].dirty <= 1;
+		 used[index] <= set;
 	      end
 	   end
 	end
@@ -206,7 +208,6 @@ module dcache (
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
-	   used[index] <= set;
 	   cache[index][set].data[1] <= ccif.dload[CPUID];
 	end
 	FLUSH1: begin
