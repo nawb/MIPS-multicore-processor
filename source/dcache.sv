@@ -118,7 +118,7 @@ module dcache (
 	end
 	FETCH2: begin
            if (!ccif.dwait[CPUID]) begin
-              nstate = IDLE; end //FETCH2DONE; end
+              nstate = FETCH2DONE; end
            else begin
              nstate = FETCH2; end
 	end
@@ -159,9 +159,9 @@ module dcache (
       //if(dcif.halt && (cstate != FLUSH1)) nstate = FLUSH1;
    end
 
-   always_comb begin : OUTPUT_LOGIC
-      set = ((cache[index][1].tag == tag) && (cache[index][1].valid))? 1:0;
-      
+   assign set = ((cache[index][1].tag == tag) && (cache[index][1].valid))? 1:0;
+   
+   always_comb begin : OUTPUT_LOGIC            
       casez(cstate)
 	RESET: begin
 	   cache <= '0;
@@ -171,6 +171,7 @@ module dcache (
 	   ccif.daddr[CPUID] <= '0;
 	   ccif.dstore[CPUID] <= '0;	 
 	   dcif.dmemload <= '0;
+	   dcif.dhit <= 0;	   
 	end
 	IDLE: begin
 	   ccif.dREN[CPUID] <= 0;
@@ -187,6 +188,7 @@ module dcache (
 		 cache[index][set].data[offset] <= dcif.dmemstore;
 		 cache[index][set].dirty <= 1;
 		 used[index] <= set;
+		 dcif.dhit <= 1;		 
 	      end
 	   end
 	end
@@ -209,6 +211,7 @@ module dcache (
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
 	   cache[index][set].tag <= tag;
 	   cache[index][set].data[0] <= ccif.dload[CPUID];
+	   $display("dload: %h | %h", ccif.dload[CPUID], cache[index][set].data[offset]);
 	   cache[index][set].valid <= 1;
 	end
 	FETCH1DONE: begin
@@ -225,6 +228,10 @@ module dcache (
 	FETCH2DONE: begin
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
+	   dcif.dmemload <= cache[index][set].data[offset]; //return the one asked for
+	   used[index] <= set;
+	   dcif.dhit <= 0;	   
+	   $display("[%s]dmemload: %h", cstate, cache[index][set].data[offset]);
 	end
 	FLUSH1: begin
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b000};

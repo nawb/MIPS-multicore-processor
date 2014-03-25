@@ -64,11 +64,22 @@ module dcache_tb;
       //Check it.
 
       $display("\nRequesting data that is not loaded: compulsory miss test.");
-      load_word(32'h00);
+      load_word(32'h00); //miss
+      #PERIOD;
+      
+      load_word(32'h1c); //miss
       #PERIOD;      
-      load_word(32'h1c);
-      load_word(32'h20);
+      
+      load_word(32'h18); //hit
+      #PERIOD;
 
+      store_word(32'h18, 32'hDEAD); //hit
+      #PERIOD;
+      
+      store_word(32'h08, 32'hDED2); //miss
+      #PERIOD;      
+      
+      
       $display("\nRequesting data that is in cache.");
       $display("\nRequesting same data continuously. -> cache hits");
       $display("\nRequesting data in closeby addresses. -> cache hits");
@@ -81,7 +92,7 @@ module dcache_tb;
    end // initial begin
 
 
-   task load_word;
+   task automatic load_word;
       input [31:0] address;
       begin
 	 dcif.dmemaddr = address;
@@ -91,6 +102,30 @@ module dcache_tb;
 	    if (dcif.dhit == 1) begin
 	       dcif.dmemREN = 0;
 	       $display("Received data: %h", ccif.dload[CPUID]);
+	       break;
+	    end
+	    else begin
+	       $display("waiting");
+	       #PERIOD;
+	    end	    
+	 end	
+      end
+   endtask
+
+   
+   task automatic store_word;
+      input [31:0] address;
+      input [31:0] data;      
+      begin
+	 dcif.dmemaddr = address;
+	 dcif.dmemREN = 0;
+	 dcif.dmemWEN = 1;
+	 dcif.dmemstore = data;	 
+
+	 for (i=0; i < 32; i++) begin
+	    if (dcif.dhit == 1) begin
+	       dcif.dmemWEN = 0;
+	       $display("Storing data: %h", ccif.dstore[CPUID]);
 	       break;
 	    end
 	    else begin
