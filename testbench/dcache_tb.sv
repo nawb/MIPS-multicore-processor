@@ -57,56 +57,22 @@ module dcache_tb;
       dcif.dmemaddr = '0;
       dcif.dmemstore = '0;
       //initial reset
-      #PERIOD nRST = 1;
-
+      #(PERIOD*1.5) nRST = 1;
+      @(posedge CLK);      
 
       $display("\nChecking if everything reset to 0.");
       //Check it.
 
-
       $display("\nRequesting data that is not loaded: compulsory miss test.");
-      load_word(32'h04);
       load_word(32'h00);
-
+      load_word(32'h04);
 
       $display("\nRequesting data that is in cache.");
-
-
-
       $display("\nRequesting same data continuously. -> cache hits");
-
-
-
       $display("\nRequesting data in closeby addresses. -> cache hits");
-
-
-
       $display("\nRequesting data with same index -> conflict miss test.");
-
-
-
       $display("\nRequesting data outside of index -> capacity miss test.");
-
-
-
-      $display("\nMISC: Requesting data with correct tag but incorrect index -> cache miss");
-
-
-      $display("Resetting.");
-      nRST = 0; #1ns; nRST = 1;
-      #PERIOD;
-
-      $display("\nFilling cache by generating misses.");
-      for (i = 0; i < WORDS*4; i=i+8) begin
-	 dcif.dmemaddr = i;
-	 dcif.dmemREN = 1;
-	 #(PERIOD);
-	 while (!dcif.dhit) #(2*PERIOD);
-	 dcif.dmemREN = 0;
-	 $display("Loaded data: [0x%h]: %h", ccif.daddr[CPUID], dcif.dmemload);
-      end
-      $display("Check .wav to see if correct data has been uploaded.");
-
+      $display("\nMISC: Requesting data with correct tag but incorrect index -> cache miss");      
 
       $finish();
    end // initial begin
@@ -116,28 +82,14 @@ module dcache_tb;
       begin
 	 dcif.dmemaddr = address;
 	 dcif.dmemREN = 1;
-	 #(PERIOD);
-	 if (dcif.dhit == 1)
-	   $display("cache hit. %3d", $time);
-	 else if (ccif.daddr[CPUID] == 32'h04 && ccif.dREN[CPUID] == 1) begin
-	    $display("cache miss. %3d", $time);
-	    #(2*PERIOD);
-	 end
-	 #(PERIOD);
-	 $display("Received data: %h", dcif.dmemload);
+	 
+	 while (dcif.dhit != 1) begin #PERIOD; end;	 
+	 $display("Received data: %h", ccif.dload[CPUID]);
+	 
+	 while (dcif.dhit != 1) begin #PERIOD; end;	 
+	 $display("Received data: %h", ccif.dload[CPUID]);
 	 dcif.dmemREN = 0;
       end
-      /*
-      dcif.imemaddr = 32'h04;
-      dcif.imemREN = 1;
-      if (dcif.ihit != 1) begin end
-	else $display("Error! Should not have this data yet. %d", $time);
-      #(PERIOD);
-      if (ccif.iaddr[CPUID] == 32'h04 && ccif.iREN[CPUID] == 1)
-	$display("Generated cache miss. Going to RAM. %d", $time);
-      #(PERIOD);
-      $display("Received data: %h", dcif.imemload);
-      dcif.imemREN = 0;*/
    endtask
 
 endmodule
