@@ -66,6 +66,10 @@ module dcache_tb;
       $display("\nRequesting data that is not loaded: compulsory miss test.");
       load_word(32'h00);
       load_word(32'h04);
+      load_word(32'h08);
+      load_word(32'h10);
+      load_word(32'h1c);
+      load_word(32'h20);
 
       $display("\nRequesting data that is in cache.");
       $display("\nRequesting same data continuously. -> cache hits");
