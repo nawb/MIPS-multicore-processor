@@ -80,9 +80,9 @@ module dcache_tb;
       #PERIOD;      
       
       load_word(32'h00000400); //hit, loading into same set, must pick last used to replace
-      #PERIOD;      
-
-      store_word(32'h18, 32'hDEAD); //hit
+      #(2*PERIOD);
+   
+      store_word(32'h18, 32'hDEAD); //hit, storing over old value (should make it dirty)
       #PERIOD;
       
       store_word(32'h08, 32'hDED2); //miss

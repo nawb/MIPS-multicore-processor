@@ -256,14 +256,18 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   cache[index][wset].data[1] <= ccif.dload[CPUID];
-	   dcif.dhit <= ~ccif.dwait[CPUID];
+	   if (!dcif.dmemWEN) dcif.dhit <= ~ccif.dwait[CPUID];
 	end
 	FETCH2DONE: begin
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
 	   dcif.dmemload <= cache[index][wset].data[offset]; //return the one asked for
-	   used[index] <= wset;
-	   dcif.dhit <= 0;	   
+	   if (dcif.dmemWEN) begin
+	      cache[index][rset].data[offset] <= dcif.dmemstore;
+	      cache[index][rset].dirty <= 1;	      
+	      dcif.dhit <= 1;
+	   end 	   
+	   used[index] <= wset;	   
 	   $display("[%s]dmemload: %h", cstate, cache[index][wset].data[offset]);
 	end
 	FLUSH1: begin
