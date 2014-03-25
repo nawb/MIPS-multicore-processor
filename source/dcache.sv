@@ -34,7 +34,7 @@ module dcache (
    //internal signal
    logic 	   dhit_t;   
    
-   cache_block [7:0][1:0] cache; //2-way set associative
+   cache_block cache[7:0][1:0]; //2-way set associative
    logic [DTAG_W-1:0] tag;
    logic [DIDX_W-1:0] index;
    logic [DBLK_W-1:0] offset;   //block offset
@@ -194,10 +194,10 @@ module dcache (
       //if(dcif.halt && (cstate != FLUSH1)) nstate = FLUSH1;
    end   
    
-   always_comb begin : OUTPUT_LOGIC            
+   always_comb begin : OUTPUT_LOGIC
       casez(cstate)
 	RESET: begin
-	   cache <= '0;
+	   cache <= '{{'0,'0},{'0,'0},{'0,'0},{'0,'0},{'0,'0},{'0,'0},{'0,'0},{'0,'0}};
 	   used <= '0;
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
@@ -249,6 +249,7 @@ module dcache (
 	FETCH1DONE: begin
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
+	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
 	   cache[index][wset].valid <= 1;
 	end
 	FETCH2: begin
@@ -262,6 +263,7 @@ module dcache (
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
 	   dcif.dmemload <= cache[index][wset].data[offset]; //return the one asked for
+	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   if (dcif.dmemWEN) begin
 	      cache[index][rset].data[offset] <= dcif.dmemstore;
 	      cache[index][rset].dirty <= 1;	      
