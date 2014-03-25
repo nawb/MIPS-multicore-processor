@@ -29,7 +29,7 @@ module dcache_tb;
    ////////
    //Comment out this portion to test dcache in isolation
    cpu_ram_if ramif();
-   ram #(.LAT(10)) CPURAM (CLK, nRST, ramif);
+   ram #(.LAT(2)) CPURAM (CLK, nRST, ramif);
    memory_control MCTL(CLK, nRST, ccif.cc);
    //connections
    assign ccif.ramstate = ramif.ramstate;
@@ -65,9 +65,7 @@ module dcache_tb;
 
       $display("\nRequesting data that is not loaded: compulsory miss test.");
       load_word(32'h00);
-      load_word(32'h04);
-      load_word(32'h08);
-      load_word(32'h10);
+
       load_word(32'h1c);
       load_word(32'h20);
 
@@ -79,22 +77,26 @@ module dcache_tb;
       $display("\nMISC: Requesting data with correct tag but incorrect index -> cache miss");      
 
       $finish();
+
    end // initial begin
+
 
    task load_word;
       input [31:0] address;
       begin
 	 dcif.dmemaddr = address;
 	 dcif.dmemREN = 1;
+
+	 while(dcif.dhit == 0) begin
+	    $display("waiting");	    
+	    #PERIOD;	    
+	 end
+
+	 dcif.dmemREN = 0;	 
 	 
-	 while (dcif.dhit != 1) begin #PERIOD; end;	 
 	 $display("Received data: %h", ccif.dload[CPUID]);
-	 
-	 while (dcif.dhit != 1) begin #PERIOD; end;	 
-	 $display("Received data: %h", ccif.dload[CPUID]);
-	 dcif.dmemREN = 0;
       end
    endtask
 
+   
 endmodule
-

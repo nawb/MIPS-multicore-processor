@@ -21,7 +21,7 @@ module dcache (
    parameter CPUID = 0;
 
    typedef enum
-      {RESET, IDLE, SELECT, WRITEBACK1, WRITEBACK2, WRITEBACK3, FETCH1, FETCHWAIT, FETCH2, FETCH3, FLUSH1, FLUSH2, FLUSHED} states;
+      {RESET, IDLE, WRITEBACK1, WRITEBACK2, FETCH1, FETCH1DONE, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSHED} states;
    states cstate, nstate;
    
    typedef struct packed {
@@ -109,15 +109,21 @@ module dcache (
 	end
 	FETCH1: begin
            if (!ccif.dwait[CPUID]) begin
-             nstate = FETCH2; end
+             nstate = FETCH1DONE; end
            else begin
              nstate = FETCH1; end
 	end
+	FETCH1DONE: begin
+	   nstate = FETCH2;
+	end
 	FETCH2: begin
            if (!ccif.dwait[CPUID]) begin
-             nstate = IDLE; end
+             nstate = FETCH2DONE; end
            else begin
              nstate = FETCH2; end
+	end
+	FETCH2DONE: begin
+	   nstate = IDLE;	   
 	end
 	FLUSH1: begin
 	   if (flushing_block.dirty) begin	      
@@ -164,7 +170,8 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= '0;
 	   ccif.dstore[CPUID] <= '0;	 
-	   dcif.dmemload <= '0;	   
+	   dcif.dmemload <= '0;
+	   dcif.dhit <= 0;	   
 	end
 	IDLE: begin
 	   ccif.dREN[CPUID] <= 0;
@@ -204,11 +211,20 @@ module dcache (
 	   cache[index][set].data[0] <= ccif.dload[CPUID];
 	   cache[index][set].valid <= 1;
 	end
+	FETCH1DONE: begin
+	   ccif.dREN[CPUID] <= 0;
+	   ccif.dWEN[CPUID] <= 0;
+	end
 	FETCH2: begin
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   cache[index][set].data[1] <= ccif.dload[CPUID];
+	end
+	FETCH2DONE: begin
+	   ccif.dREN[CPUID] <= 0;
+	   ccif.dWEN[CPUID] <= 0;
+	   dcif.dhit <= 1;	   
 	end
 	FLUSH1: begin
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b000};
