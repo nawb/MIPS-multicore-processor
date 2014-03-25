@@ -20,7 +20,7 @@ module dcache (
 import cpu_types_pkg::*;
 parameter CPUID = 0;
 
-typedef enum  {IDLE, SELECT, WRITEBACK1, WRITEBACK2, WRITEBACK3, FETCH1, FETCHWAIT, FETCH2, FETCH3, FLUSHING, FLUSHED} states;
+typedef enum  {IDLE, SELECT, WRITEBACK1, WRITEBACK2, WRITEBACK3, FETCH1, FETCHWAIT, FETCH2, FETCH3, FLUSH1, FLUSH2, FLUSHED} states;
 states cstate, nstate;
 
 typedef struct packed {
@@ -30,13 +30,20 @@ typedef struct packed {
   logic 	      dirty;
 } cache_block;
 
-
 cache_block [8][2] cache; //2-way set associative
 logic [DTAG_W-1:0]    tag;
 logic [DIDX_W-1:0] 	 index;
 logic [DBLK_W-1:0] 	 offset;   //block offset
 logic 		 set; //block_select
+int hitcount;
 
+logic [3:0] flush_block, flush_block_next;
+logic [2:0] block;
+logic way;
+cache_block flushing_block;
+assign block = flush_block[2:0];
+assign way = flush_block[3];
+assign flushing_block = cache[block][way];
 //table storing recently used info
 logic [7:0]    used;
 
@@ -47,7 +54,8 @@ assign index = addr.idx;
 assign offset = addr.blkoff;
 
 assign ccif.dREN[CPUID] = ((cstate == FETCH1) || (cstate == FETCH2) || (cstate == FETCH3)) && (dcif.dmemREN && !dcif.dhit);
-assign ccif.dWEN[CPUID] = ((cstate == WRITEBACK1) || (cstate == WRITEBACK2) || (cstate == WRITEBACK3)) && (dcif.dmemREN && !dcif.dhit);
+assign ccif.dWEN[CPUID] = ( ((cstate == FLUSH2) && flushing_block.dirty) || ((cstate == FLUSH1) && flushing_block.dirty) ||
+	(cstate == WRITEBACK1) || (cstate == WRITEBACK2) || (cstate == WRITEBACK3)) && (dcif.dmemREN && !dcif.dhit);
 //assign set = (cache[index][1].tag == tag)? 1:0;
 assign dcif.dmemload = cache[index][set].data[offset];
 assign dcif.dhit = (dcif.dmemREN || dcif.dmemWEN) && (cache[index][set].tag == tag) && cache[index][set].valid;
@@ -56,6 +64,8 @@ always_comb begin : DADDR
   casez(cstate)
     FETCH1, WRITEBACK1: ccif.daddr[CPUID] = {tag, index, 3'b000};
     FETCH2, WRITEBACK2: ccif.daddr[CPUID] = {tag, index, 3'b100};
+    FLUSH1: ccif.daddr[CPUID] = {flushing_block.tag, block, 3'b000};
+    FLUSH1: ccif.daddr[CPUID] = {flushing_block.tag, block, 3'b100};
     default: ccif.daddr[CPUID] = dcif.dmemaddr;
   endcase
 end
@@ -65,32 +75,37 @@ end
       cstate <= IDLE;
       cache <= '0;
       used <= '0;
+      hitcount <= '0;
+      flush_block <= '0;
     end
-    else
+    else begin
       cstate <= nstate;
+      flush_block <= flush_block_next;
       if (cstate == FETCH1) begin
         //cache[index][set].valid <= 1;
         cache[index][set].tag <= tag;
       end
-    if (cstate == FETCH2) begin
-      cache[index][set].data[0] <= ccif.dload[CPUID];
-      cache[index][set].valid <= 1;
-      //cache[index][set].tag <= tag;
-      used[index] = set;
-    end
-    if (cstate == FETCH3) begin
-      cache[index][set].data[1] <= ccif.dload[CPUID];
-    end
-    if ((cstate != WRITEBACK2) && ccif.dWEN[CPUID]) begin
-      cache[index][set].dirty <= 1;
-    end
-    if (cstate == WRITEBACK2) begin
-      cache[index][set].dirty <= 0;
-    end
+		if (cstate == FETCH2) begin
+		  cache[index][set].data[0] <= ccif.dload[CPUID];
+		  cache[index][set].valid <= 1;
+		  //cache[index][set].tag <= tag;
+		  used[index] = set;
+		end
+		if (cstate == FETCH3) begin
+		  cache[index][set].data[1] <= ccif.dload[CPUID];
+		end
+		if ((cstate != WRITEBACK2) && ccif.dWEN[CPUID]) begin
+		  cache[index][set].dirty <= 1;
+		end
+		if (cstate == WRITEBACK2) begin
+		  cache[index][set].dirty <= 0;
+		end
+	end
   end
-
+  
   always_comb begin : STATE_LOGIC
   set = ((cache[index][1].tag == tag) && (cache[index][1].valid))? 1:0;
+  flush_block_next <= flush_block;
     casez (cstate)
       IDLE: begin
         if (dcif.dhit) //hit
@@ -135,13 +150,47 @@ end
       FETCH3: begin
         nstate <= IDLE;
       end
-      default: nstate <= IDLE;
+		FLUSH1: begin
+			if (flushing_block.dirty) begin
+				//writeback if dirty
+				if (!ccif.dwait) begin
+					nstate <= FLUSH2;
+				end
+			end else begin
+				//skip to next block if not
+				if (flush_block == 4'hF) begin
+					nstate <= FLUSHED;
+				end else begin
+					flush_block_next <= flush_block + 1;
+				end
+			end
+		end
+		FLUSH2: begin
+			if (!ccif.dwait) begin
+				if (flush_block == '1) begin
+					nstate <= FLUSHED;
+				end else begin
+					nstate <= FLUSH1;
+					flush_block_next <= flush_block + 1;
+				end
+			end
+		end 
+		default: begin
+			nstate <= IDLE;
+			flush_block_next <= flush_block;
+		end
     endcase
-    if(dcif.halt[CPUID]) nstate <= FLUSHING;
+    if(dcif.halt[CPUID] && (cstate != FLUSH1)) nstate <= FLUSH1;
   end
 
   always_comb begin : OUTPUT_LOGIC
-	assign dcif.flushed = (cstate == FLUSHING);
+	casez(cstate)
+		FLUSHED: begin
+			dcif.flushed <= 1;
+		end
+		default:
+			dcif.flushed <= 0;
+	endcase
   /*
   casez(cstate)
     IDLE: begin
