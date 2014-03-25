@@ -118,7 +118,7 @@ module dcache (
 	end
 	FETCH2: begin
            if (!ccif.dwait[CPUID]) begin
-             nstate = FETCH2DONE; end
+              nstate = IDLE; end //FETCH2DONE; end
            else begin
              nstate = FETCH2; end
 	end
@@ -171,12 +171,12 @@ module dcache (
 	   ccif.daddr[CPUID] <= '0;
 	   ccif.dstore[CPUID] <= '0;	 
 	   dcif.dmemload <= '0;
-	   dcif.dhit <= 0;	   
 	end
 	IDLE: begin
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
-	   ccif.daddr[CPUID] = dcif.dmemaddr;
+	   ccif.daddr[CPUID] <= dcif.dmemaddr;
+	   dcif.dhit <= 0;	   
 	   if (dhit_t) begin
 	      if (dcif.dmemREN) begin
 		 dcif.dmemload <= cache[index][set].data[offset];
@@ -220,11 +220,11 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   cache[index][set].data[1] <= ccif.dload[CPUID];
+	   dcif.dhit <= ~ccif.dwait[CPUID];
 	end
 	FETCH2DONE: begin
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
-	   dcif.dhit <= 1;	   
 	end
 	FLUSH1: begin
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b000};
@@ -238,7 +238,8 @@ module dcache (
 	   ccif.daddr[CPUID] <= dcif.dmemaddr;
 	end
       endcase
-   end
+   end // block: OUTPUT_LOGIC
+
 /*
    always_comb begin : DREN
       if (cstate == FETCH1) begin

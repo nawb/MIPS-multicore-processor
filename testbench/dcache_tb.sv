@@ -65,7 +65,7 @@ module dcache_tb;
 
       $display("\nRequesting data that is not loaded: compulsory miss test.");
       load_word(32'h00);
-
+      #PERIOD;      
       load_word(32'h1c);
       load_word(32'h20);
 
@@ -87,14 +87,17 @@ module dcache_tb;
 	 dcif.dmemaddr = address;
 	 dcif.dmemREN = 1;
 
-	 while(dcif.dhit == 0) begin
-	    $display("waiting");	    
-	    #PERIOD;	    
-	 end
-
-	 dcif.dmemREN = 0;	 
-	 
-	 $display("Received data: %h", ccif.dload[CPUID]);
+	 for (i=0; i < 32; i++) begin
+	    if (dcif.dhit == 1) begin
+	       dcif.dmemREN = 0;
+	       $display("Received data: %h", ccif.dload[CPUID]);
+	       break;
+	    end
+	    else begin
+	       $display("waiting");
+	       #PERIOD;
+	    end	    
+	 end	
       end
    endtask
 
