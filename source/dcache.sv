@@ -21,7 +21,7 @@ module dcache (
    parameter CPUID = 0;
 
    typedef enum
-      {RESET, IDLE, WRITEBACK1, WRITEBACK2, FETCH1, FETCH1DONE, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSHED} states;
+      {RESET, IDLE, WRITEBACK1, WRITEBACK2, FETCH1, FETCH1DONE, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSH1DONE, FLUSH2DONE, FLUSHED} states;
    states cstate, nstate;
    
    typedef struct packed {
@@ -163,9 +163,11 @@ module dcache (
 	FLUSH1: begin
 	   if (flushing_block.dirty) begin	      
 	      //writeback if dirty
-	      if (!ccif.dwait) begin
-		 nstate = FLUSH2;
-	      end
+	      if (!ccif.dwait[CPUID]) begin
+			nstate = FLUSH1DONE;
+		end else begin
+			nstate = FLUSH1;
+		end
 	   end else begin
 	      //skip to next block if not
 	      if (flush_block == 4'hF) begin
@@ -175,16 +177,22 @@ module dcache (
 	      end
 	   end
 	end
+	FLUSH1DONE: begin
+		nstate = FLUSH2;
+	end
 	FLUSH2: begin
-	   if (!ccif.dwait) begin
+	   if (!ccif.dwait[CPUID]) begin
 	      if (flush_block == '1) begin
 		 nstate = FLUSHED;
 	      end else begin
-		 nstate = FLUSH1;
+		 nstate = FLUSH2DONE;
 		 flush_block_next = flush_block + 1;
 	      end
 	   end
-	end 
+	end
+	FLUSH2DONE: begin
+		nstate = FLUSH1;
+	end
 	default: begin
 	   nstate = IDLE;
 	   flush_block_next = flush_block;
@@ -274,12 +282,12 @@ module dcache (
 	end
 	FLUSH1: begin
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b000};
-	   ccif.dWEN[CPUID] <= 1;
+	   ccif.dWEN[CPUID] <= flushing_block.dirty;
 	   ccif.dstore[CPUID] = flushing_block.data[0];
 	end
 	FLUSH2: begin
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b100};
-	   ccif.dWEN[CPUID] <= 1;
+	   ccif.dWEN[CPUID] <= flushing_block.dirty;
 	   ccif.dstore[CPUID] = flushing_block.data[1];
 	end
 	default: begin
