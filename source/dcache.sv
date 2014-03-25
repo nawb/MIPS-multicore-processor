@@ -171,8 +171,10 @@ module dcache (
 	   if (dcif.dhit) begin
 	      if (dcif.dmemREN)
 		dcif.dmemload <= cache[index][set].data[offset];
-	      else if (dcif.dmemWEN)
-		cache[index][set].data[offset] <= dcif.dmemstore;
+	      else if (dcif.dmemWEN) begin
+		 cache[index][set].data[offset] <= dcif.dmemstore;
+		 cache[index][set].dirty <= 1;
+	      end
 	   end
 	end
 	WRITEBACK1: begin
@@ -180,6 +182,7 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 1;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
 	   ccif.dstore[CPUID] <= cache[index][(!used[index])].data[0];
+	   cache[index][set].dirty <= 0;
 	end
 	WRITEBACK2: begin
 	   ccif.dREN[CPUID] <= 0;
@@ -200,7 +203,7 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   used[index] <= set;
-	   cache[index][set].data[1] <= ccif.dload[CPUID];	       
+	   cache[index][set].data[1] <= ccif.dload[CPUID];
 	end
 	FLUSH1: begin
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b000};
@@ -213,19 +216,6 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= dcif.dmemaddr;
 	end
-	/*
-	 if ((cstate != WRITEBACK2) && ccif.dWEN[CPUID]) begin
-	    cache[index][set].dirty <= 1;
-	 end
-	 if (cstate == WRITEBACK2) begin
-	    cache[index][set].dirty <= 0;
-	 end
-	 if ((cstate != WRITEBACK2) && ccif.dWEN[CPUID]) begin
-	    cache[index][set].dirty <= 1;
-	 end
-	 if (cstate == WRITEBACK2) begin
-	    cache[index][set].dirty <= 0;
-	 end*/
       endcase
    end
 /*
