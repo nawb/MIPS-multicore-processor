@@ -16,6 +16,7 @@ import cpu_types_pkg::*;
 module dcache_tb;
    //internal signals
    logic nRST, CLK = 0;
+   logic RAMCLK = 0;   
    parameter PERIOD = 10;
    parameter CPUID = 0;
    parameter WORDS = 10; //# data words to load into cache
@@ -29,7 +30,7 @@ module dcache_tb;
    ////////
    //Comment out this portion to test dcache in isolation
    cpu_ram_if ramif();
-   ram #(.LAT(2)) CPURAM (CLK, nRST, ramif);
+   ram #(.LAT(1)) CPURAM (RAMCLK, nRST, ramif);
    memory_control MCTL(CLK, nRST, ccif.cc);
    //connections
    assign ccif.ramstate = ramif.ramstate;
@@ -47,15 +48,16 @@ module dcache_tb;
    dcache DUT ( );
 `endif
 
+   always #(PERIOD/4) RAMCLK++;   
    always #(PERIOD/2) CLK++;
 
    initial begin
       //initial values
       nRST = 0;
-      dcif.imemaddr = '0; dcif.imemREN = 0; //so they dont interfere with memctl
+      ccif.iaddr[CPUID] = '0; ccif.iREN[CPUID] = 0; //so they dont interfere with memctl
       dcif.dmemWEN = 0; dcif.dmemREN = 0;
       dcif.dmemaddr = '0;
-      dcif.dmemstore = '0;
+      dcif.dmemstore = '0;      
       //initial reset
       #(PERIOD*1.5) nRST = 1;
       @(posedge CLK);      
@@ -94,7 +96,11 @@ module dcache_tb;
       $display("\nRequesting data in closeby addresses. -> cache hits");
       $display("\nRequesting data with same index -> conflict miss test.");
       $display("\nRequesting data outside of index -> capacity miss test.");
-      $display("\nMISC: Requesting data with correct tag but incorrect index -> cache miss");      
+      $display("\nTesting FLUSH states...sending halt.");
+
+      dcif.halt = 1;
+      #PERIOD;
+      
 
       $finish();
 
