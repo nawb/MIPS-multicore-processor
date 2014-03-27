@@ -103,8 +103,12 @@ module dcache (
 	 hitcount <= 0;
 	 wset <= 0;
 	 for (int i=0; i<8; i++) begin
-			cache[i][0] <= { >> {'0 }};
-			cache[i][1] <= { >> {'0 }};
+	    cache[i][0].valid <= 0;//{ >> {'0 }};
+	    cache[i][1].valid <= 0;//{ >> {'0 }};
+	    cache[i][0].tag <= '0;
+	    cache[i][1].tag <= '0;
+	    cache[i][0].dirty <= 0;
+	    cache[i][1].dirty <= 0;	    
 	 end
       end
       else begin
@@ -156,7 +160,7 @@ module dcache (
 	end
 	FETCH1: begin
            if (!ccif.dwait[CPUID]) begin
-             nstate <= FETCH1DONE; end
+             nstate <= FETCH2; end //FETCH1DONE; end
            else begin
              nstate <= FETCH1; end
 	end
@@ -165,7 +169,7 @@ module dcache (
 	end
 	FETCH2: begin
            if (!ccif.dwait[CPUID]) begin
-              nstate <= FETCH2DONE; end
+             nstate <= FETCH2DONE; end
            else begin
              nstate <= FETCH2; end
 	end
@@ -216,8 +220,8 @@ module dcache (
       //if(dcif.halt && (cstate != FLUSH1)) nstate = FLUSH1;
    end   
    
-   always_comb begin : OUTPUT_LOGIC
-   cache_next <= cache;
+   always_comb begin : OUTPUT_LOGIC      
+      cache_next <= cache;
       casez(cstate)
 	RESET: begin
 	   used <= '0;
@@ -229,10 +233,11 @@ module dcache (
 	   dcif.dhit <= 0;	   
 	end
 	IDLE: begin
+	   initial_values();	   
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= dcif.dmemaddr;
-	   dcif.dhit <= 0;	   
+	   dcif.dhit <= 0;
 	   if (dhit_t) begin
 	      if (dcif.dmemREN) begin
 		 dcif.dmemload <= cache[index][rset].data[offset];
@@ -243,11 +248,12 @@ module dcache (
 		 cache_next[index][rset].data[offset] <= dcif.dmemstore;
 		 cache_next[index][rset].dirty <= 1;
 		 used[index] <= rset;
-		 dcif.dhit <= 1;		 
+		 dcif.dhit <= 1;
 	      end
-	   end
+	   end	   
 	end
 	WRITEBACK1: begin
+	   initial_values();
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 1;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
@@ -255,12 +261,14 @@ module dcache (
 	   cache_next[index][wset].dirty <= 0;
 	end
 	WRITEBACK2: begin
+	   initial_values();
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 1;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   ccif.dstore[CPUID] <= cache_next[index][wset].data[1];//(!used[index])].data[1];
 	end
-      	FETCH1: begin
+      	FETCH1: begin	   
+	   initial_values();
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
@@ -268,45 +276,48 @@ module dcache (
 	   cache_next[index][wset].data[0] <= ccif.dload[CPUID];
 	   $display("dload: %h | %h", ccif.dload[CPUID], cache_next[index][wset].data[offset]);	   
 	end
-	FETCH1DONE: begin
+	/*FETCH1DONE: begin
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
 	   cache_next[index][wset].valid <= 1;
-	end
+	end*/
 	FETCH2: begin
+	   initial_values();
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   cache_next[index][wset].data[1] <= ccif.dload[CPUID];
-	   if (!dcif.dmemWEN) dcif.dhit <= ~ccif.dwait[CPUID];
+	   //if (!dcif.dmemWEN) dcif.dhit <= ~ccif.dwait[CPUID];
 	end
 	FETCH2DONE: begin
+	   initial_values();
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
 	   dcif.dmemload <= cache_next[index][wset].data[offset]; //return the one asked for
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   if (dcif.dmemWEN) begin
 	      cache_next[index][rset].data[offset] <= dcif.dmemstore;
-	      cache_next[index][rset].dirty <= 1;	      
-	      dcif.dhit <= 1;
-	   end 	   
-	   used[index] <= wset;	   
+	      cache_next[index][rset].dirty <= 1;	      	      
+	   end
+	   dcif.dhit <= 1;
+	   used[index] <= wset;
 	   $display("[%s]dmemload: %h", cstate, cache_next[index][wset].data[offset]);
 	end
 	FLUSH1: begin
+	   initial_values();
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b000};
 	   ccif.dWEN[CPUID] <= flushing_block.dirty;
 	   ccif.dstore[CPUID] = flushing_block.data[0];
 	end
 	FLUSH2: begin
+	   initial_values();
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b100};
 	   ccif.dWEN[CPUID] <= flushing_block.dirty;
 	   ccif.dstore[CPUID] = flushing_block.data[1];
 	end
 	default: begin
-	   ccif.dREN[CPUID] <= 0;
-	   ccif.dWEN[CPUID] <= 0;
+	   initial_values();
 	   ccif.daddr[CPUID] <= dcif.dmemaddr;
 	   cache_next <= cache;
 	end
@@ -331,5 +342,16 @@ module dcache (
 	  dcif.flushed <= 0;
       endcase
    end
+
+   task initial_values; 
+      //initializes all the variables in OUTPUT_LOGIC so they don't create latches
+      dcif.dhit <= 0;
+      dcif.dmemload <= '0;      
+      ccif.dstore[CPUID] <= '0;
+      ccif.daddr[CPUID] <= ccif.daddr[CPUID];
+      ccif.dREN[CPUID] <= 0;
+      ccif.dWEN[CPUID] <= 0;
+      used <= used;
+   endtask
    
 endmodule
