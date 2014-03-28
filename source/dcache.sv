@@ -136,6 +136,7 @@ module dcache (
               if (dhit_t) begin
 		 nstate <= IDLE;
 		 hitcount_next <= hitcount + 1;
+	 	 $display("hit %d", hitcount_next);
 	      end
               else if (cache[index][rset].dirty) begin //miss and dirty
 		 nstate <= WRITEBACK1; end
@@ -210,6 +211,9 @@ module dcache (
 	FLUSH2DONE: begin
 		nstate <= FLUSH1;
 	end
+	FLUSHED: begin
+	   nstate <= FLUSHED;
+	end
 	default: begin
 	   nstate <= IDLE;
 	   flush_block_next <= flush_block;
@@ -274,7 +278,7 @@ module dcache (
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
 	   cache_next[index][wset].tag <= tag;
 	   cache_next[index][wset].data[0] <= ccif.dload[CPUID];
-	   $display("dload: %h | %h", ccif.dload[CPUID], cache_next[index][wset].data[offset]);	   
+	   //$display("dload: %h | %h", ccif.dload[CPUID], cache_next[index][wset].data[offset]);	   
 	end
 	/*FETCH1DONE: begin
 	   ccif.dREN[CPUID] <= 0;
@@ -303,7 +307,7 @@ module dcache (
 	   end
 	   dcif.dhit <= 1;
 	   used[index] <= wset;
-	   $display("[%s]dmemload: %h", cstate, cache_next[index][wset].data[offset]);
+	   //$display("[%s]dmemload: %h", cstate, cache_next[index][wset].data[offset]);
 	end
 	FLUSH1: begin
 	   initial_values();
@@ -316,6 +320,9 @@ module dcache (
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b100};
 	   ccif.dWEN[CPUID] <= flushing_block.dirty;
 	   ccif.dstore[CPUID] <= flushing_block.data[1];
+	end
+	FLUSHED: begin
+	   initial_values();
 	end
 	default: begin
 	   initial_values();
