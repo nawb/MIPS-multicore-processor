@@ -296,6 +296,7 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   dcif.dmemload <= cache_next[index][wset].data[offset]; //return the one asked for
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
+	   cache_next[index][rset].valid <= 1;	
 	   if (dcif.dmemWEN) begin
 	      cache_next[index][rset].data[offset] <= dcif.dmemstore;
 	      cache_next[index][rset].dirty <= 1;	      	      
@@ -308,13 +309,13 @@ module dcache (
 	   initial_values();
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b000};
 	   ccif.dWEN[CPUID] <= flushing_block.dirty;
-	   ccif.dstore[CPUID] = flushing_block.data[0];
+	   ccif.dstore[CPUID] <= flushing_block.data[0];
 	end
 	FLUSH2: begin
 	   initial_values();
 	   ccif.daddr[CPUID] <= {flushing_block.tag, block, 3'b100};
 	   ccif.dWEN[CPUID] <= flushing_block.dirty;
-	   ccif.dstore[CPUID] = flushing_block.data[1];
+	   ccif.dstore[CPUID] <= flushing_block.data[1];
 	end
 	default: begin
 	   initial_values();
