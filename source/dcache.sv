@@ -53,7 +53,7 @@ module dcache (
    assign flushing_block = cache[block][way];
    
    //table storing recently used info
-   logic [7:0] 	      used;
+   logic [7:0] 	      used, used_next;
    
    dcachef_t addr;
    assign addr = dcachef_t'(dcif.dmemaddr);
@@ -102,6 +102,7 @@ module dcache (
 	 flush_block <= '0;
 	 hitcount <= 0;
 	 wset <= 0;
+	 used <= '0;
 	 for (int i=0; i<8; i++) begin
 	    cache[i][0].valid <= 0;//{ >> {'0 }};
 	    cache[i][1].valid <= 0;//{ >> {'0 }};
@@ -117,6 +118,7 @@ module dcache (
 	 hitcount <= hitcount_next;
 	 cache <= cache_next;
 	 wset <= wset_next;
+	 used <= used_next;
       end
    end
    
@@ -228,7 +230,7 @@ module dcache (
       cache_next <= cache;
       casez(cstate)
 	RESET: begin
-	   used <= '0;
+	   used_next <= '0;
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= '0;
@@ -246,12 +248,12 @@ module dcache (
 	      if (dcif.dmemREN) begin
 		 dcif.dmemload <= cache[index][rset].data[offset];
 		 dcif.dhit <= 1;
-		 used[index] <= rset;
+		 used_next[index] <= rset;
 	      end
 	      else if (dcif.dmemWEN) begin
 		 cache_next[index][rset].data[offset] <= dcif.dmemstore;
 		 cache_next[index][rset].dirty <= 1;
-		 used[index] <= rset;
+		 used_next[index] <= rset;
 		 dcif.dhit <= 1;
 	      end
 	   end	   
@@ -306,7 +308,7 @@ module dcache (
 	      cache_next[index][rset].dirty <= 1;	      	      
 	   end
 	   dcif.dhit <= 1;
-	   used[index] <= wset;
+	   used_next[index] <= wset;
 	   //$display("[%s]dmemload: %h", cstate, cache_next[index][wset].data[offset]);
 	end
 	FLUSH1: begin
@@ -359,7 +361,7 @@ module dcache (
       ccif.daddr[CPUID] <= ccif.daddr[CPUID];
       ccif.dREN[CPUID] <= 0;
       ccif.dWEN[CPUID] <= 0;
-      used <= used;
+      used_next <= used;
    endtask
    
 endmodule
