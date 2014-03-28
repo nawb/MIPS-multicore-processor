@@ -17,7 +17,8 @@ module hazard_unit ( hazard_unit_if.haz hzif );
    assign hzif.MWen = hzif.EMen; //MW latch always enabled
 
    //flush when:
-   assign hzif.FDflush = ~hzif.halt & (hzif.dhit | hzif.branching | hzif.jumping);
+   assign hzif.FDflush = ~hzif.halt & (hzif.branching | hzif.jumping);
+			 //(hzif.dhit | hzif.branching | hzif.jumping);
    assign hzif.DEflush = ~hzif.halt & (hzif.jumping | hzif.branching);
    assign hzif.EMflush = 1'b0;
    assign hzif.MWflush = 1'b0;

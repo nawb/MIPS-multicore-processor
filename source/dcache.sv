@@ -302,7 +302,7 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   dcif.dmemload <= cache_next[index][wset].data[offset]; //return the one asked for
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
-	   cache_next[index][rset].valid <= 1;	
+	   cache_next[index][wset].valid <= 1;	
 	   if (dcif.dmemWEN) begin
 	      cache_next[index][rset].data[offset] <= dcif.dmemstore;
 	      cache_next[index][rset].dirty <= 1;	      	      
