@@ -277,7 +277,7 @@ module dcache (
 	   initial_values();
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
-	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
+	   ccif.daddr[CPUID] <= {tag, index, 3'b000};	   
 	   cache_next[index][wset].tag <= tag;
 	   cache_next[index][wset].data[0] <= ccif.dload[CPUID];
 	   //$display("dload: %h | %h", ccif.dload[CPUID], cache_next[index][wset].data[offset]);	   
@@ -304,11 +304,11 @@ module dcache (
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   cache_next[index][wset].valid <= 1;	
 	   if (dcif.dmemWEN) begin
-	      cache_next[index][rset].data[offset] <= dcif.dmemstore;
-	      cache_next[index][rset].dirty <= 1;	      	      
+	      cache_next[index][wset].data[offset] <= dcif.dmemstore;
+	      cache_next[index][wset].dirty <= 1;
 	   end
 	   dcif.dhit <= 1;
-	   used_next[index] <= wset;
+	   used_next[index] <= rset;
 	   //$display("[%s]dmemload: %h", cstate, cache_next[index][wset].data[offset]);
 	end
 	FLUSH1: begin
