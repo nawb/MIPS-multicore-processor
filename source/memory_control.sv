@@ -137,8 +137,6 @@ module memory_control
 	 endcase
    end // always_comb
 
-   //assign ccif.ramaddr = (ccif.dWEN | ccif.dREN) ? ccif.daddr[CPUID] : ccif.iaddr[CPUID];
-
    assign ccif.dload[0] = ccif.ramload;
    assign ccif.iload[0] = ccif.ramload;
    assign ccif.dload[1] = ccif.ramload;
