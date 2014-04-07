@@ -23,11 +23,11 @@ module memory_control
    
    state_t state, next_state;
    
-   always_ff(@posedge CLK, negedge nRST) begin
+   always_ff @(posedge CLK, negedge nRST) begin
       if(!nRST) begin
 	 state <= IDLE;
-      else
-	 state <= next_state
+      end else begin 
+	 state <= next_state;
       end
    end
    
@@ -36,10 +36,10 @@ module memory_control
 	 IDLE:
 	    if(ccif.cctrans[0]) begin
 	       next_state <= CORE0;
-	    else 
+	    end else 
 	    if(ccif.cctrans[1]) begin
 	       next_state <= CORE1;
-	    else
+	    end else begin
 	       next_state <= IDLE;
 	    end
 	 CORE0:
@@ -94,7 +94,7 @@ module memory_control
 	       ccif.ramREN = 1'b0;
 	    end // else: !if(ccif.iREN)
 	 end
-	 CORE0:
+	 CORE0: begin
 	    ccif.ramstore = ccif.dstore[0];
 	    ccif.ramaddr = ccif.daddr[0];
 	    if (ccif.ccwrite[0]) begin
@@ -114,7 +114,8 @@ module memory_control
 	       ccif.ramWEN = 1'b0;
 	       ccif.ramREN = 1'b1;
 	    end
-	 CORE1:
+	 end
+	 CORE1: begin
 	    ccif.ramstore = ccif.dstore[1];
 	    ccif.ramaddr = ccif.daddr[1];
 	    if (ccif.ccwrite[0]) begin
@@ -134,7 +135,8 @@ module memory_control
 	       ccif.ramWEN = 1'b0;
 	       ccif.ramREN = 1'b1;
 	    end
-	 endcase
+	 end
+      endcase
    end // always_comb
 
    assign ccif.dload[0] = ccif.ramload;
