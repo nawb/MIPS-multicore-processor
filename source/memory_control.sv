@@ -18,6 +18,42 @@ module memory_control
    // number of cpus for cc
    parameter CPUS = 2;
    localparam CPUID = 0;
+   
+   typedef enum {IDLE, CORE0, CORE1} state_t;
+   
+   state_t state, next_state;
+   
+   always_ff(@posedge CLK, negedge nRST) begin
+      if(!nRST) begin
+	 state <= IDLE;
+      else
+	 state <= next_state
+      end
+   end
+   
+   always_comb begin
+      casez(state)
+	 IDLE:
+	    if(ccif.cctrans[0]) begin
+	       next_state <= CORE0;
+	    else 
+	    if(ccif.cctrans[1]) begin
+	       next_state <= CORE1;
+	    else
+	       next_state <= IDLE;
+	    end
+	 CORE0:
+	    if(ccif.cctrans[0])
+	       next_state <= CORE0;
+	    else
+	       next_state <= IDLE;
+	 CORE1:
+	    if(ccif.cctrans[1])
+	       next_state <= CORE1;
+	    else
+	       next_state <= IDLE;
+      endcase
+   end
 
    //priority mux,
    //dWEN|dREN has highest priority
@@ -29,46 +65,83 @@ module memory_control
    //Also, assert a wait high during RAM's BUSY state...until it reaches ACCESS state,
    //that's when you want to pull it back low to let cache layer know that it has been done, and it can assert ihit/dhit
    always_comb begin
-      if (ccif.dWEN[CPUID]) begin
-	 ccif.dwait[CPUID] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
-	 ccif.iwait[CPUID] = 1'b1;
-	 ccif.ramWEN = ccif.dWEN[CPUID];
-	 ccif.ramREN = ccif.dREN[CPUID];
-      end
-      else if (ccif.dREN[CPUID]) begin
-	 ccif.dwait[CPUID] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
-	 ccif.iwait[CPUID] = 1'b1;
-	 ccif.ramWEN = 1'b0;
-	 ccif.ramREN = ccif.dREN[CPUID];
-      end
-      else if (ccif.iREN[CPUID]) begin
-	 ccif.iwait[CPUID] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
-	 ccif.dwait[CPUID] = 1'b0;
-	 ccif.ramWEN = 1'b0;
-	 ccif.ramREN = 1'b1;
-      end
-      else begin
-	 ccif.dwait[CPUID] = 1'b0;
-	 ccif.iwait[CPUID] = 1'b0;
-	 ccif.ramWEN = 1'b0;
-	 ccif.ramREN = 1'b0;
-      end // else: !if(ccif.iREN)
+      casez(state)
+	 IDLE: begin
+	    ccif.ramstore = '0;
+	    ccif.ramaddr = ccif.iREN[0] ? ccif.iaddr[0] : ccif.iaddr[1];
+	    if (ccif.iREN[0]) begin
+	       ccif.iwait[0] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	       ccif.dwait[0] = 1'b1;
+	       ccif.iwait[1] = 1'b1;
+	       ccif.dwait[1] = 1'b1;
+	       ccif.ramWEN = 1'b0;
+	       ccif.ramREN = 1'b1;
+	    end
+	    else if (ccif.iREN[1]) begin
+	       ccif.iwait[1] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	       ccif.dwait[1] = 1'b0;
+	       ccif.iwait[0] = 1'b1;
+	       ccif.dwait[0] = 1'b1;
+	       ccif.ramWEN = 1'b0;
+	       ccif.ramREN = 1'b1;
+	    end
+	    else begin
+	       ccif.dwait[0] = 1'b0;
+	       ccif.iwait[0] = 1'b0;
+	       ccif.dwait[1] = 1'b0;
+	       ccif.iwait[1] = 1'b0;
+	       ccif.ramWEN = 1'b0;
+	       ccif.ramREN = 1'b0;
+	    end // else: !if(ccif.iREN)
+	 end
+	 CORE0:
+	    ccif.ramstore = ccif.dstore[0];
+	    ccif.ramaddr = ccif.daddr[0];
+	    if (ccif.ccwrite[0]) begin
+	       //core is writing
+	       ccif.iwait[0] = 1'b1;
+	       ccif.dwait[0] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	       ccif.iwait[1] = 1'b1;
+	       ccif.dwait[1] = 1'b1;
+	       ccif.ramWEN = 1'b1;
+	       ccif.ramREN = 1'b0;
+	    end else begin
+	       //core is reading
+	       ccif.iwait[0] = 1'b1;
+	       ccif.dwait[0] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	       ccif.iwait[1] = 1'b1;
+	       ccif.dwait[1] = 1'b1;
+	       ccif.ramWEN = 1'b0;
+	       ccif.ramREN = 1'b1;
+	    end
+	 CORE1:
+	    ccif.ramstore = ccif.dstore[1];
+	    ccif.ramaddr = ccif.daddr[1];
+	    if (ccif.ccwrite[0]) begin
+	       //core is writing
+	       ccif.iwait[1] = 1'b1;
+	       ccif.dwait[1] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	       ccif.iwait[0] = 1'b1;
+	       ccif.dwait[0] = 1'b1;
+	       ccif.ramWEN = 1'b1;
+	       ccif.ramREN = 1'b0;
+	    end else begin
+	       //core is reading
+	       ccif.iwait[1] = 1'b1;
+	       ccif.dwait[1] = (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	       ccif.iwait[0] = 1'b1;
+	       ccif.dwait[0] = 1'b1;
+	       ccif.ramWEN = 1'b0;
+	       ccif.ramREN = 1'b1;
+	    end
+	 endcase
    end // always_comb
 
    //assign ccif.ramaddr = (ccif.dWEN | ccif.dREN) ? ccif.daddr[CPUID] : ccif.iaddr[CPUID];
 
-   //FOR CHOOSING THE ADDRESS:
-   always_comb begin
-      casez ({ccif.dWEN[CPUID], ccif.dREN[CPUID]})
-	2'b11, 2'b10,
-	2'b01: ccif.ramaddr = ccif.daddr[CPUID];
-	2'b00: ccif.ramaddr = ccif.iaddr[CPUID];
-	default: ccif.ramaddr = '0;
-      endcase
-   end
-
-   assign ccif.dload[CPUID] = ccif.ramload;
-   assign ccif.iload[CPUID] = ccif.ramload;
-   assign ccif.ramstore = ccif.dstore[CPUID];
+   assign ccif.dload[0] = ccif.ramload;
+   assign ccif.iload[0] = ccif.ramload;
+   assign ccif.dload[1] = ccif.ramload;
+   assign ccif.iload[1] = ccif.ramload;
 
 endmodule
