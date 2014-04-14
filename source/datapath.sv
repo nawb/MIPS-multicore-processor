@@ -79,14 +79,39 @@ module datapath (
 	default: rfif.wdat = ppif.MW_out.alu_res;
       endcase
    end
-
+   
    //alu
+   logic loading_saved;   
+   word_t op1_saved, op2_saved;
+   word_t op1_mux, op2_mux;   
+
+   // op saver (in case of flush (on LW dependency))
+   always_ff @ (posedge CLK, negedge nRST) begin
+      if (!nRST) begin
+	 op1_saved <= '0;
+	 op2_saved <= '0;
+	 loading_saved <= '0;	 
+      end
+      else begin
+	 op1_saved <= aluif.op1;
+	 op2_saved <= aluif.op2;
+	 loading_saved <= hzif.loading;	 
+      end
+   end
+
+   //if op2 is fwded on LW, latch op1 and flush rest.
+   assign aluif.op1 = (loading_saved && fwif.fwd_op2 == 2)?
+		      op1_saved : op1_mux;
+   //if op1 is fwded on LW, latch op2 and flush rest.
+   assign aluif.op2 = (loading_saved && fwif.fwd_op1 == 2)?
+		      op2_saved : op2_mux;
+      
    always_comb begin : FWD_MUX_1
       casez (fwif.fwd_op1)
-	0: aluif.op1 = ppif.DE_out.rdat1;
-	1: aluif.op1 = ppif.EM_out.alu_res;
-	2: aluif.op1 = rfif.wdat;
-	default: aluif.op1 = ppif.DE_out.rdat1;
+	0: op1_mux = ppif.DE_out.rdat1;
+	1: op1_mux = ppif.EM_out.alu_res;
+	2: op1_mux = rfif.wdat;
+	default: op1_mux = ppif.DE_out.rdat1;
       endcase
    end
    always_comb begin : FWD_MUX_2
@@ -99,10 +124,10 @@ module datapath (
    end
    always_comb begin : ALU_SRC
       casez (ppif.DE_out.alu_src)
-	0: aluif.op2 = op2_tmp;
-	1: aluif.op2 = ppif.DE_out.imm16;
-	2: aluif.op2 = {ppif.DE_out.imm16, 16'b0}; //for LUI specifically
-	default: aluif.op2 = ppif.DE_out.rdat2;	
+	0: op2_mux = op2_tmp;
+	1: op2_mux = ppif.DE_out.imm16;
+	2: op2_mux = {ppif.DE_out.imm16, 16'b0}; //for LUI specifically
+	default: op2_mux = ppif.DE_out.rdat2;	
       endcase
    end
    assign aluif.opcode  = ppif.DE_out.alu_op;
@@ -116,6 +141,9 @@ module datapath (
    assign hzif.jumping = (ppif.DE_out.pc_src == 2 || ppif.DE_out.pc_src == 3) ? 1 : 0;
    assign hzif.dREN = ppif.EM_out.dcuREN;
    assign hzif.dWEN = ppif.EM_out.dcuWEN;
+   assign hzif.loading = hzif.dREN && (fwif.curr_rt == fwif.mem_rt)? 1:0;
+     //on LW, if reg we need is further in pipeline in MEM,
+     //stall it until its loaded and then fwd it (from WB).
 
    //forwarding unit
    assign fwif.curr_rs = ppif.DE_out.rs;
