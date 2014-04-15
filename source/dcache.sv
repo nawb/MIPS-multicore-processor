@@ -109,7 +109,11 @@ module dcache (
 	    cache[i][0].tag <= '0;
 	    cache[i][1].tag <= '0;
 	    cache[i][0].dirty <= 0;
-	    cache[i][1].dirty <= 0;	    
+	    cache[i][1].dirty <= 0;
+	    cache[i][0].data[0] <= '0;
+	    cache[i][0].data[1] <= '0;
+	    cache[i][1].data[0] <= '0;
+	    cache[i][1].data[1] <= '0; 
 	 end
       end
       else begin
