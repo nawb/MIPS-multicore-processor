@@ -99,6 +99,10 @@ module memory_control
       ccif.ccinv[1] <= 0;
       ccif.ccwait[0] <= 0;
       ccif.ccwait[1] <= 0;
+      ccif.dload[0] <= ccif.ramload;
+      ccif.iload[0] <= ccif.ramload;
+      ccif.dload[1] <= ccif.ramload;
+      ccif.iload[1] <= ccif.ramload;
       casez(state)
 	 IDLE: begin
 	    ccif.ramstore <= '0;
@@ -237,6 +241,10 @@ module memory_control
 	 MEM1: begin
 	    ccif.ramstore <= ccif.dstore[1];
 	    ccif.ramaddr <= ccif.daddr[1];
+	    ccif.dload[0] <= ccif.ramload;
+	    ccif.iload[0] <= ccif.ramload;
+	    ccif.dload[1] <= ccif.ramload;
+	    ccif.iload[1] <= ccif.ramload;
 	    if (ccif.ccwrite[0]) begin
 	       //core is writing
 	       ccif.iwait[1] <= 1'b1;
