@@ -10,7 +10,7 @@
 module memory_control
   (
    input CLK, nRST,
-   cache_control_if.cc ccif
+   cache_control_if ccif
    );
    // type import
    import cpu_types_pkg::*;
@@ -154,6 +154,7 @@ module memory_control
 	       ccif.ramREN <= 1'b0;
 	    end
 	 end
+
 	 SNOOP1: begin
 	    ccif.ramstore <= ccif.dstore[1];
 	    ccif.ramaddr <= ccif.daddr[1];
@@ -180,6 +181,7 @@ module memory_control
 	       ccif.ramREN <= 1'b0;
 	    end
 	 end
+
 	 WB0: begin
 	    ccif.ramstore <= ccif.dstore[0];
 	    ccif.ramaddr <= ccif.daddr[0];
@@ -192,6 +194,7 @@ module memory_control
 	    ccif.ramWEN <= 1'b1;
 	    ccif.ramREN <= 1'b0;
 	 end
+
 	 WB1: begin
 	    ccif.ramstore <= ccif.dstore[1];
 	    ccif.ramaddr <= ccif.daddr[1];
@@ -204,6 +207,7 @@ module memory_control
 	    ccif.ramWEN <= 1'b1;
 	    ccif.ramREN <= 1'b0;
 	 end
+
 	 MEM0: begin
 	    ccif.ramstore <= ccif.dstore[0];
 	    ccif.ramaddr <= ccif.daddr[0];
@@ -229,6 +233,7 @@ module memory_control
 	       ccif.ramREN <= 1'b1;
 	    end
 	 end
+
 	 MEM1: begin
 	    ccif.ramstore <= ccif.dstore[1];
 	    ccif.ramaddr <= ccif.daddr[1];
