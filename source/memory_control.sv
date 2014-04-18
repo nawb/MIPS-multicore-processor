@@ -35,10 +35,10 @@ module memory_control
    always_comb begin
       casez(state)
 	 IDLE: begin
-	    if(ccif.cctrans[0]) begin
+	    if(ccif.dREN[0] || ccif.dWEN[0]) begin//ccif.cctrans[0]) begin
 	       next_state <= SNOOP0;
 	    end else
-	    if(ccif.cctrans[1]) begin
+	    if(ccif.dREN[1] || ccif.dWEN[1]) begin//ccif.cctrans[1]) begin
 	       next_state <= SNOOP1;
 	    end else begin
 	       next_state <= IDLE;
