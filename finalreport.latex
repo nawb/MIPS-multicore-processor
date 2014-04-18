@@ -17,8 +17,11 @@
 
   \section{Executive Summary}
   
-  Text for your executive summary
-
+  We have designed several implmentations of a MIPS CPU. First there was a singlecycle CPU, which executes one instruction per clock cycle. Then we implemented a 5 stage pipeline which overlaps several instructions to increase the clock rate. Then we added caches to reduce average memory access time. Then we implemented a coherence controller for a dual-core CPU.
+  
+  In the rest of the report, the design and verification process of both the caches and the cache coherence implementation will be discussed.
+  \pagebreak
+  
   \section{Processor Design}
 
 % Uncomment after you create the block diagram graphic.
@@ -69,6 +72,8 @@
       \hline
       Chip Area & ?? \\ \hline
       Minimum Clock Cycle & ??ns \\ \hline
+      CPI without cache & ?? cycles \\ \hline
+      CPI with cache & ??cyles \\ \hline
       \ldots & \ldots \\ \hline
     \end{tabular}
 
