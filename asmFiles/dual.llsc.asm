@@ -40,9 +40,9 @@
 
   ll    $3, 8($2)
   addiu   $3, $3, 0x01
-  sw    $3, 8($2)
-  sc    $3, 8($2)
-  sw    $3, 8($2)
+  sw    $3, 8($2)  #writes 1 to 0x98
+  sc    $3, 8($2)  #overwrites R3 to 0
+  sw    $3, 8($2)  #overwrites 0x98 to 0
 
   halt      # that's all
 
