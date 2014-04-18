@@ -178,6 +178,7 @@ module datapath (
    assign dpif.imemREN = 1'b1;//ppif.EM_out.icuREN;
    assign dpif.dmemREN = ppif.EM_out.dcuREN;
    assign dpif.dmemWEN = ppif.EM_out.dcuWEN;
+   assign dpif.datomic = cuif.datomic;   
    
    //keep halt latched high after program ends
    always_ff @ (posedge CLK, negedge nRST) begin

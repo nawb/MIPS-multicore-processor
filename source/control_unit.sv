@@ -55,7 +55,7 @@ module control_unit
       casez (op)
 	RTYPE: cuif.alu_src = 0;
 	// all the things requiring a signexted/zeroextend:
-	ORI, ANDI, XORI, ADDIU, SLTI, SLTIU, SW, LW: cuif.alu_src = 1; 
+	ORI, ANDI, XORI, ADDIU, SLTI, SLTIU, SW, LW, LL, SC: cuif.alu_src = 1; 
 	LUI: cuif.alu_src = 2;
 	default: cuif.alu_src = 0;
       endcase
@@ -72,21 +72,21 @@ module control_unit
       endcase
    end
    
-   assign cuif.memwr   = (op == SW) ?
+   assign cuif.memwr   = (op == SW || op == SC) ?
 			 1 : 0 ;
 
    always_comb begin : MEMTOREG
       casez (op)
 	JAL: cuif.memtoreg = 2;
-	LW:  cuif.memtoreg = 1; //DON'T ASSERT ON LUI...LUI is more like ORI
+	LW, LL:  cuif.memtoreg = 1; //DON'T ASSERT ON LUI...LUI is more like ORI
 	default: cuif.memtoreg = 0;
       endcase
    end
 
-   assign cuif.regwr   = (op == RTYPE || op == LW || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTIU) ?
+   assign cuif.regwr   = (op == RTYPE || op == LW || op == LL || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTIU) ?
 			 1 : 0;
 
-   assign cuif.icuREN  = ~(op == SW || op == LW) ? 1 : 0;
+   assign cuif.icuREN  = ~(op == SW || op == LW || op == LL || op == SC) ? 1:0;
    always_comb begin : DCUREN
       casez (cuif.memtoreg)
 	1: cuif.dcuREN = 1;
@@ -94,6 +94,8 @@ module control_unit
       endcase
    end
    assign cuif.dcuWEN  = cuif.memwr;
+
+   assign cuif.datomic = (op == LL || op == SC) ? 1:0;   
    
    always_comb begin : ALU_OP
       if (op == RTYPE) begin

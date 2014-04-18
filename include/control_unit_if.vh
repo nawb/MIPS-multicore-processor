@@ -36,13 +36,14 @@ interface control_unit_if;
    logic 	memwr, regwr;
    logic [1:0] 	memtoreg;   
    logic        icuREN, dcuWEN, dcuREN;
+   logic        datomic;
             
    // regular module ports
    modport cu
      (
       input instr, alu_flags, zeroflag,
       output halt, rs, rd, rt, imm16, regdst, extop, alu_op, shamt, alu_src, pc_src,
-      memwr, memtoreg, regwr, icuREN, dcuWEN, dcuREN,
+      memwr, memtoreg, regwr, icuREN, dcuWEN, dcuREN, datomic,
       regEN, flush
       );
    
