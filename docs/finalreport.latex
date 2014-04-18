@@ -3,7 +3,7 @@
 % For more information on LaTeX documents consult The (Not So
 % Short Introduction to LateX2e
 
-\documentclass{article}
+\documentclass[12pt]{article}
 \usepackage[pdftex]{graphicx,color}
 \def\baselinestretch{1.5} % line spaceing
 \title{ECE437L Preliminary Report \\ TA: Eric}
@@ -43,9 +43,14 @@
     \begin{figure}[hp]
     \begin{center}
       \includegraphics[width=\textwidth]{caches.pdf}
-    % You can change the type of figure to a .png, .pdf, .jpg, .mps
     \end{center}
-
+    \caption{Data Cache Diagram}
+  \end{figure}
+  
+   \begin{figure}[hp]
+    \begin{center}
+      \includegraphics[width=\textwidth]{cache_coherence_state_diagram.png}
+    \end{center}
     \caption{Data Cache Diagram}
   \end{figure}
   1KB 2-way set associative with each block containing 2 words as well as valid, dirty, and state bits.
@@ -75,28 +80,6 @@ Verification of dcache involved testing reading and writing. Data incurring cump
     \end{center}
     \caption{Multicore Block Diagram}
    \end{figure}
-
-\begin{quote}
-\textit{In this section you should discuss your methodology for testing and verifying
-your designs. Discuss the design choices you made with each design and the
-verifcation process you used on your design's components and the overall
-design itself. Discuss the test cases, corner cases, and expected use cases
-that you verified, and how you came up with these tests (assembly and test
-benches).}
-
-\textit{Be sure to discuss the implementation and verification of the coherence
-controller addition to the memory controller, and the additions to the caches
-to implement the MSI protocol.}
-
-\textit{If you tell what we already know (that you made a cache hierarchy, and
-we implemented a coherence protocol), you get zero points for this section.
-Also, just telling us that you used the tools we gave you to debug and do
-the verification will net you zero points. We know you used tools, what we
-don't know is your thought process and the critical thinking skills you used
-to come up with ideas to design, implement, and verify your processors.}
-\end{quote}
-
-
 
 	\section{Processor Debug}
 
