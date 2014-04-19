@@ -32,21 +32,20 @@ module dcache (
    } cache_block;
 
    //internal signal
-   logic 	   dhit_t;   
+   logic 	   dhit_t, snoophit;
    
    cache_block cache[7:0][1:0]; //2-way set associative
    cache_block cache_next[7:0][1:0];
    logic [DTAG_W-1:0] tag, snooptag;
    logic [DIDX_W-1:0] index, snoopindex;
    logic [DBLK_W-1:0] offset, snoopoffset;   //block offset
-   //logic 	      set; //block_select
    logic 	      wset, wset_next, rset, snoopset;
    
    int 		      hitcount; 
-   int				hitcount_next;
+   int	              hitcount_next;
    logic [3:0] 	      flush_block, flush_block_next;   
-   logic [2:0] 	      block;   
-   logic 	      way;   
+   logic [2:0] 	      block;
+   logic 	      way;
    cache_block flushing_block;  
    assign block = flush_block[2:0];   
    assign way = flush_block[3];   
@@ -65,7 +64,7 @@ module dcache (
    assign snoopaddr = dcachef_t'(ccif.ccsnoopaddr);
    assign snooptag = snoopaddr.tag;
    assign snoopindex = snoopaddr.idx;
-   assign snoopoffset = snoopaddr.blkoff;   
+   assign snoopoffset = snoopaddr.blkoff;
 
    /* choosing which set to load into in LRU:
     * index matches. so have to check tag to pick which set.
@@ -353,7 +352,13 @@ module dcache (
    assign dhit_t = (dcif.dmemREN || dcif.dmemWEN) && 
 		   (((cache[index][0].tag == tag) && cache[index][0].valid) ||
 		   ((cache[index][1].tag == tag) && cache[index][1].valid));
-  
+
+   assign snoophit = (((cache[snoopindex][0].tag == snooptag) && cache[snoopindex][0].valid) ||
+		      ((cache[snoopindex][1].tag == snooptag) && cache[snoopindex][1].valid));
+
+   assign ccif.cctrans[CPUID] = msif.cctrans;
+   assign ccif.ccwrite[CPUID] = msif.ccwrite;   
+   
    always_comb begin : DCIFFLUSHED
       casez(cstate)
 	FLUSHED: begin
