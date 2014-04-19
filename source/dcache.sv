@@ -36,11 +36,11 @@ module dcache (
    
    cache_block cache[7:0][1:0]; //2-way set associative
    cache_block cache_next[7:0][1:0];
-   logic [DTAG_W-1:0] tag;
-   logic [DIDX_W-1:0] index;
-   logic [DBLK_W-1:0] offset;   //block offset
+   logic [DTAG_W-1:0] tag, snooptag;
+   logic [DIDX_W-1:0] index, snoopindex;
+   logic [DBLK_W-1:0] offset, snoopoffset;   //block offset
    //logic 	      set; //block_select
-   logic 	      wset, wset_next, rset;
+   logic 	      wset, wset_next, rset, snoopset;
    
    int 		      hitcount; 
    int				hitcount_next;
@@ -61,6 +61,12 @@ module dcache (
    assign index = addr.idx;
    assign offset = addr.blkoff;
 
+   dcachef_t snoopaddr;
+   assign snoopaddr = dcachef_t'(ccif.ccsnoopaddr);
+   assign snooptag = snoopaddr.tag;
+   assign snoopindex = snoopaddr.idx;
+   assign snoopoffset = snoopaddr.blkoff;   
+
    /* choosing which set to load into in LRU:
     * index matches. so have to check tag to pick which set.
     * - if tag matches one of them (and it is valid), return that one.  [dhit_t]
@@ -74,7 +80,8 @@ module dcache (
 
    // Divided set into two set selects: rset, wset. rset is used in IDLE (when we're only reading from a set.) wset otherwise.
    
-   assign rset = ((cache[index][1].tag == tag) && cache[index][1].valid)? 1:0;   
+   assign rset = ((cache[index][1].tag == tag) && cache[index][1].valid)? 1:0;
+   assign snoopset = ((cache[snoopindex][1].tag == snooptag) && cache[snoopindex][1].valid)? 1:0;
    always_comb begin: WSET_LOGIC
       casez(cstate)
 	RESET: begin
