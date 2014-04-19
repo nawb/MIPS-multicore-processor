@@ -59,39 +59,30 @@ Verification of dcache involved testing reading and writing. Data incurring cump
   
   The bus controller state machine starts out in an idle state, which it remains in as long as there is no activity on the bus. Whenever one or both of the CPU cores initiates a bus transaction, the bus controller transitions to a state giving one of the cores control over the bus. The arbitration gives control to whoever comes first, and in the case of both cores requesting at the same time, core 0 wins. The next state sends out signals for a snoop operation, where the requesting core will inform the other core if it needs to invalidate a block or perform a cache to cache transfer. After snooping, if the other core is forced to do a writeback by the coherence operation, a new state is entered for the writeback. If the writeback isn't needed or after the writeback completes, a memory access state is entered which allows the cache to access memory for either a read or a write. Once that core indicates that it has completed its memory transaction, the bus controller then returns to idle.
 
+  \pagebreak
   \subsection{Diagrams}
 
   \begin{figure}[hp]
-    \begin{center}
       \includegraphics[width=\textwidth]{pipeline_datapath.pdf}
-    \end{center}
     \caption{Pipeline Diagram}
   \end{figure}
 
     \begin{figure}[hp]
-    \begin{center}
       \includegraphics[width=\textwidth]{caches.pdf}
-    \end{center}
     \caption{Data Cache Diagram}
   \end{figure}
   
    \begin{figure}[hp]
-    \begin{center}
       \includegraphics[width=\textwidth]{cache_coherence_state_diagram.png}
-    \end{center}
     \caption{Data Cache Diagram}
   \end{figure}
   
 
   \begin{figure}[hp]
-    \begin{center}
       \includegraphics[width=\textwidth]{multicore.png}
-    \end{center}
     \caption{Multicore Block Diagram}
    \end{figure}
-
-
-	\section{Processor Debug}
+   \pagebreak
 
   \section{Results}
 
