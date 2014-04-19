@@ -43,11 +43,11 @@ Description of states. Fetch, Writeback, Flush.
 
   Within the caches, each block holds an MSI state. It arbitrates with other caches by sending BusRd, BusRdX and BusCache signals onto the bus. 
 
-TESTING THE DCACHE:
-
 The MSI protocol was tested by running it through a parallel program (similar to dual.llsc) that would utilize the same address block. Only a single address was changed to keep it simple - the block in dcache was monitored for state transitions while one core would write and the other would read, and then vice versa. 
 
 Verification of dcache involved testing reading and writing. Data incurring cumpulsory misses (tests fetch states), conflict misses with no dirty block, conflict misses with dirty block, working on data with index match but different tag (tests set associativity), flushing.
+
+The common case of dcache use is one where a block is brought into cache and used in the near future. Situations that would degrade the performance would be one such as two cores constantly writing to and reading from a single address. Each cache would be constantly invalidating the other, thus saturating the bus and allowing few cache hits.
 
   
   \subsection{Multicore Design}
