@@ -82,7 +82,7 @@ write_buffer:
   ll $t1,0($s3)
   ori $s2,$0,1
   beq $t1,$0,write_buffer
-  sc $s3,0($s2)
+  sc $s2,0($s3)
   beq $s2,$0,write_buffer
   #ATOMIC SECTION
   lw $s0,write_pointer($0)
@@ -110,7 +110,7 @@ read_buffer:
   ll $t1,0($s3)
   ori $s2,$0,1
   beq $t1,$0,read_buffer
-  sc $s3,0($s2)
+  sc $s2,0($s3)
   beq $s2,$0,read_buffer
   #ATOMIC SECTION
   ori $t4,$0,36

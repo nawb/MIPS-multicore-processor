@@ -63,7 +63,7 @@ The common case of dcache use is one where a block is brought into cache and use
   \subsection{Diagrams}
 
   \begin{figure}[hp]
-      \includegraphics[width=\textwidth]{pipeline_datapath.pdf}
+      \includegraphics[width=\textwidth,angle=90]{pipeline_datapath.pdf}
     \caption{Pipeline Diagram}
   \end{figure}
 
