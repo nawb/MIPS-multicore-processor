@@ -22,7 +22,7 @@
   In the rest of the report, the design and verification process of both the caches and the cache coherence implementation will be discussed.
   \pagebreak
   
-  \section{Processor Design}
+  \section{Processor Design and Verification}
   
     \subsection{Pipeline Design}
   \textbf{5-stage}
@@ -31,28 +31,10 @@
 
 \textbf{Branch prediction} (static not-taken predictor, resolved in ex)
 
-  \begin{figure}[hp]
-    \begin{center}
-      \includegraphics[width=\textwidth]{pipeline_datapath.pdf}
-    \end{center}
-    \caption{Pipeline Diagram}
-  \end{figure}
+
 
   \subsection{Cache Design}
   
-    \begin{figure}[hp]
-    \begin{center}
-      \includegraphics[width=\textwidth]{caches.pdf}
-    \end{center}
-    \caption{Data Cache Diagram}
-  \end{figure}
-  
-   \begin{figure}[hp]
-    \begin{center}
-      \includegraphics[width=\textwidth]{cache_coherence_state_diagram.png}
-    \end{center}
-    \caption{Data Cache Diagram}
-  \end{figure}
   1KB 2-way set associative with each block containing 2 words as well as valid, dirty, and state bits.
 
 Implemented as a state machine since filling or flushing a multiple-word block requires multiple memory cycles (the memory can only supply one word at a time).
@@ -77,6 +59,30 @@ Verification of dcache involved testing reading and writing. Data incurring cump
   
   The bus controller state machine starts out in an idle state, which it remains in as long as there is no activity on the bus. Whenever one or both of the CPU cores initiates a bus transaction, the bus controller transitions to a state giving one of the cores control over the bus. The arbitration gives control to whoever comes first, and in the case of both cores requesting at the same time, core 0 wins. The next state sends out signals for a snoop operation, where the requesting core will inform the other core if it needs to invalidate a block or perform a cache to cache transfer. After snooping, if the other core is forced to do a writeback by the coherence operation, a new state is entered for the writeback. If the writeback isn't needed or after the writeback completes, a memory access state is entered which allows the cache to access memory for either a read or a write. Once that core indicates that it has completed its memory transaction, the bus controller then returns to idle.
 
+  \subsection{Diagrams}
+
+  \begin{figure}[hp]
+    \begin{center}
+      \includegraphics[width=\textwidth]{pipeline_datapath.pdf}
+    \end{center}
+    \caption{Pipeline Diagram}
+  \end{figure}
+
+    \begin{figure}[hp]
+    \begin{center}
+      \includegraphics[width=\textwidth]{caches.pdf}
+    \end{center}
+    \caption{Data Cache Diagram}
+  \end{figure}
+  
+   \begin{figure}[hp]
+    \begin{center}
+      \includegraphics[width=\textwidth]{cache_coherence_state_diagram.png}
+    \end{center}
+    \caption{Data Cache Diagram}
+  \end{figure}
+  
+
   \begin{figure}[hp]
     \begin{center}
       \includegraphics[width=\textwidth]{multicore.png}
@@ -85,7 +91,6 @@ Verification of dcache involved testing reading and writing. Data incurring cump
    \end{figure}
 
 
-=======
 	\section{Processor Debug}
 
   \section{Results}
