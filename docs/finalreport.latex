@@ -3,7 +3,7 @@
 % For more information on LaTeX documents consult The (Not So
 % Short Introduction to LateX2e
 
-\documentclass{article}
+\documentclass[12pt]{article}
 \usepackage[pdftex]{graphicx,color}
 \def\baselinestretch{1.5} % line spaceing
 \title{ECE437L Preliminary Report \\ TA: Eric}
@@ -52,7 +52,13 @@
 
 Implemented as a state machine since filling or flushing a multiple-word block requires multiple memory cycles (the memory can only supply one word at a time).
 
-Description of states.
+Description of states. Fetch, Writeback, Flush.
+
+  Within the caches, each block holds an MSI state. It arbitrates with other caches by sending BusRd, BusRdX and BusCache signals onto the bus. 
+
+TESTING THE DCACHE:
+
+The MSI protocol was tested by running it through a parallel program (similar to dual.llsc) that would utilize the same address block. Only a single address was changed to keep it simple - the block in dcache was monitored for state transitions while one core would write and the other would read, and then vice versa. 
 
 Verification of dcache involved testing reading and writing. Data incurring cumpulsory misses (tests fetch states), conflict misses with no dirty block, conflict misses with dirty block, working on data with index match but different tag (tests set associativity), flushing.
 
@@ -62,12 +68,9 @@ Verification of dcache involved testing reading and writing. Data incurring cump
 
   In the process of implementing multiple cores, hardware has been added to support write atomicity through \textbf{load-link/store-conditional} instructions. The address to work on is stored in a link register, which is a latch with two fields - a 32-bit address field and a 1-bit valid field. This allowed the implementation to be kept simple. The register may be written to or read from but its result would only hold value (i.e. denote a true atomic operation) when paired with a high valid bit.
   
-  One key change that needed to be made to implement multicore was to replace the memory controller with a bus controller, for a bus which connects to RAM and both CPUs. This bus controller arbitrates between the two CPU cores, facilitating memory access and transitions in the MSI state machine for cache coherence. The bus controller is implmented with its own state machine, different from but tightly interconnected with the MSI state machine. One of the important design decisions in a multicore CPU is how to implement this bus controller and its state machine.
+  One key change that needed to be made to implement multicore was to replace the memory controller with a bus controller, for a bus which connects to RAM and both CPUs. This bus controller arbitrates between the two CPU cores, facilitating memory access and transitions in the MSI state machine for cache coherence. The bus controller is implemented with its own state machine, different from but tightly interconnected with the MSI state machine. One of the important design decisions in a multicore CPU is how to implement this bus controller and its state machine.
   
   The bus controller state machine starts out in an idle state, which it remains in as long as there is no activity on the bus. Whenever one or both of the CPU cores initiates a bus transaction, the bus controller transitions to a state giving one of the cores control over the bus. The arbitration gives control to whoever comes first, and in the case of both cores requesting at the same time, core 0 wins. The next state sends out signals for a snoop operation, where the requesting core will inform the other core if it needs to invalidate a block or perform a cache to cache transfer. After snooping, if the other core is forced to do a writeback by the coherence operation, a new state is entered for the writeback. If the writeback isn't needed or after the writeback completes, a memory access state is entered which allows the cache to access memory for either a read or a write. Once that core indicates that it has completed its memory transaction, the bus controller then returns to idle.
-
-- what? MSI in dcache
-- how we tested? running it through a parallel program (similar to dual.llsc) that would utilize the same address block. Only a single address was changed to keep it simple - the block in dcache was monitored for state transitions while one core would write and the other would read, and then vice versa. 
 
   \begin{figure}[hp]
     \begin{center}
@@ -98,7 +101,7 @@ to come up with ideas to design, implement, and verify your processors.}
 
 
 
-	\section{Processor Debug}
+%	\section{Processor Debug}
 
   \section{Results}
 
