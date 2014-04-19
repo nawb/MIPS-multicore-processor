@@ -4,8 +4,9 @@ module msi (
 	       input logic CLK, nRST,
 	       msi_if.msi mif
 	       );
-
-msi_state cstate, nstate;
+   import msi_pkg::*;
+   
+   msi_state cstate, nstate;
 bus_command command, ncommand;
 
 //flip flop logic

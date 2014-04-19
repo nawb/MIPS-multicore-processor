@@ -7,6 +7,7 @@
 // interfaces
 `include "datapath_cache_if.vh"
 `include "cache_control_if.vh"
+`include "msi_if.vh"
 
 // cpu types
 `include "cpu_types_pkg.vh"
@@ -18,17 +19,21 @@ module dcache (
 	       );
    // import types
    import cpu_types_pkg::*;
+   import msi_pkg::*;   
    parameter CPUID = 0;
 
+   msi_if msif ();
+   msi    MSI(CLK, nRST, msif);
+   
    typedef enum
       {RESET, IDLE, WRITEBACK1, WRITEBACK2, FETCH1, FETCH1DONE, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSH1DONE, FLUSH2DONE, FLUSHED} states;
    states cstate, nstate;
    
-   typedef struct packed {
+   typedef struct packed {      
       logic [25:0] tag;
       word_t [1:0] data;
       logic 	   valid;
-      logic 	   dirty;
+      logic 	   dirty;      
    } cache_block;
 
    //internal signal
@@ -290,7 +295,8 @@ module dcache (
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};	   
 	   cache_next[index][wset].tag <= tag;
 	   cache_next[index][wset].data[0] <= ccif.dload[CPUID];
-	   //$display("dload: %h | %h", ccif.dload[CPUID], cache_next[index][wset].data[offset]);	   
+	   //$display("dload: %h | %h", ccif.dload[CPUID], cache_next[index][wset].data[offset]);
+	   msif.busRd <= 1;	   
 	end
 	/*FETCH1DONE: begin
 	   ccif.dREN[CPUID] <= 0;
@@ -305,6 +311,7 @@ module dcache (
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   cache_next[index][wset].data[1] <= ccif.dload[CPUID];
 	   //if (!dcif.dmemWEN) dcif.dhit <= ~ccif.dwait[CPUID];
+	   msif.busRd <= 1;			
 	end
 	FETCH2DONE: begin
 	   initial_values();
@@ -312,10 +319,13 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   dcif.dmemload <= cache_next[index][wset].data[offset]; //return the one asked for
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
-	   cache_next[index][wset].valid <= 1;	
+	   cache_next[index][wset].valid <= 1;
+	   msif.read <= 1;
 	   if (dcif.dmemWEN) begin
 	      cache_next[index][wset].data[offset] <= dcif.dmemstore;
 	      cache_next[index][wset].dirty <= 1;
+	      msif.read <= 0;
+	      msif.write <= 1;	      
 	   end
 	   dcif.dhit <= 1;
 	   used_next[index] <= rset;
@@ -356,8 +366,9 @@ module dcache (
    assign snoophit = (((cache[snoopindex][0].tag == snooptag) && cache[snoopindex][0].valid) ||
 		      ((cache[snoopindex][1].tag == snooptag) && cache[snoopindex][1].valid));
 
-   assign ccif.cctrans[CPUID] = msif.cctrans;
-   assign ccif.ccwrite[CPUID] = msif.ccwrite;   
+   assign ccif.cctrans[CPUID] = msif.command == BUSRD || msif.command == BUSRDX ? 1:0;//msif.cctrans[snoopindex][snoopset];
+   assign ccif.ccwrite[CPUID] = (msif.command == BUSRDX) ? 1:0;
+   //msif.ccwrite[snoopindex][snoopset];
    
    always_comb begin : DCIFFLUSHED
       casez(cstate)
@@ -378,6 +389,10 @@ module dcache (
       ccif.dREN[CPUID] <= 0;
       ccif.dWEN[CPUID] <= 0;
       used_next <= used;
+      msif.read <= 0;
+      msif.write <= 0;
+      msif.busRd <= 0;
+      msif.busRdX <= 0;      
    endtask
    
 endmodule
