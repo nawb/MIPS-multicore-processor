@@ -19,7 +19,7 @@ module memory_control
    parameter CPUS = 2;
    localparam CPUID = 0;
 
-   typedef enum {IDLE, SNOOP0, SNOOP1, WB0, WB1, MEM0, MEM1} state_t;
+   typedef enum {IDLE, SNOOP0, SNOOP1, WB0, WB1, MEM0, MEM0B, MEM1, MEM1B} state_t;
 
    state_t state, next_state;
 
@@ -80,13 +80,25 @@ module memory_control
 	    if(ccif.cctrans[0])
 	       next_state <= MEM0;
 	    else
-	       next_state <= IDLE;
+	       next_state <= MEM0B;
 	 end
+	MEM0B: begin
+	   if (ccif.cctrans[0])
+	     next_state <= MEM0B;
+	   else
+	     next_state <= IDLE;	   
+	end
+	MEM1B: begin
+	   if (ccif.cctrans[0])
+	     next_state <= MEM1B;
+	   else
+	     next_state <= IDLE;	   
+	end
 	 MEM1: begin
 	    if(ccif.cctrans[1])
 	       next_state <= MEM1;
 	    else
-	       next_state <= IDLE;
+	       next_state <= MEM1B;
 	 end
       endcase
    end
@@ -136,6 +148,7 @@ module memory_control
 	    ccif.ramstore <= ccif.dstore[0];
 	    ccif.ramaddr <= ccif.daddr[0];
 	    ccif.ccsnoopaddr[1] <= ccif.daddr[0];
+	    ccif.dload[0] <= ccif.dstore[1];
 	    if (ccif.ccwrite[0]) begin
 	       //core is writing
 	       ccif.iwait[0] <= 1'b1;
@@ -163,6 +176,7 @@ module memory_control
 	    ccif.ramstore <= ccif.dstore[1];
 	    ccif.ramaddr <= ccif.daddr[1];
 	    ccif.ccsnoopaddr[0] <= ccif.daddr[1];
+	    ccif.dload[1] <= ccif.dstore[0];
 	    if (ccif.ccwrite[1]) begin
 	       //core is writing
 	       ccif.iwait[1] <= 1'b1;
@@ -236,9 +250,64 @@ module memory_control
 	       ccif.ramWEN <= 1'b0;
 	       ccif.ramREN <= 1'b1;
 	    end
+	 end // case: MEM0
+	
+	 MEM0B: begin
+	    ccif.ramstore <= ccif.dstore[0];
+	    ccif.ramaddr <= ccif.daddr[0];
+	    if (ccif.ccwrite[0]) begin
+	       //core is writing
+	       ccif.iwait[0] <= 1'b1;
+	       ccif.dwait[0] <= (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	       ccif.iwait[1] <= 1'b1;
+	       ccif.dwait[1] <= 1'b1;
+	       ccif.ccwait[0] <= 1'b1;
+	       ccif.ccinv[0] <= 1'b1;
+	       ccif.ramWEN <= 1'b1;
+	       ccif.ramREN <= 1'b0;
+	    end else begin
+	       //core is reading
+	       ccif.iwait[0] <= 1'b1;
+	       ccif.dwait[0] <= (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	       ccif.iwait[1] <= 1'b1;
+	       ccif.dwait[1] <= 1'b1;
+	       ccif.ccwait[1] <= 1'b1;
+	       ccif.ccinv[1] <= 1'b0;
+	       ccif.ramWEN <= 1'b0;
+	       ccif.ramREN <= 1'b1;
+	    end
 	 end
 
 	 MEM1: begin
+	    ccif.ramstore <= ccif.dstore[1];
+	    ccif.ramaddr <= ccif.daddr[1];
+	    ccif.dload[0] <= ccif.ramload;
+	    ccif.iload[0] <= ccif.ramload;
+	    ccif.dload[1] <= ccif.ramload;
+	    ccif.iload[1] <= ccif.ramload;
+	    if (ccif.ccwrite[0]) begin
+	       //core is writing
+	       ccif.iwait[1] <= 1'b1;
+	       ccif.dwait[1] <= (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	       ccif.iwait[0] <= 1'b1;
+	       ccif.dwait[0] <= 1'b1;
+	       ccif.ccwait[0] <= 1'b1;
+	       ccif.ccinv[0] <= 1'b1;
+	       ccif.ramWEN <= 1'b1;
+	       ccif.ramREN <= 1'b0;
+	    end else begin
+	       //core is reading
+	       ccif.iwait[1] <= 1'b1;
+	       ccif.dwait[1] <= (ccif.ramstate == ACCESS) ? 1'b0 : 1'b1;
+	       ccif.iwait[0] <= 1'b1;
+	       ccif.dwait[0] <= 1'b1;
+	       ccif.ccwait[0] <= 1'b1;
+	       ccif.ccinv[0] <= 1'b0;
+	       ccif.ramWEN <= 1'b0;
+	       ccif.ramREN <= 1'b1;
+	    end
+	 end // case: MEM1
+	MEM1B: begin
 	    ccif.ramstore <= ccif.dstore[1];
 	    ccif.ramaddr <= ccif.daddr[1];
 	    ccif.dload[0] <= ccif.ramload;
