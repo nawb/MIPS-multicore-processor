@@ -144,7 +144,7 @@ module dcache (
 		 hitcount_next <= hitcount + 1;
 	 	 $display("hit %d", hitcount_next);
 	      end
-              else if (cache[index][rset].dirty) begin //miss and dirty
+              else if (cache[index][rset].dirty && cache[index][wset_next].dirty) begin //miss and dirty
 		 nstate <= WRITEBACK1; end
               else begin //miss but not dirty	      
 		 nstate <= FETCH1; end
@@ -266,7 +266,7 @@ module dcache (
 	   initial_values();
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 1;
-	   ccif.daddr[CPUID] <= {tag, index, 3'b000};
+	   ccif.daddr[CPUID] <= {cache_next[index][wset].tag, index, 3'b000};
 	   ccif.dstore[CPUID] <= cache_next[index][wset].data[0];//(~used[index])].data[0];
 	   cache_next[index][wset].dirty <= 0;
 	end
@@ -274,7 +274,7 @@ module dcache (
 	   initial_values();
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 1;
-	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
+	   ccif.daddr[CPUID] <= {cache_next[index][wset].tag, index, 3'b100};
 	   ccif.dstore[CPUID] <= cache_next[index][wset].data[1];//(!used[index])].data[1];
 	end
       	FETCH1: begin	   
