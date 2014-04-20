@@ -141,7 +141,8 @@ module datapath (
    assign hzif.jumping = (ppif.DE_out.pc_src == 2 || ppif.DE_out.pc_src == 3) ? 1 : 0;
    assign hzif.dREN = ppif.EM_out.dcuREN;
    assign hzif.dWEN = ppif.EM_out.dcuWEN;
-   assign hzif.loading = hzif.dREN && (fwif.curr_rt == fwif.mem_rt)? 1:0;
+   assign hzif.loading = hzif.dREN && 
+			 (fwif.curr_rt == fwif.mem_rt || fwif.curr_rs == fwif.mem_rt)? 1:0;
      //on LW, if reg we need is further in pipeline in MEM,
      //stall it until its loaded and then fwd it (from WB).
 

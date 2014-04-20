@@ -20,7 +20,7 @@ module hazard_unit ( hazard_unit_if.haz hzif );
    assign hzif.FDflush = ~hzif.halt & (hzif.branching | hzif.jumping);
 			 //(hzif.dhit | hzif.branching | hzif.jumping);
    assign hzif.DEflush = ~hzif.halt & (hzif.jumping | hzif.branching);
-   assign hzif.EMflush = hzif.loading;
+   assign hzif.EMflush = 1'b0; //hzif.loading;
    assign hzif.MWflush = 1'b0;
    
 endmodule
