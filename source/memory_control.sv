@@ -126,12 +126,16 @@ module memory_control
 	    ccif.ccwait[0] <= 1'b0;
 	    ccif.ccwait[1] <= 1'b1; //hold all other cores
 	    ccif.ccsnoopaddr[1] <= ccif.daddr[0]; //send to other core's snooptag
+	    ccif.ramaddr <= ccif.daddr[0]; //fire memory up early
+	    ccif.ramREN <= ccif.dREN[0];   //but dont HAVE to use it - only if you go to MEM
 	 end
 	 SNOOP1: begin
 	    default_values();
 	    ccif.ccwait[0] <= 1'b1; //hold all other cores
 	    ccif.ccwait[1] <= 1'b0;
 	    ccif.ccsnoopaddr[0] <= ccif.daddr[1]; //send to other core's snooptag
+	    ccif.ramaddr <= ccif.daddr[1];
+	    ccif.ramREN <= ccif.dREN[1];	    
 	 end
 
 	 CACHE0: begin
