@@ -151,7 +151,7 @@ module dcache (
 	   nstate <= IDLE;	   
 	end
 	IDLE: begin
-	   if (dcif.halt) begin
+	   if (~ccif.ccwait[CPUID] & dcif.halt) begin
 	      nstate <= FLUSH1;	      
 	   end
 	   else if (!ccif.ccwait[CPUID] && (dcif.dmemREN || dcif.dmemWEN)) begin
@@ -272,11 +272,18 @@ module dcache (
 		 cache_next[index][rset].dirty <= 1;
 		 used_next[index] <= rset;
 		 dcif.dhit <= 1;
-		 cache_next[index][wset].ccstate <= M;	
+		 cache_next[index][wset].ccstate <= M;
 		 ccif.cctrans[CPUID] <= 1;
 		 ccif.ccwrite[CPUID] <= 1;
 	      end
-	   end	   
+	   end	
+	   if (snoophit) begin
+	      //ccif.daddr[CPUID] <= ccif.ccsnoopaddr;
+	      ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset];
+	      cache_next[snoopindex][snoopset].ccstate <= S;
+	      ccif.ccwrite[CPUID] <= 1;
+	      ccif.cctrans[CPUID] <= 1;
+	   end
 	end
 	WRITEBACK1: begin
 	   initial_values();
@@ -301,7 +308,8 @@ module dcache (
 	   cache_next[index][wset].tag <= tag;
 	   cache_next[index][wset].data[0] <= ccif.dload[CPUID];
 	   //$display("dload: %h | %h", ccif.dload[CPUID], cache_next[index][wset].data[offset]);
-	   msif.busRd <= 1;
+	   //msif.busRd <= 1;
+//	   ccif.cctrans[CPUID] <= 1;
 	end
 	FETCH2: begin
 	   initial_values();
@@ -310,7 +318,8 @@ module dcache (
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   cache_next[index][wset].data[1] <= ccif.dload[CPUID];
 	   //if (!dcif.dmemWEN) dcif.dhit <= ~ccif.dwait[CPUID];
-	   msif.busRd <= 1;			
+	   //msif.busRd <= 1;	
+//	   ccif.cctrans[CPUID] <= 1; 		
 	end
 	FETCH2DONE: begin
 	   initial_values();
@@ -319,15 +328,15 @@ module dcache (
 	   dcif.dmemload <= cache_next[index][wset].data[offset]; //return the one asked for
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   cache_next[index][wset].valid <= 1;	   
-	   msif.read <= 1;
+	   //msif.read <= 1;
 	   cache_next[index][wset].ccstate <= S;
 	   ccif.cctrans[CPUID] <= 1;
 	   if (dcif.dmemWEN) begin
 	      cache_next[index][wset].data[offset] <= dcif.dmemstore;
 	      cache_next[index][wset].dirty <= 1;
 	      cache_next[index][wset].ccstate <= M;
-	      msif.read <= 0;
-	      msif.write <= 1;
+	      //msif.read <= 0;
+	      //msif.write <= 1;
 	   end
 	   dcif.dhit <= 1;
 	   used_next[index] <= rset;
@@ -347,6 +356,7 @@ module dcache (
 	end
 	FLUSHED: begin
 	   initial_values();
+	   ccif.cctrans[CPUID] <= 1;
 	end
 	default: begin
 	   initial_values();
