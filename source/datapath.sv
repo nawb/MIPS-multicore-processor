@@ -52,9 +52,9 @@ module datapath (
 
    //PIPELINE LATCHES
    pipelinereg #(70)  IF_ID  (CLK, nRST, hzif.FDen, hzif.FDflush, ppif.FD_in, ppif.FD_out);
-   pipelinereg #(200) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
-   pipelinereg #(124) EX_MEM (CLK, nRST, hzif.EMen, hzif.EMflush, ppif.EM_in, ppif.EM_out);
-   pipelinereg #(114) MEM_WB (CLK, nRST, hzif.MWen, hzif.MWflush, ppif.MW_in, ppif.MW_out);
+   pipelinereg #(201) ID_EX  (CLK, nRST, hzif.DEen, hzif.DEflush, ppif.DE_in, ppif.DE_out);
+   pipelinereg #(125) EX_MEM (CLK, nRST, hzif.EMen, hzif.EMflush, ppif.EM_in, ppif.EM_out);
+   pipelinereg #(115) MEM_WB (CLK, nRST, hzif.MWen, hzif.MWflush, ppif.MW_in, ppif.MW_out);
 
    ////////////////////////////////////////////////////
    // BLOCK CONNECTIONS
@@ -179,7 +179,9 @@ module datapath (
    assign dpif.imemREN = 1'b1;//ppif.EM_out.icuREN;
    assign dpif.dmemREN = ppif.EM_out.dcuREN;
    assign dpif.dmemWEN = ppif.EM_out.dcuWEN;
-   assign dpif.datomic = cuif.datomic;   
+   assign dpif.datomic = ppif.EM_out.datomic;
+   //(((ppif.EM_out.opcode == LL) && ppif.EM_out.datomic) || //LL in MEM, SC in WB
+			 // ((ppif.EM_out.opcode == SC) && ppif.EM_out.datomic));
    
    //keep halt latched high after program ends
    always_ff @ (posedge CLK, negedge nRST) begin
@@ -224,7 +226,7 @@ module datapath (
    assign ppif.DE_in.opcode = ppif.FD_out.opcode;
    assign ppif.DE_in.beq = (ppif.FD_out.instr[31:26] == BEQ) ? 2 :
 			   (ppif.FD_out.instr[31:26] == BNE) ? 1 : 0;
-
+   assign ppif.DE_in.datomic = cuif.datomic;
 
    //LATCH 3: EXECUTE/MEMORY===========================
    assign ppif.EM_in.pc_plus_4 = ppif.DE_out.pc_plus_4;
@@ -242,6 +244,7 @@ module datapath (
    assign ppif.EM_in.dcuREN = ppif.DE_out.dcuREN;
    assign ppif.EM_in.halt = ppif.DE_out.halt;
    assign ppif.EM_in.opcode = ppif.DE_out.opcode;
+   assign ppif.EM_in.datomic = ppif.DE_out.datomic;   
 
    //LATCH 4: MEMORY/WRITEBACK=========================
    assign ppif.MW_in.pc_plus_4 = ppif.EM_out.pc_plus_4;
@@ -264,5 +267,6 @@ module datapath (
    assign ppif.MW_in.icuREN = ppif.EM_out.icuREN;
    assign ppif.MW_in.halt = ppif.EM_out.halt;
    assign ppif.MW_in.opcode = ppif.EM_out.opcode;
+   assign ppif.MW_in.datomic = ppif.EM_out.datomic;   
 
 endmodule

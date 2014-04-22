@@ -41,7 +41,7 @@ module control_unit
    always_comb begin : REGDST
       casez (op)
 	RTYPE: cuif.regdst = 0;
-	LW, LUI, SLTI, SLTIU: cuif.regdst = 1;
+	LW, LUI, SLTI, SLTIU, SC: cuif.regdst = 1;
 	JAL: cuif.regdst = 2;
 	default: cuif.regdst = 1;
       endcase
@@ -78,21 +78,21 @@ module control_unit
    always_comb begin : MEMTOREG
       casez (op)
 	JAL: cuif.memtoreg = 2;
-	LW, LL:  cuif.memtoreg = 1; //DON'T ASSERT ON LUI...LUI is more like ORI
+	LW, LL, SC:  cuif.memtoreg = 1; //DON'T ASSERT ON LUI...LUI is more like ORI
 	default: cuif.memtoreg = 0;
       endcase
    end
 
-   assign cuif.regwr   = (op == RTYPE || op == LW || op == LL || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTIU) ?
+   assign cuif.regwr   = (op == RTYPE || op == LW || op == LL || op == SC || op == ORI || op == ANDI || op == XORI || op == LUI || op == JAL || op == ADDIU || op == SLTI || op == SLTIU) ?
 			 1 : 0;
 
-   assign cuif.icuREN  = ~(op == SW || op == LW || op == LL || op == SC) ? 1:0;
+   assign cuif.icuREN  = ~(op == SW || op == LW || op == LL || op == SC) ? 1:0;      
    always_comb begin : DCUREN
       casez (cuif.memtoreg)
-	1: cuif.dcuREN = 1;
+	1: cuif.dcuREN = ~(op==SC)?1:0; //so that REN and WEN are not high at the same time (special case for SC)
 	default: cuif.dcuREN = 0;
       endcase
-   end
+   end      
    assign cuif.dcuWEN  = cuif.memwr;
 
    assign cuif.datomic = (op == LL || op == SC) ? 1:0;   

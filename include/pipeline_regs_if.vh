@@ -34,7 +34,7 @@ package pipeline_regs_pkg;
       //MEM:
       regbits_t rd, rs, rt;
       logic [1:0] regdst;
-      logic memwr, dcuWEN, dcuREN;
+      logic memwr, dcuWEN, dcuREN, datomic;
       word_t pc_plus_4;
       //WB:
       logic [1:0] memtoreg, pc_src;
@@ -54,7 +54,7 @@ package pipeline_regs_pkg;
       //MEM:
       regbits_t rd, rt;
       logic [1:0] regdst;
-      logic memwr, dcuWEN, dcuREN;
+      logic memwr, dcuWEN, dcuREN, datomic;
       word_t pc_plus_4;
       //WB:
       logic [1:0] memtoreg, pc_src;
@@ -70,7 +70,7 @@ package pipeline_regs_pkg;
       //control signals:
       //WB:
       logic [1:0] memtoreg, pc_src;
-      logic dcuREN, icuREN;
+      logic dcuREN, icuREN, datomic;
       word_t pc_plus_4;
       logic halt;
       } MW_t;
