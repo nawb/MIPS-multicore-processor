@@ -34,7 +34,7 @@ module memory_control
 	 state <= next_state;
       end
    end
-
+   
    //next state logic
    always_comb begin : NEXT_STATE_LOGIC
       casez(state)
@@ -67,14 +67,14 @@ module memory_control
 	    end
 	 end
 	 CACHE0: begin
-	    if (!ccif.ccwrite[1]) begin //wait until other cache is done writing to memory and changes state from M->S
+	    if (!ccif.ccwrite[1] && (ccif.daddr[0] == ccif.daddr[1])) begin //wait until other cache is done writing to memory and changes state from M->S
 	       next_state <= CACHE0;
 	    end else begin
 	       next_state <= IDLE;
 	    end
 	 end
 	 CACHE1: begin
-	    if (!ccif.ccwrite[0]) begin //wait until other cache is done writing to memory and changes state from M->S
+	    if (!ccif.ccwrite[0] && (ccif.daddr[0] == ccif.daddr[1])) begin //wait until other cache is done writing to memory and changes state from M->S IF it is doing so for the address we are snooping for
 	       next_state <= CACHE1;
 	    end else begin
 	       next_state <= IDLE;
@@ -97,6 +97,7 @@ module memory_control
 
    //output logic
    always_comb begin : OUTPUT_LOGIC
+      default_values();      
       casez(state)
 	 IDLE: begin
 	    default_values();
@@ -124,16 +125,16 @@ module memory_control
 	    ccif.ccwait[0] <= 1'b0;
 	    ccif.ccwait[1] <= 1'b1; //hold all other cores
 	    ccif.ccsnoopaddr[1] <= ccif.daddr[0]; //send to other core's snooptag
-	    ccif.ramaddr <= ccif.daddr[0]; //fire memory up early
-	    ccif.ramREN <= ccif.dREN[0];   //but dont HAVE to use it - only if you go to MEM
+	    //ccif.ramaddr <= ccif.daddr[0]; //fire memory up early
+	    //ccif.ramREN <= ccif.dREN[0];   //but dont HAVE to use it - only if you go to MEM
 	 end
 	 SNOOP1: begin
 	    default_values();
 	    ccif.ccwait[0] <= 1'b1; //hold all other cores
 	    ccif.ccwait[1] <= 1'b0;
 	    ccif.ccsnoopaddr[0] <= ccif.daddr[1]; //send to other core's snooptag
-	    ccif.ramaddr <= ccif.daddr[1];
-	    ccif.ramREN <= ccif.dREN[1];	    
+	    //ccif.ramaddr <= ccif.daddr[1];
+	    //ccif.ramREN <= ccif.dREN[1];	    
 	 end
 
 	 CACHE0: begin
@@ -183,6 +184,7 @@ module memory_control
 	 end
       endcase
    end // always_comb
+
 
    task default_values;
       //initializes all the variables in OUTPUT_LOGIC so they don't create latches

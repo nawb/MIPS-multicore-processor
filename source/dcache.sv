@@ -110,6 +110,9 @@ module dcache (
       endcase
    end
 
+   word_t tempload;
+   assign tempload = ccif.dload[CPUID];
+   
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST) begin
 	 cstate <= RESET;
@@ -318,13 +321,16 @@ module dcache (
 		    ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset];
 		    cache_next[snoopindex][snoopset].ccstate <= S;
 		    ccif.cctrans[CPUID] <= 1;
+		    ccif.ccwrite[CPUID] <= 1;		    
 		 end
 		 else if (cache[snoopindex][snoopset].ccstate == S) begin
 		    ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset];
 		    ccif.cctrans[CPUID] <= 0;
+		    ccif.ccwrite[CPUID] <= 1;		    
 		 end
 	      end else begin    //BusRd
-		 
+		 ccif.cctrans[CPUID] <= 0;
+		 ccif.ccwrite[CPUID] <= 0;		 
 	      end
 	   end	   
 	end // case: IDLE
@@ -332,7 +338,7 @@ module dcache (
 	   initial_values();	   
 	   ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset]; //send only the word in block that other cache asked for
 	   ccif.ccwrite[CPUID] <= 1;
-	   cache_next[snoopindex][snoopset].ccstate <= S;	   
+	   cache_next[snoopindex][snoopset].ccstate <= S;
 	end
 	CCWRITEBACK1: begin
 	   initial_values();
@@ -372,18 +378,18 @@ module dcache (
 	end	
       	FETCH1: begin	   
 	   initial_values();
-	   cache_next[index][wset].data[0] <= ccif.dload[CPUID];
+	   cache_next[index][wset].data[0] <= tempload;
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};	   
 	   cache_next[index][wset].tag <= tag;
-	   //$display("dload: %h | %h", ccif.dload[CPUID], cache_next[index][wset].data[offset]);
+	   //$display("dload: %h | %h", tempload, cache_next[index][wset].data[offset]);
 	   //msif.busRd <= 1;
 //	   ccif.cctrans[CPUID] <= 1;
 	end
 	FETCH2: begin
 	   initial_values();
-	   cache_next[index][wset].data[1] <= ccif.dload[CPUID];
+	   cache_next[index][wset].data[1] <= tempload;
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
@@ -441,6 +447,7 @@ module dcache (
 	(cstate == WRITEBACK1) || (cstate == WRITEBACK2) || (cstate == WRITEBACK3)) && (dcif.dmemREN && !dcif.dhit);
     */
 
+   //if the tag matches either of the tags in the set
    assign dhit_t = (dcif.dmemREN || dcif.dmemWEN) && 
 		   (((cache[index][0].tag == tag) && cache[index][0].valid) ||
 		   ((cache[index][1].tag == tag) && cache[index][1].valid));
