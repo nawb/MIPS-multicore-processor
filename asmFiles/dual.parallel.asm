@@ -8,8 +8,7 @@
   org   0x0000              # first processor p0
   ori   $sp, $zero, 0x3ffc  # stack
   #put random seed in a0
-  lui $a0,0xDEAD
-  ori $a0,$0,0xBEEF
+  lw $a0,seed($0)
   #initialize loop counter
   ori $k0,$0,255
   loop0:
@@ -18,9 +17,9 @@
     #full if w+1=r
     #wait until non-full
     full_test:
-      lw $t0,read_pointer($0) #r
-      lw $t1,write_pointer($0) #w
-      addiu $t1,$t1,4
+      lw $t1,read_pointer($0) #r
+      lw $t0,write_pointer($0) #w
+      jal inc_mod_temp
       beq $t0,$t1,full_test
     jal write_buffer  #write to circular buffer
     addiu $k0, $k0, -1  #increment loop counter
@@ -45,26 +44,15 @@ unlock:
 # store v0 into the circular buffer
 write_buffer:
   push  $ra                 # save return address
-  #ori   $a0, $zero, l1      # move lock to arguement register
   jal   lock                # try to aquire the lock
   # critical code segment BEGIN
   
   lw $s0,write_pointer($0)
-  ori $t4,$0,40
-  addiu $s0,$s0,4
-  beq $s0,$t4,dec0
-  j wr0
-  dec0:
-  subu $s0,$s0,$t4
-  wr0:
-  #copy v0 to t5 and mask off upper 16 bits
-  xor $t5,$v0,$0
-  ori $t5,$t5,0xFFFF
+  jal inc_mod
   sw $v0,buffer($s0)
   sw $s0,write_pointer($0)
   
   # critical code segment END
-  ori   $a0, $zero, l5      # move lock to arguement register
   jal   unlock              # release the lock
   pop   $ra                 # get return address
   jr    $ra                 # return to caller
@@ -83,12 +71,14 @@ l5:
     #empty if r=w
     #wait if empty
     empty_test:
-      lw $t0,read_pointer($0) #r
+      lw $s0,read_pointer($0) #r
       lw $t1,write_pointer($0) #w
-      beq $t0,$t1,empty_test
+      beq $s0,$t1,empty_test
 
     jal read_buffer #read from circular buffer into v0
     add $a1,$0,$v0
+    sll $a1,$a1,16
+    srl $a1,$a1,16
     #compute running sum, min, max
     #m(a0,a1)->v0
     #min
@@ -98,44 +88,35 @@ l5:
     #max
     lw $a0,maxtmp($0)
     jal max
-    sw $a0,maxtmp($0)
+    sw $v0,maxtmp($0)
     #sum
-    lw $t0,sum($0)
-    add $t0,$t0,$a1
-    sw $t0,sum($0)
+    lw $t8,sum($0)
+    add $t8,$t8,$a1
+    sw $t8,sum($0)
     addiu $k0, $k0, -1  #increment loop counter
     bne $k0,$0,loop1
 
   #divide by 256 to get average
-  lw $t0,sum($0)
-  sll $t0,$t0,24
-  sw $t0,sum($0)
+  lw $t8,sum($0)
+  srl $t8,$t8,8
+  sw $t8,sum($0)
   halt
 
-# read from the cirular buffer
+# read from the circular buffer
 read_buffer:
   push  $ra                 # save return address
-  #ori   $a0, $zero, l1      # move lock to arguement register
   jal   lock                # try to aquire the lock
   # critical code segment BEGIN
 
-  ori $t4,$0,36
-  addiu $s0,$s0,-4
-  beq $s0,$t4,dec1
-  j rd1
-  dec1:
-  subu $s0,$s0,$t4
-  rd1:
+  lw $s0,read_pointer($0)
+  jal inc_mod
   lw $v0,buffer($s0)
-
+  sw $s0,read_pointer($0)
+  
   # critical code segment END
-  #ori   $a0, $zero, l5      # move lock to arguement register
   jal   unlock              # release the lock
   pop   $ra                 # get return address
   jr    $ra                 # return to caller
-
-res:
-  cfw 0x0                   # end result should be 3
 
 #----------------------------------------------
 # Course Provided Subroutines
@@ -206,13 +187,34 @@ minrtn:
   jr    $ra
 #--------------------------------------------------
 
+#$s0<-$s0+4 mod 40
+inc_mod:
+  addiu $s0,$s0,4
+  sltiu $t9,$s0,40
+  beq $t9,$0,increment
+  addiu $s0,$s0,-40
+  increment:
+  jr $ra
+  
+inc_mod_temp:
+  addiu $t0,$t0,4
+  sltiu $t9,$t0,40
+  beq $t9,$0,increment_temp
+  addiu $t0,$t0,-40
+  increment_temp:
+  jr $ra
+  
 org 0x0F00
 buffer:
 
 org 0x7000
 read_pointer: nop
 write_pointer: nop
-mintmp: nop
-maxtmp: nop
+mintmp:
+cfw 0x7FFFFFFF
+maxtmp:
+cfw 0x80000000
 sum: nop
 lock_pointer: nop
+seed:
+cfw 0xDEADBEEF
