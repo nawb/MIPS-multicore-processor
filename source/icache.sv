@@ -9,8 +9,8 @@
 
 module icache (
   input logic CLK, nRST,
-  datapath_cache_if.icache dcif,
-  cache_control_if.icache ccif
+  datapath_cache_if dcif,
+  cache_control_if ccif
 );
   // import types
   import cpu_types_pkg::*;

@@ -157,6 +157,7 @@ module dcache (
       nstate <= cstate;
       flush_block_next <= flush_block;
       hitcount_next <= hitcount;
+      
       casez (cstate)
 	RESET: begin
 	   nstate <= IDLE;	   
@@ -284,6 +285,8 @@ module dcache (
    
    always_comb begin : OUTPUT_LOGIC
       cache_next <= cache;
+      nextlinkreg <= linkreg;
+      nextlinkvalid <= linkvalid;
       casez(cstate)
 	RESET: begin
 	   initial_values();	   
@@ -291,7 +294,7 @@ module dcache (
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= '0;
-	   ccif.dstore[CPUID] <= '0;	 
+	   ccif.dstore[CPUID] <= '0;
 	   dcif.dmemload <= '0;
 	   dcif.dhit <= 0;	   
 	end
