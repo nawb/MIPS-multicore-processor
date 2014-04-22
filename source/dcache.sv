@@ -7,23 +7,23 @@
 // interfaces
 `include "datapath_cache_if.vh"
 `include "cache_control_if.vh"
-`include "msi_if.vh"
+//`include "msi_if.vh"
 
 // cpu types
 `include "cpu_types_pkg.vh"
 
 module dcache (
 	       input logic CLK, nRST,
-	       datapath_cache_if.dcache dcif,
-	       cache_control_if.dcache ccif
+	       datapath_cache_if dcif,
+	       cache_control_if ccif
 	       );
    // import types
    import cpu_types_pkg::*;
-   import msi_pkg::*;   
+  // import msi_pkg::*;   
    parameter CPUID = 0;
 
-   msi_if msif ();
-   msi    MSI(CLK, nRST, msif);
+  // msi_if msif ();
+  // msi    MSI(CLK, nRST, msif);
    
    typedef enum
       {RESET, IDLE, CCWRITEBACK0, CCWRITEBACK1, CCWRITEBACK2, WRITEBACK1, WRITEBACK2, FETCH1, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSH1DONE, FLUSH2DONE, FLUSHED} states;
@@ -159,7 +159,7 @@ module dcache (
 	      if (snoophit && cache[snoopindex][snoopset].ccstate == M) begin
 		 //Modified is getting invalidated
 		 //or other core wants something we have in Modified
-		 nstate <= CCWRITEBACK0;	   
+		 nstate <= CCWRITEBACK0;
 	      end else begin
 		 nstate <= IDLE;		    
 	      end
@@ -274,10 +274,11 @@ module dcache (
       //if(dcif.halt && (cstate != FLUSH1)) nstate = FLUSH1;
    end   
    
-   always_comb begin : OUTPUT_LOGIC      
+   always_comb begin : OUTPUT_LOGIC
       cache_next <= cache;
       casez(cstate)
 	RESET: begin
+	   initial_values();	   
 	   used_next <= '0;
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
@@ -473,20 +474,50 @@ module dcache (
    if ccif.ccinv & dpif.datomic,
 	linkreg -> 0
     */
+   word_t linkreg, nextlinkreg;
+   logic linkvalid, nextlinkvalid, sc_success;
+
+   always_ff @ (posedge CLK, negedge nRST) begin
+      if (!nRST) begin
+	 linkreg <= '0;
+	 linkvalid <= 0;	 
+      end
+      else begin
+	 linkreg <= nextlinkreg;
+	 linkvalid <= nextlinkvalid;
+      end
+   end
+   
+   always_comb begin
+      sc_success <= 0;      
+      if (ccif.datomic && ccif.dmemREN) begin : LOAD_LINK
+	 nextlinkreg <= dcif.dmemaddr;
+	 nextlinkvalid <= 1;
+      end else begin
+	 nextlinkreg <= '0;
+	 nextlinkvalid <= 0;
+      end
+      if (ccif.datomic && ccif.dmemWEN) begin : STORE_CONDITIONAL
+	 //check if linkreg holds correct address
+	 if (dcif.dmemaddr == linkreg && linkvalid) begin
+	    dcif.dmemload <= 1;
+	    nextlinkvalid <= 0;	    
+	 end else begin
+	    dcif.dmemload <= 0;
+	    nextlinkvalid <= 0;	    
+	 end
+      end
+   end
    
    task initial_values; 
       //initializes all the variables in OUTPUT_LOGIC so they don't create latches
       dcif.dhit <= 0;
       dcif.dmemload <= '0;      
       ccif.dstore[CPUID] <= cache[snoopindex][snoopset].data[snoopoffset];
-      ccif.daddr[CPUID] <= ccif.daddr[CPUID];
+      ccif.daddr[CPUID] <= '0;//ccif.daddr[CPUID];
       ccif.dREN[CPUID] <= 0;
       ccif.dWEN[CPUID] <= 0;
-      used_next <= used;
-      msif.read <= 0;
-      msif.write <= 0;
-      msif.busRd <= 0;
-      msif.busRdX <= 0;
+      used_next <= used;  
       ccif.cctrans[CPUID] <= 0;
       ccif.ccwrite[CPUID] <= 0;      
    endtask
