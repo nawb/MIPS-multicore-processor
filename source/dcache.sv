@@ -110,6 +110,10 @@ module dcache (
       endcase
    end
 
+   //LL/SC stuff:
+   word_t linkreg, nextlinkreg;
+   logic linkvalid, nextlinkvalid;
+   
    word_t tempload;
    assign tempload = ccif.dload[CPUID];
    
@@ -120,6 +124,8 @@ module dcache (
 	 hitcount <= 0;
 	 wset <= 0;
 	 used <= '0;
+	 linkreg <= '0;
+	 linkvalid <= 0;
 	 for (int i=0; i<8; i++) begin
 	    cache[i][0].valid <= 0;//{ >> {'0 }};
 	    cache[i][1].valid <= 0;//{ >> {'0 }};
@@ -141,7 +147,9 @@ module dcache (
 	 hitcount <= hitcount_next;
 	 cache <= cache_next;
 	 wset <= wset_next;
-	 used <= used_next;	 	 
+	 used <= used_next;	 
+	 linkreg <= nextlinkreg;
+	 linkvalid <= nextlinkvalid;
       end
    end
    
@@ -333,7 +341,28 @@ module dcache (
 		 ccif.cctrans[CPUID] <= 0;
 		 ccif.ccwrite[CPUID] <= 0;		 
 	      end
-	   end	   
+	   end // if (snoophit)
+
+	   //LL/SC IMPLEMENTATION:
+	   if (dcif.datomic && dcif.dmemREN) begin : LOAD_LINK
+	      nextlinkreg <= dcif.dmemaddr;
+	      nextlinkvalid <= 1;
+	   end else begin
+	      nextlinkreg <= '0;
+	      nextlinkvalid <= 0;
+	   end
+	   if (dcif.datomic && dcif.dmemWEN) begin : STORE_CONDITIONAL
+	      //check if linkreg holds correct address
+	      if (dcif.dmemaddr == linkreg && linkvalid) begin
+		 dcif.dmemload <= 1;
+		 nextlinkvalid <= 0;	    
+	      end else begin
+		 dcif.dmemload <= 0;
+		 nextlinkvalid <= 0;	    
+	      end
+	   end
+
+	   
 	end // case: IDLE
 	CCWRITEBACK0: begin
 	   initial_values();	   
@@ -469,45 +498,6 @@ module dcache (
 	  dcif.flushed <= 0;
       endcase
    end   
-
-   /*
-   if ccif.ccinv & dpif.datomic,
-	linkreg -> 0
-    */
-   word_t linkreg, nextlinkreg;
-   logic linkvalid, nextlinkvalid, sc_success;
-
-   always_ff @ (posedge CLK, negedge nRST) begin
-      if (!nRST) begin
-	 linkreg <= '0;
-	 linkvalid <= 0;	 
-      end
-      else begin
-	 linkreg <= nextlinkreg;
-	 linkvalid <= nextlinkvalid;
-      end
-   end
-   
-   always_comb begin
-      sc_success <= 0;      
-      if (ccif.datomic && ccif.dmemREN) begin : LOAD_LINK
-	 nextlinkreg <= dcif.dmemaddr;
-	 nextlinkvalid <= 1;
-      end else begin
-	 nextlinkreg <= '0;
-	 nextlinkvalid <= 0;
-      end
-      if (ccif.datomic && ccif.dmemWEN) begin : STORE_CONDITIONAL
-	 //check if linkreg holds correct address
-	 if (dcif.dmemaddr == linkreg && linkvalid) begin
-	    dcif.dmemload <= 1;
-	    nextlinkvalid <= 0;	    
-	 end else begin
-	    dcif.dmemload <= 0;
-	    nextlinkvalid <= 0;	    
-	 end
-      end
-   end
    
    task initial_values; 
       //initializes all the variables in OUTPUT_LOGIC so they don't create latches

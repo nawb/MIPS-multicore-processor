@@ -28,9 +28,9 @@ module caches (
   word_t instr;   
 
   // icache
-  icache #(CPUID)  ICACHE(CLK, nRST, dcif.icache, ccif.icache);
+  icache #(CPUID)  ICACHE(CLK, nRST, dcif, ccif);
   // dcache
-  dcache #(CPUID)  DCACHE(CLK, nRST, dcif.dcache, ccif.dcache);
+  dcache #(CPUID)  DCACHE(CLK, nRST, dcif, ccif);
 
    //assign dcif.flushed = dcif.halt;
    
