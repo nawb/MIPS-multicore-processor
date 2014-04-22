@@ -19,48 +19,48 @@ module dcache (
 	       );
    // import types
    import cpu_types_pkg::*;
-  // import msi_pkg::*;   
+   // import msi_pkg::*;   
    parameter CPUID = 0;
 
-  // msi_if msif ();
-  // msi    MSI(CLK, nRST, msif);
+   // msi_if msif ();
+   // msi    MSI(CLK, nRST, msif);
    
-   typedef enum
-      {RESET, IDLE, CCWRITEBACK0, CCWRITEBACK1, CCWRITEBACK2, WRITEBACK1, WRITEBACK2, FETCH1, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSH1DONE, FLUSH2DONE, FLUSHED} states;
+   typedef enum 	   
+			   {RESET, IDLE, CCWRITEBACK0, CCWRITEBACK1, CCWRITEBACK2, WRITEBACK1, WRITEBACK2, FETCH1, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSH1DONE, FLUSH2DONE, FLUSHED} states;
    states cstate, nstate;
 
-   typedef enum logic[1:0] {I,S,X,M} msistate;   
+   typedef enum 	   logic[1:0] {I,S,X,M} msistate;   
    
-   typedef struct packed {      
-      logic [25:0] tag;
+   typedef struct 	   packed {      
+      logic [25:0] 	   tag;
       word_t [1:0] data;
-      logic 	   valid;
-      logic 	   dirty;
+      logic 		   valid;
+      logic 		   dirty;
       msistate     ccstate;
    } cache_block;
    
    //internal signal
-   logic 	   dhit_t, snoophit;
+   logic 		   dhit_t, snoophit;
    
    cache_block cache[7:0][1:0]; //2-way set associative
    cache_block cache_next[7:0][1:0];
-   logic [DTAG_W-1:0] tag, snooptag;
-   logic [DIDX_W-1:0] index, snoopindex;
-   logic [DBLK_W-1:0] offset, snoopoffset;   //block offset
-   logic 	      wset, wset_next, rset, snoopset;
+   logic [DTAG_W-1:0] 	   tag, snooptag;
+   logic [DIDX_W-1:0] 	   index, snoopindex;
+   logic [DBLK_W-1:0] 	   offset, snoopoffset;   //block offset
+   logic 		   wset, wset_next, rset, snoopset;
    
-   int 		      hitcount; 
-   int	              hitcount_next;
-   logic [3:0] 	      flush_block, flush_block_next;   
-   logic [2:0] 	      block;
-   logic 	      way;
+   int 			   hitcount; 
+   int 			   hitcount_next;
+   logic [3:0] 		   flush_block, flush_block_next;   
+   logic [2:0] 		   block;
+   logic 		   way;
    cache_block flushing_block;  
    assign block = flush_block[2:0];   
    assign way = flush_block[3];   
    assign flushing_block = cache[block][way];
    
    //table storing recently used info
-   logic [7:0] 	      used, used_next;
+   logic [7:0] 		   used, used_next;
    
    dcachef_t addr;
    assign addr = dcachef_t'(dcif.dmemaddr);
@@ -211,27 +211,27 @@ module dcache (
 	end
 	WRITEBACK1: begin
            if (!ccif.dwait[CPUID]) begin
-             nstate <= WRITEBACK2; end
+              nstate <= WRITEBACK2; end
            else begin
-             nstate <= WRITEBACK1; end
+              nstate <= WRITEBACK1; end
 	end
 	WRITEBACK2: begin
            if (!ccif.dwait[CPUID]) begin
-             nstate <= FETCH1; end
+              nstate <= FETCH1; end
            else begin
-             nstate <= WRITEBACK2; end
+              nstate <= WRITEBACK2; end
 	end
 	FETCH1: begin
            if (!ccif.dwait[CPUID]) begin
-             nstate <= FETCH2; end
+              nstate <= FETCH2; end
            else begin
-             nstate <= FETCH1; end
+              nstate <= FETCH1; end
 	end
 	FETCH2: begin
            if (!ccif.dwait[CPUID]) begin
-             nstate <= FETCH2DONE; end
+              nstate <= FETCH2DONE; end
            else begin
-             nstate <= FETCH2; end
+              nstate <= FETCH2; end
 	end
 	FETCH2DONE: begin
 	   nstate <= IDLE;	   
@@ -240,10 +240,10 @@ module dcache (
 	   if (flushing_block.dirty) begin	      
 	      //writeback if dirty
 	      if (!ccif.dwait[CPUID]) begin
-			nstate <= FLUSH1DONE;
-		end else begin
-			nstate <= FLUSH1;
-		end
+		 nstate <= FLUSH1DONE;
+	      end else begin
+		 nstate <= FLUSH1;
+	      end
 	   end else begin
 	      //skip to next block if not
 	      if (flush_block == 4'hF) begin
@@ -254,7 +254,7 @@ module dcache (
 	   end
 	end
 	FLUSH1DONE: begin
-		nstate <= FLUSH2;
+	   nstate <= FLUSH2;
 	end
 	FLUSH2: begin
 	   if (!ccif.dwait[CPUID]) begin
@@ -268,7 +268,7 @@ module dcache (
 	   end
 	end
 	FLUSH2DONE: begin
-		nstate <= FLUSH1;
+	   nstate <= FLUSH1;
 	end
 	FLUSHED: begin
 	   nstate <= FLUSHED;
@@ -281,7 +281,8 @@ module dcache (
 
       endcase
       //if(dcif.halt && (cstate != FLUSH1)) nstate = FLUSH1;
-   end   
+   end // block: NEXT_STATE_LOGIC
+   word_t memstore_t;
    
    always_comb begin : OUTPUT_LOGIC
       cache_next <= cache;
@@ -296,7 +297,8 @@ module dcache (
 	   ccif.daddr[CPUID] <= '0;
 	   ccif.dstore[CPUID] <= '0;
 	   dcif.dmemload <= '0;
-	   dcif.dhit <= 0;	   
+	   dcif.dhit <= 0;
+	   memstore_t <= '0;	   
 	end
 	IDLE: begin
 	   initial_values();	   
@@ -304,6 +306,7 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= dcif.dmemaddr;
 	   dcif.dhit <= 0;
+	   
 	   if (dhit_t) begin
 	      if (dcif.dmemREN) begin
 		 dcif.dmemload <= cache[index][rset].data[offset];
@@ -311,11 +314,17 @@ module dcache (
 		 used_next[index] <= rset;
 	      end
 	      else if (dcif.dmemWEN) begin
-		 cache_next[index][rset].data[offset] <= dcif.dmemstore;
+		 if (linkreg == dcif.dmemaddr) begin : LOCK_BROKEN
+		    nextlinkvalid <= 0;		 
+		 end
+		 if (!(dcif.datomic && !linkvalid)) begin //if lock HAD been broken, don't store
+		    cache_next[index][rset].data[offset] <= dcif.dmemstore; 
+		 end
+		 
 		 cache_next[index][rset].dirty <= 1;
 		 used_next[index] <= rset;
 		 dcif.dhit <= 1;
-		 cache_next[index][wset].ccstate <= M;
+		 cache_next[index][rset].ccstate <= M;
 		 if (cache[index][wset].ccstate == S) begin
 		    //if previous state was S, issue a BusRdX
 		    ccif.cctrans[CPUID] <= 1;
@@ -347,26 +356,23 @@ module dcache (
 	   end // if (snoophit)
 
 	   //LL/SC IMPLEMENTATION:
-	   if (dcif.datomic && dcif.dmemREN) begin : LOAD_LINK
-	      nextlinkreg <= dcif.dmemaddr;
-	      nextlinkvalid <= 1;
-	   end else begin
-	      nextlinkreg <= '0;
-	      nextlinkvalid <= 0;
-	   end
 	   if (dcif.datomic && dcif.dmemWEN) begin : STORE_CONDITIONAL
 	      //check if linkreg holds correct address
-	      if (dcif.dmemaddr == linkreg && linkvalid) begin
+	      if ((dcif.dmemaddr == linkreg) && linkvalid) begin : SC_SUCCESS		 
 		 dcif.dmemload <= 1;
+		 nextlinkreg <= linkreg|1'b1;
 		 nextlinkvalid <= 0;	    
-	      end else begin
+	      end else begin : SC_FAIL		 
 		 dcif.dmemload <= 0;
-		 nextlinkvalid <= 0;	    
+		 nextlinkvalid <= 0;
 	      end
 	   end
-
+	   else if (dcif.datomic && dcif.dmemREN) begin : LOAD_LINK
+	      nextlinkreg <= dcif.dmemaddr;
+	      nextlinkvalid <= 1;
+	   end
 	   
-	end // case: IDLE
+	end // case: IDLE	
 	CCWRITEBACK0: begin
 	   initial_values();	   
 	   ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset]; //send only the word in block that other cache asked for
@@ -418,7 +424,7 @@ module dcache (
 	   cache_next[index][wset].tag <= tag;
 	   //$display("dload: %h | %h", tempload, cache_next[index][wset].data[offset]);
 	   //msif.busRd <= 1;
-//	   ccif.cctrans[CPUID] <= 1;
+	   //	   ccif.cctrans[CPUID] <= 1;
 	end
 	FETCH2: begin
 	   initial_values();
@@ -428,7 +434,7 @@ module dcache (
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
 	   //if (!dcif.dmemWEN) dcif.dhit <= ~ccif.dwait[CPUID];
 	   //msif.busRd <= 1;	
-//	   ccif.cctrans[CPUID] <= 1; 		
+	   //	   ccif.cctrans[CPUID] <= 1; 		
 	end
 	FETCH2DONE: begin
 	   initial_values();
@@ -475,15 +481,15 @@ module dcache (
       endcase
    end // block: OUTPUT_LOGIC
 
-/*
-   assign ccif.dWEN[CPUID] = ( ((cstate == FLUSH2) && flushing_block.dirty) || ((cstate == FLUSH1) && flushing_block.dirty) ||
-	(cstate == WRITEBACK1) || (cstate == WRITEBACK2) || (cstate == WRITEBACK3)) && (dcif.dmemREN && !dcif.dhit);
+   /*
+    assign ccif.dWEN[CPUID] = ( ((cstate == FLUSH2) && flushing_block.dirty) || ((cstate == FLUSH1) && flushing_block.dirty) ||
+    (cstate == WRITEBACK1) || (cstate == WRITEBACK2) || (cstate == WRITEBACK3)) && (dcif.dmemREN && !dcif.dhit);
     */
 
    //if the tag matches either of the tags in the set
    assign dhit_t = (dcif.dmemREN || dcif.dmemWEN) && 
 		   (((cache[index][0].tag == tag) && cache[index][0].valid) ||
-		   ((cache[index][1].tag == tag) && cache[index][1].valid));
+		    ((cache[index][1].tag == tag) && cache[index][1].valid));
 
    assign snoophit = (((cache[snoopindex][0].tag == snooptag) && cache[snoopindex][0].valid) ||
 		      ((cache[snoopindex][1].tag == snooptag) && cache[snoopindex][1].valid));

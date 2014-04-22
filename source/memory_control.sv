@@ -134,7 +134,7 @@ module memory_control
 	    ccif.ccwait[1] <= 1'b0;
 	    ccif.ccsnoopaddr[0] <= ccif.daddr[1]; //send to other core's snooptag
 	    //ccif.ramaddr <= ccif.daddr[1];
-	    //ccif.ramREN <= ccif.dREN[1];	    
+	    //ccif.ramREN <= ccif.dREN[1];
 	 end
 
 	 CACHE0: begin
@@ -185,7 +185,9 @@ module memory_control
       endcase
    end // always_comb
 
-
+   assign ccif.ccinv[0] = ccif.ccwrite[1];
+   assign ccif.ccinv[1] = ccif.ccwrite[0];
+      
    task default_values;
       //initializes all the variables in OUTPUT_LOGIC so they don't create latches
       ccif.ramREN <= 0;
