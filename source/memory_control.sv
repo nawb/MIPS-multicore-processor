@@ -184,7 +184,7 @@ module memory_control
 	    ccif.dload[0] <= ccif.ramload;
 	    ccif.ramstore <= ccif.dstore[0];
 	    ccif.dwait[0] <= (ccif.ramstate == ACCESS)? 0:1;
-	    ccif.ccwait[1] <= 1;  //can be 0 since not dealing with cache anymore
+	    ccif.ccwait[1] <= 0;  //can be 0 since not dealing with cache anymore
 	 end       
  	MEM1: begin
 	   default_values();
@@ -194,7 +194,7 @@ module memory_control
 	   ccif.dload[1] <= ccif.ramload;
 	   ccif.ramstore <= ccif.dstore[1];
 	   ccif.dwait[1] <= (ccif.ramstate == ACCESS)? 0:1;
-	   ccif.ccwait[0] <= 1; //0 since only dealing with memory now	  
+	   ccif.ccwait[0] <= 0; //0 since only dealing with memory now	  
  	end // case: MEM1
 	 default: begin
 	    default_values();

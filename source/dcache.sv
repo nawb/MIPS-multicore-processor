@@ -170,7 +170,7 @@ module dcache (
 		 nstate <= INVALIDATION;
 	      end else if (snoophit && cache[snoopindex][snoopset].ccstate == M) begin
 		 //other core wants something we have in Modified
-		 nstate <= CCWRITEBACK0;
+		 nstate <= CCWRITEBACK1;
 	      end else begin		 
 		 nstate <= IDLE;		    
 	      end
@@ -198,7 +198,7 @@ module dcache (
 	   nstate <= IDLE;	   
 	end
 	CCWRITEBACK0: begin
-	   nstate <= CCWRITEBACK1;	   
+	   nstate <= IDLE;	   
 	end
 	CCWRITEBACK1: begin //like WRITEBACK1 except doesnt go to fetch afterwards
 	   if (!ccif.dwait[CPUID]) begin
@@ -209,7 +209,7 @@ module dcache (
 	end
 	CCWRITEBACK2: begin
 	   if (!ccif.dwait[CPUID]) begin
-	      nstate <= IDLE;	      
+	      nstate <= CCWRITEBACK0;	      
 	   end else begin
 	      nstate <= CCWRITEBACK2;	      
 	   end
@@ -395,7 +395,7 @@ module dcache (
 	   ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset]; //send only the word in block that other cache asked for
 	   ccif.ccwrite[CPUID] <= 1;
 	   cache_next[snoopindex][snoopset].ccstate <= S;
-	   ccif.cctrans[CPUID] <= 0;
+	   ccif.cctrans[CPUID] <= 1;
 	end
 	CCWRITEBACK1: begin
 	   initial_values();
@@ -413,7 +413,6 @@ module dcache (
 	   ccif.daddr[CPUID] <= {cache_next[snoopindex][snoopset].tag, index, 3'b100};
 	   ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[1];//(!used[index])].data[1];
 	   ccif.ccwrite[CPUID] <= 0;
-	   ccif.cctrans[CPUID] <= 1;
 	end
 
 	WRITEBACK1: begin
