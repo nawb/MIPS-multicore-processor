@@ -39,9 +39,10 @@ module memory_control
    always_comb begin : NEXT_STATE_LOGIC
       casez(state)
 	 IDLE: begin
-	    if (ccif.dREN || ccif.dWEN) begin
-	       next_state <= ARBITRATE;	       
-	    end
+	    if (ccif.dREN[0] || ccif.dWEN[0] || ccif.dREN[1] || ccif.dWEN[1])
+	      next_state <= ARBITRATE;	       
+	    else
+	      next_state <= IDLE;	    
 	 end
 	ARBITRATE: begin
 	   if(ccif.dREN[0] || ccif.dWEN[0]) begin//ccif.cctrans[0]) begin
