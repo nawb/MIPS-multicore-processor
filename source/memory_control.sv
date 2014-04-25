@@ -19,7 +19,7 @@ module memory_control
    parameter CPUS = 2;
    localparam CPUID = 0;
 
-   typedef enum {IDLE, SNOOP0, SNOOP1, CACHE0, CACHE1, MEM0, MEM1} state_t;
+   typedef enum {IDLE, ARBITRATE, SNOOP0, SNOOP1, CACHE0, CACHE1, MEM0, MEM1} state_t;
    //MEM0: memory has ownership, will send to core 0
    //MEM1: memory has ownership, will send to core 1
    //CACHE0: cache 1 has ownership, will send to core 0
@@ -39,29 +39,33 @@ module memory_control
    always_comb begin : NEXT_STATE_LOGIC
       casez(state)
 	 IDLE: begin
-	    if(ccif.dREN[0] || ccif.dWEN[0]) begin//ccif.cctrans[0]) begin
-	       next_state <= SNOOP0;
-	    end else
-	    if(ccif.dREN[1] || ccif.dWEN[1]) begin//ccif.cctrans[1]) begin
-	       next_state <= SNOOP1;
-	    end else begin
-	       next_state <= IDLE;
+	    if (ccif.dREN || ccif.dWEN) begin
+	       next_state <= ARBITRATE;	       
 	    end
 	 end
+	ARBITRATE: begin
+	   if(ccif.dREN[0] || ccif.dWEN[0]) begin//ccif.cctrans[0]) begin
+	      next_state <= SNOOP0;
+	   end else if(ccif.dREN[1] || ccif.dWEN[1]) begin//ccif.cctrans[1]) begin
+	      next_state <= SNOOP1;
+	   end else begin
+	      next_state <= IDLE;
+	   end
+	end
 	 SNOOP0: begin
-	    if (ccif.ccwrite[1]) begin
+	    if (ccif.cctrans[1]) begin //stay in snoop until other cache does a WB or INV
+	       next_state <= SNOOP0;	       
+	    end else if (ccif.ccwrite[1]) begin //it has done a WB
 	       next_state <= CACHE0;
-	    //end else if (ccif.cctrans[1]) begin <-- why?
-	       //next_state <= IDLE;
-	    end else begin
+	    end else begin //it doesn't have it
 	       next_state <= MEM0;
 	    end
 	 end
 	 SNOOP1: begin
-	    if (ccif.ccwrite[0]) begin
+	    if (ccif.cctrans[0]) begin
+	       next_state <= SNOOP1;
+	    end else if (ccif.ccwrite[0]) begin
 	       next_state <= CACHE1;
-	    //end else if (ccif.cctrans[0]) begin
-	    //   next_state <= IDLE;
 	    end else begin
 	       next_state <= MEM1;
 	    end
@@ -119,14 +123,17 @@ module memory_control
 	       ccif.iwait[0] <= 1'b1;
 	       ccif.iwait[1] <= (ccif.ramstate == ACCESS)? 0:1;
 	    end // if (ccif.iREN[1])
-	 end
+	 end // case: IDLE
+	ARBITRATE: begin
+	   default_values();
+	   ccif.ccwait[0] <= 1'b1;
+	   ccif.ccwait[1] <= 1'b1;	   
+	end
 	 SNOOP0: begin
 	    default_values();
 	    ccif.ccwait[0] <= 1'b0;
 	    ccif.ccwait[1] <= 1'b1; //hold all other cores
 	    ccif.ccsnoopaddr[1] <= ccif.daddr[0]; //send to other core's snooptag
-	    //ccif.ramaddr <= ccif.daddr[0]; //fire memory up early
-	    //ccif.ramREN <= ccif.dREN[0];   //but dont HAVE to use it - only if you go to MEM
 	    ccif.ccinv[1] <= ccif.ccwrite[0] & ccif.dWEN[0];	    
 	 end
 	 SNOOP1: begin
@@ -134,11 +141,8 @@ module memory_control
 	    ccif.ccwait[0] <= 1'b1; //hold all other cores
 	    ccif.ccwait[1] <= 1'b0;
 	    ccif.ccsnoopaddr[0] <= ccif.daddr[1]; //send to other core's snooptag
-	    //ccif.ramaddr <= ccif.daddr[1];
-	    //ccif.ramREN <= ccif.dREN[1];
-	    ccif.ccinv[0] <= ccif.ccwrite[1] & ccif.dWEN[1];	    
+	   // ccif.ccinv[0] <= 1'b1;
 	 end
-
 	 CACHE0: begin
 	    default_values();
 	    ccif.ramWEN <= ccif.dWEN[1];	    
@@ -160,7 +164,6 @@ module memory_control
 	    //^^ for the core writing to memory, it has to wait to change state until ram is free
 	    ccif.ccwait[0] <= 1;
 	 end
-
 	 MEM0: begin
 	    default_values();
 	    ccif.ramREN <= ccif.dREN[0];
@@ -169,6 +172,7 @@ module memory_control
 	    ccif.dload[0] <= ccif.ramload;
 	    ccif.ramstore <= ccif.dstore[0];
 	    ccif.dwait[0] <= (ccif.ramstate == ACCESS)? 0:1;
+	    ccif.ccwait[1] <= 0;  //can be 0 since not dealing with cache anymore
 	 end       
  	MEM1: begin
 	   default_values();
@@ -178,10 +182,11 @@ module memory_control
 	   ccif.dload[1] <= ccif.ramload;
 	   ccif.ramstore <= ccif.dstore[1];
 	   ccif.dwait[1] <= (ccif.ramstate == ACCESS)? 0:1;
+	   ccif.ccwait[0] <= 0; //0 since only dealing with memory now	  
  	end // case: MEM1
 	 default: begin
 	    default_values();
-	    ccif.iload[0] <= '0;	    
+	    ccif.iload[0] <= '0;
 	    ccif.iload[1] <= '0;	    
 	 end
       endcase
@@ -204,7 +209,9 @@ module memory_control
       ccif.ccsnoopaddr[0] <= ccif.ccsnoopaddr[0];
       ccif.ccsnoopaddr[1] <= ccif.ccsnoopaddr[1];
       ccif.ccwait[0] <= 0;
-      ccif.ccwait[1] <= 0;      
+      ccif.ccwait[1] <= 0;
+      ccif.ccinv[0] <= 0;
+      ccif.ccinv[1] <= 0;      
    endtask // default_values
    
    

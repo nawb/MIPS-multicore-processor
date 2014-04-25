@@ -26,7 +26,7 @@ module dcache (
    // msi    MSI(CLK, nRST, msif);
    
    typedef enum 	   
-			   {RESET, IDLE, CCWRITEBACK0, CCWRITEBACK1, CCWRITEBACK2, WRITEBACK1, WRITEBACK2, FETCH1, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSH1DONE, FLUSH2DONE, FLUSHED} states;
+			   {RESET, IDLE, INVALIDATION, CCWRITEBACK0, CCWRITEBACK1, CCWRITEBACK2, WRITEBACK1, WRITEBACK2, FETCH1, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSH1DONE, FLUSH2DONE, FLUSHED, FLUSHEDALLDONE} states;
    states cstate, nstate;
 
    typedef enum 	   logic[1:0] {I,S,X,M} msistate;   
@@ -165,11 +165,13 @@ module dcache (
 	IDLE: begin
 	   //COHERENCE OPERATIONS:
 	   if (ccif.ccwait[CPUID]) begin
-	      if (snoophit && cache[snoopindex][snoopset].ccstate == M) begin
-		 //Modified is getting invalidated
-		 //or other core wants something we have in Modified
+	      if (snoophit && ccif.ccinv[CPUID]) begin
+		 //M or S is getting invalidated
+		 nstate <= INVALIDATION;
+	      end else if (snoophit && cache[snoopindex][snoopset].ccstate == M) begin
+		 //other core wants something we have in Modified
 		 nstate <= CCWRITEBACK0;
-	      end else begin
+	      end else begin		 
 		 nstate <= IDLE;		    
 	      end
 	   end
@@ -192,6 +194,9 @@ module dcache (
 	      nstate <= IDLE;    
 	   end
 	end // case: IDLE
+	INVALIDATION: begin
+	   nstate <= IDLE;	   
+	end
 	CCWRITEBACK0: begin
 	   nstate <= CCWRITEBACK1;	   
 	end
@@ -271,7 +276,10 @@ module dcache (
 	   nstate <= FLUSH1;
 	end
 	FLUSHED: begin
-	   nstate <= FLUSHED;
+	   nstate <= FLUSHEDALLDONE;
+	end
+	FLUSHEDALLDONE: begin
+	   nstate <= FLUSHEDALLDONE;	   
 	end
 	default: begin
 	   nstate <= IDLE;
@@ -283,6 +291,7 @@ module dcache (
       //if(dcif.halt && (cstate != FLUSH1)) nstate = FLUSH1;
    end // block: NEXT_STATE_LOGIC
    word_t memstore_t;
+   logic temp;
    
    always_comb begin : OUTPUT_LOGIC
       cache_next <= cache;
@@ -329,36 +338,14 @@ module dcache (
 		    //if previous state was S, issue a BusRdX
 		    ccif.cctrans[CPUID] <= 1;
 		    ccif.ccwrite[CPUID] <= 1;
-		 end else begin //else just invalidate other copies
-		    ccif.cctrans[CPUID] <= 0;		    
-		    ccif.ccwrite[CPUID] <= 1;   
 		 end
 	      end
-	   end	
-	   if (snoophit) begin
-	      if (ccif.ccinv[CPUID]) begin //BusRdX
-		 if (cache[snoopindex][snoopset].ccstate == M) begin
-		    //Modified is getting invalidated
-		    ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset];
-		    cache_next[snoopindex][snoopset].ccstate <= S;
-		    ccif.cctrans[CPUID] <= 1;
-		    ccif.ccwrite[CPUID] <= 1;		    
-		 end
-		 else if (cache[snoopindex][snoopset].ccstate == S) begin
-		    ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset];
-		    ccif.cctrans[CPUID] <= 0;
-		    ccif.ccwrite[CPUID] <= 1;		    
-		 end
-	      end else begin    //BusRd
-		 ccif.cctrans[CPUID] <= 0;
-		 ccif.ccwrite[CPUID] <= 0;		 
-	      end
-	   end // if (snoophit)
+	   end
 
 	   //LL/SC IMPLEMENTATION:
 	   if (dcif.datomic && dcif.dmemWEN) begin : STORE_CONDITIONAL
 	      //check if linkreg holds correct address
-	      if ((dcif.dmemaddr == linkreg) && linkvalid) begin : SC_SUCCESS		 
+	      if ((dcif.dmemaddr == linkreg) && linkvalid) begin : SC_SUCCESS
 		 dcif.dmemload <= 1;
 		 nextlinkreg <= linkreg|1'b1;
 		 nextlinkvalid <= 0;	    
@@ -371,13 +358,44 @@ module dcache (
 	      nextlinkreg <= dcif.dmemaddr;
 	      nextlinkvalid <= 1;
 	   end
-	   
-	end // case: IDLE	
+
+	   if (snoophit && ccif.ccinv[CPUID]) begin
+	      ccif.cctrans[CPUID] <= 1; //going to INVALIDATION state
+	   end
+	   if (snoophit && cache[snoopindex][snoopset].ccstate == M) begin
+	      ccif.cctrans[CPUID] <= 1;	//going to CCWRITEBACK0 state
+	      ccif.ccwrite[CPUID] <= 1;	      
+	   end
+	end // case: IDLE
+	INVALIDATION: begin
+	   initial_values();	   
+	   cache_next[snoopindex][snoopset].ccstate <= I;
+	   cache_next[snoopindex][snoopset].valid <= 0;
+	   ccif.cctrans[CPUID] <= 0; //done transitioning
+	   /*
+	   if (cache[snoopindex][snoopset].ccstate == M) begin
+	      //Modified is getting invalidated
+	      ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset];
+	      cache_next[snoopindex][snoopset].ccstate <= S;
+	      ccif.cctrans[CPUID] <= 1;
+	      ccif.dWEN[CPUID] <= 1;		    
+	      ccif.ccwrite[CPUID] <= 1;
+	   end
+	   else if (cache[snoopindex][snoopset].ccstate == S) begin
+	      ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset];
+	      ccif.cctrans[CPUID] <= 0;
+	      ccif.ccwrite[CPUID] <= 1;
+	   end else begin    //BusRd			       
+	      ccif.cctrans[CPUID] <= 0;
+	      ccif.ccwrite[CPUID] <= 0;
+	   end*/
+	end 	
 	CCWRITEBACK0: begin
 	   initial_values();	   
 	   ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[snoopoffset]; //send only the word in block that other cache asked for
 	   ccif.ccwrite[CPUID] <= 1;
 	   cache_next[snoopindex][snoopset].ccstate <= S;
+	   ccif.cctrans[CPUID] <= 0;
 	end
 	CCWRITEBACK1: begin
 	   initial_values();
@@ -386,7 +404,7 @@ module dcache (
 	   ccif.daddr[CPUID] <= {cache_next[snoopindex][snoopset].tag, index, 3'b000};
 	   ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[0];//(~used[index])].data[0];
 	   cache_next[snoopindex][snoopset].dirty <= 0;
-	   ccif.ccwrite[CPUID] <= 1;	   
+	   ccif.ccwrite[CPUID] <= 1;
 	end
 	CCWRITEBACK2: begin
 	   initial_values();
@@ -405,7 +423,7 @@ module dcache (
 	   ccif.daddr[CPUID] <= {cache_next[index][wset].tag, index, 3'b000};
 	   ccif.dstore[CPUID] <= cache_next[index][wset].data[0];//(~used[index])].data[0];
 	   cache_next[index][wset].dirty <= 0;
-	   ccif.ccwrite[CPUID] <= 1;	   
+	   ccif.ccwrite[CPUID] <= 1;
 	end
 	WRITEBACK2: begin
 	   initial_values();
@@ -422,19 +440,13 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};	   
 	   cache_next[index][wset].tag <= tag;
-	   //$display("dload: %h | %h", tempload, cache_next[index][wset].data[offset]);
-	   //msif.busRd <= 1;
-	   //	   ccif.cctrans[CPUID] <= 1;
 	end
 	FETCH2: begin
 	   initial_values();
 	   cache_next[index][wset].data[1] <= tempload;
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
-	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
-	   //if (!dcif.dmemWEN) dcif.dhit <= ~ccif.dwait[CPUID];
-	   //msif.busRd <= 1;	
-	   //	   ccif.cctrans[CPUID] <= 1; 		
+	   ccif.daddr[CPUID] <= {tag, index, 3'b100};	
 	end
 	FETCH2DONE: begin
 	   initial_values();
@@ -442,16 +454,13 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   dcif.dmemload <= cache_next[index][wset].data[offset]; //return the one asked for
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
-	   cache_next[index][wset].valid <= 1;	   
-	   //msif.read <= 1;
+	   cache_next[index][wset].valid <= 1;
 	   cache_next[index][wset].ccstate <= S;
 	   ccif.cctrans[CPUID] <= 1;
 	   if (dcif.dmemWEN) begin
 	      cache_next[index][wset].data[offset] <= dcif.dmemstore;
 	      cache_next[index][wset].dirty <= 1;
 	      cache_next[index][wset].ccstate <= M;
-	      //msif.read <= 0;
-	      //msif.write <= 1;
 	   end
 	   dcif.dhit <= 1;
 	   used_next[index] <= rset;
@@ -472,6 +481,10 @@ module dcache (
 	FLUSHED: begin
 	   initial_values();
 	   ccif.cctrans[CPUID] <= 1;
+	end
+	FLUSHEDALLDONE: begin
+	   initial_values();
+	   ccif.cctrans[CPUID] <= 0;	   
 	end
 	default: begin
 	   initial_values();
@@ -500,7 +513,7 @@ module dcache (
    
    always_comb begin : DCIFFLUSHED
       casez(cstate)
-	FLUSHED: begin
+	FLUSHED,FLUSHEDALLDONE: begin
 	   dcif.flushed <= 1;
 	end
 	default:
@@ -518,7 +531,8 @@ module dcache (
       ccif.dWEN[CPUID] <= 0;
       used_next <= used;  
       ccif.cctrans[CPUID] <= 0;
-      ccif.ccwrite[CPUID] <= 0;      
+      ccif.ccwrite[CPUID] <= 0;
+      temp <= 0;      
    endtask
    
 endmodule
