@@ -29,7 +29,7 @@ module dcache (
 			   {RESET, IDLE, INVALIDATION, CCWRITEBACK0, CCWRITEBACK1, CCWRITEBACK2, WRITEBACK1, WRITEBACK2, FETCH1, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSH1DONE, FLUSH2DONE, FLUSHED, FLUSHEDALLDONE} states;
    states cstate, nstate;
 
-   typedef enum 	   logic[1:0] {I,S,X,M} msistate;   
+   typedef enum 	   logic[1:0] {I,S,M} msistate;   
    
    typedef struct 	   packed {      
       logic [25:0] 	   tag;
@@ -334,8 +334,8 @@ module dcache (
 		 used_next[index] <= rset;
 		 dcif.dhit <= 1;
 		 cache_next[index][rset].ccstate <= M;
-		 if (cache[index][wset].ccstate == S) begin
-		    //if previous state was S, issue a BusRdX
+		 if (cache[index][wset].ccstate != M) begin
+		    //if previous state was S or I, issue a BusRdX to ccinv others
 		    ccif.cctrans[CPUID] <= 1;
 		    ccif.ccwrite[CPUID] <= 1;
 		 end
