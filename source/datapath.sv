@@ -196,7 +196,16 @@ module datapath (
    ///////////////////////////////////////////////////////
 
    //LATCH 1: INSTRUCTION FETCH/INSTRUCTION DECODE========
-   assign ppif.FD_in.instr = dpif.imemload;
+
+   //Letting imemload be just assign ppif.instr=dpif.imemload was problematic.
+   //On an icache miss, while icache would be loading new instr, dp would go and use
+   //the old instr sitting in its place in cache. Mess everything up.
+   always_comb begin : IMEMLOAD
+      if (pcif.pcEN)
+	ppif.FD_in.instr = dpif.imemload;
+      else
+	ppif.FD_in.instr = '0; //NOP
+   end
    assign ppif.FD_in.pc_plus_4 = pcif.imemaddr + 4;
    assign ppif.FD_in.opcode = opcode_t'(dpif.imemload[31:26]);
 

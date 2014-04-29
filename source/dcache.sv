@@ -290,8 +290,8 @@ module dcache (
       endcase
       //if(dcif.halt && (cstate != FLUSH1)) nstate = FLUSH1;
    end // block: NEXT_STATE_LOGIC
-   word_t memstore_t;
-   logic temp;
+   //word_t memstore_t;
+   //logic temp;
    
    always_comb begin : OUTPUT_LOGIC
       cache_next <= cache;
@@ -307,7 +307,7 @@ module dcache (
 	   ccif.dstore[CPUID] <= '0;
 	   dcif.dmemload <= '0;
 	   dcif.dhit <= 0;
-	   memstore_t <= '0;	   
+	   //memstore_t <= '0;	   
 	end
 	IDLE: begin
 	   initial_values();	   
@@ -531,7 +531,7 @@ module dcache (
       used_next <= used;  
       ccif.cctrans[CPUID] <= 0;
       ccif.ccwrite[CPUID] <= 0;
-      temp <= 0;      
+      //temp <= 0;      
    endtask
    
 endmodule
