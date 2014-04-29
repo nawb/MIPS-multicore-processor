@@ -401,7 +401,7 @@ module dcache (
 	   initial_values();
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 1;
-	   ccif.daddr[CPUID] <= {cache_next[snoopindex][snoopset].tag, index, 3'b000};
+	   ccif.daddr[CPUID] <= {cache_next[snoopindex][snoopset].tag, snoopindex, 3'b000};
 	   ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[0];//(~used[index])].data[0];
 	   cache_next[snoopindex][snoopset].dirty <= 0;
 	   ccif.ccwrite[CPUID] <= 1;
@@ -410,7 +410,7 @@ module dcache (
 	   initial_values();
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 1;
-	   ccif.daddr[CPUID] <= {cache_next[snoopindex][snoopset].tag, index, 3'b100};
+	   ccif.daddr[CPUID] <= {cache_next[snoopindex][snoopset].tag, snoopindex, 3'b100};
 	   ccif.dstore[CPUID] <= cache_next[snoopindex][snoopset].data[1];//(!used[index])].data[1];
 	   ccif.ccwrite[CPUID] <= 0;
 	end
