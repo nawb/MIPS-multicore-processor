@@ -90,14 +90,48 @@ The common case of dcache use is one where a block is brought into cache and use
 
     \begin{tabular}{|l|l|}
       \hline
-      Chip Area & ?? \\ \hline
-      Minimum Clock Cycle & ??ns \\ \hline
-      CPI without cache & ?? cycles \\ \hline
-      CPI with cache & ??cyles \\ \hline
-      \ldots & \ldots \\ \hline
+      Logic Elements Used & 3,542 \\ \hline
+      Minimum Clock Cycle & 24.3ns \\ \hline
+      CPI without cache & 1.4 cycles \\ \hline
     \end{tabular}
 
-    \caption{Synthesis Results}
+    \caption{Singlecycle Synthesis Results}
+  \end{table}
+  
+    \begin{table}[!hbp]
+
+    \begin{tabular}{|l|l|}
+      \hline
+      Logic Elements & 3,518 \\ \hline
+      Minimum Clock Cycle & 12.2ns \\ \hline
+      CPI & 1.9  cycles \\ \hline
+    \end{tabular}
+
+    \caption{Pipeline Synthesis Results}
+  \end{table}
+  
+    \begin{table}[!hbp]
+
+    \begin{tabular}{|l|l|}
+      \hline
+      Logic Elements & 9,662 \\ \hline
+      Minimum Clock Cycle & 17.0ns \\ \hline
+      CPI & 1.9 cycles \\ \hline
+    \end{tabular}
+
+    \caption{Pipeline with cache Synthesis Results}
+  \end{table}
+  
+      \begin{table}[!hbp]
+
+    \begin{tabular}{|l|l|}
+      \hline
+      Logic Elements & 23,310 \\ \hline
+      Minimum Clock Cycle & 25.2ns \\ \hline
+      CPI & 2.3 cycles \\ \hline
+    \end{tabular}
+
+    \caption{Multicore Synthesis Results}
   \end{table}
 
   Text for your results
