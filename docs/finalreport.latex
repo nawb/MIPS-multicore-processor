@@ -95,7 +95,9 @@ The common case of dcache use is one where a block is brought into cache and use
       Logic Elements Used & 3,542 & 3,518 \\ \hline
       Registers Used & 1252 & 1672 \\ \hline
       Minimum Clock Cycle & 24.3ns & 12.2ns \\ \hline
-      CPI without cache & 1.4 cycles & 1.9 cycles\\ \hline
+      CPI without cache (1 cycle RAM) & 1.4 cycles & 1.8 cycles\\ \hline
+      CPI with cache (5 cycle RAM) & ??? & 2.8 cycles \\ \hline
+      
     \end{tabular}
 
     \caption{Synthesis results comparison using fib.asm}
@@ -107,12 +109,20 @@ The common case of dcache use is one where a block is brought into cache and use
       \hline
 	& Pipeline with cache & Multicore \\ \hline
       Logic Elements & 9,662 & 23,310\\ \hline
-      Registers Used & ??? & 8221 \\ \hline
+      Registers Used & 4135 & 8221 \\ \hline
       Minimum Clock Cycle & 17.0ns & 25.2ns \\ \hline
-      CPI & 1.9 cycles & 2.3 cycles \\ \hline
     \end{tabular}
+      \end{table}
 
-    \caption{Pipeline with cache Synthesis Results}
+    
+  \begin{table}[!hbp]
+    \begin{tabular}{|l|l|l|}
+      \hline
+      Pipeline without cache & Pipeline with cache & Multicore \\ \hline
+      1 cycle RAM & 1.8 & 2.0 & 2.3 \\ \hline
+      5 cycle RAM & 3.0* & 2.8 & 3.1 \\ \hline
+    \end{tabular}
+    \caption{CPI Results}
   \end{table}
   
 
@@ -120,8 +130,12 @@ The common case of dcache use is one where a block is brought into cache and use
 
   In the multicore CPU, the critical path is from the RAM address to the memory/writeback latch in the CPU. This implies that the critical path is through the coherence controller and the data cache, which makes a lot of sense. First of all, the fact that it was slower than the single core pipeline with cache immediately points to the coherence controller and/or data caches being the critical path, because they are the only parts that changed in the multicore design, aside from some small additions to the datapath to add the LL and SC instructions. Also, the datapath of each CPU is pipelined to reduce its critical path but the coherence bus controller is a simple single cycle implentation. Obviously without pipelining we should expect it to have a fairly slow maximum clock.
   
+  The cache hierarchy influences the instruction throughput because it determines the average memory access time. Because the cache in this design is quite small and with low associativity, the hit rate, hit penalty, and miss penalty will all be low. 
+  
   %TODO 
+  %Multicore instruction latency. Throughput is easy but I have no idea how to figure out latency.
   %Discuss how the cache hierarchy influences instruction throughput.
+  %Run your parallel algorithm on the multi-core gate level net list with timing included for the following clock periods 100ns/50ns/20ns/10ns/2ns. Discuss any observations or failures you experience.
   \section{Conclusion}
 
   Text for your conclusion
