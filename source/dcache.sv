@@ -21,7 +21,7 @@ module dcache (
    parameter CPUID = 0;
 
    typedef enum
-      {RESET, IDLE, WRITEBACK1, WRITEBACK2, FETCH1, FETCH1DONE, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSH1DONE, FLUSH2DONE, FLUSHED} states;
+      {RESET, IDLE, WRITEBACK1, WRITEBACK2, FETCH1, FETCH1DONE, FETCH2, FETCH2DONE, FLUSH1, FLUSH2, FLUSH1DONE, FLUSH2DONE, FLUSHED, HITCOUNT} states;
    states cstate, nstate;
    
    typedef struct packed {
@@ -197,7 +197,7 @@ module dcache (
 	   end else begin
 	      //skip to next block if not
 	      if (flush_block == 4'hF) begin
-		 nstate <= FLUSHED;
+		 nstate <= HITCOUNT;
 	      end else begin
 		 flush_block_next <= flush_block + 1;
 	      end
@@ -209,7 +209,7 @@ module dcache (
 	FLUSH2: begin
 	   if (!ccif.dwait[CPUID]) begin
 	      if (flush_block == '1) begin
-		 nstate <= FLUSHED;
+		 nstate <= HITCOUNT;
 		 flush_block_next <= flush_block;
 	      end else begin
 		 nstate <= FLUSH2DONE;
@@ -222,6 +222,12 @@ module dcache (
 	end
 	FLUSHED: begin
 	   nstate <= FLUSHED;
+	end
+	HITCOUNT: begin
+	   if (!ccif.dwait[CPUID])
+	     nstate <= FLUSHED;
+	   else
+	     nstate <= HITCOUNT;	   
 	end
 	default: begin
 	   nstate <= IDLE;
@@ -333,6 +339,13 @@ module dcache (
 	end
 	FLUSHED: begin
 	   initial_values();
+	end
+	HITCOUNT: begin //write the hit count to mem
+	   initial_values();
+	   ccif.dREN[CPUID] <= 0;
+	   ccif.dWEN[CPUID] <= 1;
+	   ccif.daddr[CPUID] <= 32'h3100;
+	   ccif.dstore[CPUID] <= hitcount;
 	end
 	default: begin
 	   initial_values();
