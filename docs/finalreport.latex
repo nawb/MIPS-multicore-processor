@@ -18,7 +18,9 @@
 
   \section{Executive Summary}
   
-    We have designed several implementations of a MIPS CPU. First there was a singlecycle CPU, which executes one instruction per clock cycle. Then we implemented a 5 stage pipeline which overlaps several instructions to increase the clock rate. Then we added caches to reduce average memory access time. Then we implemented a coherence controller for a dual-core CPU. All of these designs have been successful.
+  We have designed several implementations of a MIPS CPU. First there was a singlecycle CPU, which executes one instruction per clock cycle. Then we implemented a 5 stage pipeline which overlaps several instructions to increase the clock rate. Then we added caches to reduce average memory access time. Then we implemented a coherence controller for a dual-core CPU. All of these designs have been successful.
+  
+  During the process of creating these processors, many insights into processor design were gained. One of the most imporant of these is the importance of modularity, which is tremendously helpful when incrementally adding new features to a design by enabling large amounts of code reuse. Another one was that making things into seperate Verilog modules is neccecary but not sufficient for useful modularity. If a module makes too many assumptions about the other pieces it will be connected to (such as the latency of memory), then it can become too specific to be easily reusable, largely defeating the point of the modularity. The other key importance of modularity besides code reuse is as an abstraction tool, helping to break a highly complex system into smaller, more managable pieces.
   
   In the rest of the report, the design and verification process of both the caches and the cache coherence implementation will be discussed. There will also be a listing and analysis of the performance of the different designs.
   \pagebreak
@@ -140,14 +142,16 @@ The common case of dcache use is one where a block is brought into cache and use
   %Discuss how the cache hierarchy influences instruction throughput.
   %Run your parallel algorithm on the multi-core gate level net list with timing included for the following clock periods 100ns/50ns/20ns/10ns/2ns. Discuss any observations or failures you experience.
   \section{Conclusion}
+  %the paragraph describing the conclusion and the grading rubric do not really match each other
   
   %summary
   
-  The singlecycle is working, pipeline works but not with vari
+  The single cycle processor worked. The pipelined implementation worked, but broke with increased memory latency. The changes needed to fix this have been made, but only implemented in the version with caches attached. The pipeline with caches is also working. The dual core processor with cache coherence also works. %assuming palgorithm gets fixed
+  
   %lessons learned
   
   %advantages and disadvantages of processors
 
-  The singlecycle has the advantage of a low CPI, but suffers from a low clockspeed as well. The pipeline increases the clock but drops CPI, gaining some performance but with dramatically higher power consumption. Caches bring both the CPI and clock down, while taking up substantially more area. The multicore adds the ability to run 2 programs simultaneously for potentially 2x performance, but loses a large fraction of that performance gain to a combination of lower clock speed and higher CPI and of course doubles area and power consumption.
+  The singlecycle has the advantage of a low CPI, but suffers from a low clockspeed as well. The pipeline increases the clock but drops CPI, gaining some performance but with dramatically higher power consumption. Caches bring both the CPI and clock down, while taking up substantially more area. The multicore adds the ability to run 2 programs simultaneously to potentially double the performance, but loses a large fraction of that performance gain to a combination of lower clock speed and higher CPI and of course doubles area and power consumption.
 
 \end{document}
