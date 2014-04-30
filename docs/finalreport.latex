@@ -5,6 +5,7 @@
 
 \documentclass[12pt]{article}
 \usepackage[pdftex]{graphicx,color}
+\usepackage{amsmath}
 \def\baselinestretch{1.5} % line spaceing
 \title{ECE437L Preliminary Report \\ TA: Eric}
 \author{Nabeel Zaim \and Steven Ellis} 
@@ -91,6 +92,7 @@ The common case of dcache use is one where a block is brought into cache and use
     \begin{tabular}{|l|l|}
       \hline
       Logic Elements Used & 3,542 \\ \hline
+      Registers Used & ??? \\ \hline
       Minimum Clock Cycle & 24.3ns \\ \hline
       CPI without cache & 1.4 cycles \\ \hline
     \end{tabular}
@@ -103,6 +105,7 @@ The common case of dcache use is one where a block is brought into cache and use
     \begin{tabular}{|l|l|}
       \hline
       Logic Elements & 3,518 \\ \hline
+      Registers Used & ??? \\ \hline
       Minimum Clock Cycle & 12.2ns \\ \hline
       CPI & 1.9  cycles \\ \hline
     \end{tabular}
@@ -115,6 +118,7 @@ The common case of dcache use is one where a block is brought into cache and use
     \begin{tabular}{|l|l|}
       \hline
       Logic Elements & 9,662 \\ \hline
+      Registers Used & ??? \\ \hline
       Minimum Clock Cycle & 17.0ns \\ \hline
       CPI & 1.9 cycles \\ \hline
     \end{tabular}
@@ -127,15 +131,19 @@ The common case of dcache use is one where a block is brought into cache and use
     \begin{tabular}{|l|l|}
       \hline
       Logic Elements & 23,310 \\ \hline
+      Registers Used & 8221 \\ \hline
       Minimum Clock Cycle & 25.2ns \\ \hline
       CPI & 2.3 cycles \\ \hline
+      Instruction Latency & ??? cycles \\ \hline
     \end{tabular}
 
     \caption{Multicore Synthesis Results}
   \end{table}
+  
 
-  Text for your results
+  For the CPI numbers, fib.asm was run on each of the CPUs. To find the number of instructions, it was run in the MIPS simulator which reports the instruction count when it finishes executing, which was 160 instructions. Then when simulating in hardware, the testbench prints out the number of clock cycles. Since the CPU was running off of a clock divider at half the system clock frequency, the number of CPU cycles taken was half of what the testbench reported. Then the CPI calculation was a direct application of the definition, number of cycles/number of instructions. The CPI got progressively worse in each implemtation. First the pipeline added stalls, then the cache added miss penalties, then the multicore added coherence operations, all of which increases the CPI. However, this was with RAM running at twice the CPU clock speed. In a real system, RAM will of course have a latency of many CPU clock cycles, and the cache would fare comparitively better in this configuration.
 
+  In the multicore CPU, the critical path is from the RAM address to the memory/writeback latch in the CPU. This implies that the critical path is through the coherence controller and the data cache, which makes a lot of sense. First of all, the fact that it was slower than the single core pipeline with cache immediately points to the coherence controller and/or data caches being the critical path, because they are the only parts that changed in the multicore design, aside from some small additions to the datapath to add the LL and SC instructions. Also, the datapath of each CPU is pipelined to reduce its critical path but the coherence bus controller is a simple single cycle implentation. Obviously without pipelining we should expect it to have a fairly slow maximum clock.
   \section{Conclusion}
 
   Text for your conclusion
