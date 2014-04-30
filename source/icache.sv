@@ -28,7 +28,10 @@ module icache (
 
   assign tag = dcif.imemaddr[31:6];
   assign index = dcif.imemaddr[5:2];
-
+   //To fix problem with ramload being unconstant...somehow verilog recognizes this differently
+   word_t tempload;      
+   assign tempload = ccif.iload[CPUID];  
+   
   always_ff @(posedge CLK, negedge nRST)
   begin
     if (!nRST) begin
@@ -36,7 +39,7 @@ module icache (
     end else if ((!dcif.ihit) && (!ccif.iwait[CPUID])) begin
 	    cache[index].tag = tag;
 	    cache[index].valid = 1;
-	    cache[index].data = ccif.iload[CPUID];
+	    cache[index].data = tempload;
     end
   end
 

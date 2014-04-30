@@ -96,6 +96,9 @@ module dcache (
       endcase
    end
 
+   word_t tempload;
+   assign tempload = ccif.dload[CPUID];   
+   
    always_ff @ (posedge CLK, negedge nRST) begin
       if (!nRST) begin
 	 cstate <= RESET;
@@ -109,7 +112,11 @@ module dcache (
 	    cache[i][0].tag <= '0;
 	    cache[i][1].tag <= '0;
 	    cache[i][0].dirty <= 0;
-	    cache[i][1].dirty <= 0;	    
+	    cache[i][1].dirty <= 0;
+	    cache[i][0].data[0] <= '0;
+	    cache[i][0].data[1] <= '0;
+	    cache[i][1].data[0] <= '0;
+	    cache[i][1].data[1] <= '0;	    
 	 end
       end
       else begin
@@ -230,6 +237,7 @@ module dcache (
       cache_next <= cache;
       casez(cstate)
 	RESET: begin
+	   initial_values();	   
 	   used_next <= '0;
 	   ccif.dREN[CPUID] <= 0;
 	   ccif.dWEN[CPUID] <= 0;
@@ -279,8 +287,8 @@ module dcache (
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b000};	   
 	   cache_next[index][wset].tag <= tag;
-	   cache_next[index][wset].data[0] <= ccif.dload[CPUID];
-	   //$display("dload: %h | %h", ccif.dload[CPUID], cache_next[index][wset].data[offset]);	   
+	   cache_next[index][wset].data[0] <= tempload;
+	   //$display("dload: %h | %h", tempload, cache_next[index][wset].data[offset]);	   
 	end
 	/*FETCH1DONE: begin
 	   ccif.dREN[CPUID] <= 0;
@@ -293,7 +301,7 @@ module dcache (
 	   ccif.dREN[CPUID] <= 1;
 	   ccif.dWEN[CPUID] <= 0;
 	   ccif.daddr[CPUID] <= {tag, index, 3'b100};
-	   cache_next[index][wset].data[1] <= ccif.dload[CPUID];
+	   cache_next[index][wset].data[1] <= tempload;
 	   //if (!dcif.dmemWEN) dcif.dhit <= ~ccif.dwait[CPUID];
 	end
 	FETCH2DONE: begin
@@ -358,7 +366,7 @@ module dcache (
       dcif.dhit <= 0;
       dcif.dmemload <= '0;      
       ccif.dstore[CPUID] <= '0;
-      ccif.daddr[CPUID] <= ccif.daddr[CPUID];
+      ccif.daddr[CPUID] <= '0;//ccif.daddr[CPUID];
       ccif.dREN[CPUID] <= 0;
       ccif.dWEN[CPUID] <= 0;
       used_next <= used;
