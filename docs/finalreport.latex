@@ -89,56 +89,58 @@ The common case of dcache use is one where a block is brought into cache and use
 
   \begin{table}[!hbp]
 
-    \begin{tabular}{|l|l|}
+    \begin{tabular}{|l|l|l|}
       \hline
-      Logic Elements Used & 3,542 \\ \hline
-      Registers Used & ??? \\ \hline
-      Minimum Clock Cycle & 24.3ns \\ \hline
-      CPI without cache & 1.4 cycles \\ \hline
+       & Singlecycle & Pipeline \\ \hline
+      Logic Elements Used & 3,542 & 3,518 \\ \hline
+      Registers Used & ??? & ??? \\ \hline
+      Minimum Clock Cycle & 24.3ns & 12.2ns \\ \hline
+      CPI without cache & 1.4 cycles & 1.9 cycles\\ \hline
     \end{tabular}
 
-    \caption{Singlecycle Synthesis Results}
+    \caption{Synthesis results comparison using fib.asm}
   \end{table}
+  
+%    \begin{table}[!hbp]
+
+%    \begin{tabular}{|l|l|}
+%      \hline
+%      Logic Elements & 3,518 \\ \hline
+%      Registers Used & ??? \\ \hline
+%      Minimum Clock Cycle & 12.2ns \\ \hline
+%      CPI & 1.9  cycles \\ \hline
+%    \end{tabular}
+%
+%    \caption{Pipeline Synthesis Results}
+%  \end{table}
   
     \begin{table}[!hbp]
 
-    \begin{tabular}{|l|l|}
+    \begin{tabular}{|l|l|l|}
       \hline
-      Logic Elements & 3,518 \\ \hline
-      Registers Used & ??? \\ \hline
-      Minimum Clock Cycle & 12.2ns \\ \hline
-      CPI & 1.9  cycles \\ \hline
-    \end{tabular}
-
-    \caption{Pipeline Synthesis Results}
-  \end{table}
-  
-    \begin{table}[!hbp]
-
-    \begin{tabular}{|l|l|}
-      \hline
-      Logic Elements & 9,662 \\ \hline
-      Registers Used & ??? \\ \hline
-      Minimum Clock Cycle & 17.0ns \\ \hline
-      CPI & 1.9 cycles \\ \hline
+	& Pipeline with cache & Multicore \\ \hline
+      Logic Elements & 9,662 & 23,310\\ \hline
+      Registers Used & ??? & ??? \\ \hline
+      Minimum Clock Cycle & 17.0ns & 25.2ns \\ \hline
+      CPI & 1.9 cycles & ??? cycles \\ \hline
     \end{tabular}
 
     \caption{Pipeline with cache Synthesis Results}
   \end{table}
   
-      \begin{table}[!hbp]
-
-    \begin{tabular}{|l|l|}
-      \hline
-      Logic Elements & 23,310 \\ \hline
-      Registers Used & 8221 \\ \hline
-      Minimum Clock Cycle & 25.2ns \\ \hline
-      CPI & 2.3 cycles \\ \hline
-      Instruction Latency & ??? cycles \\ \hline
-    \end{tabular}
-
-    \caption{Multicore Synthesis Results}
-  \end{table}
+%      \begin{table}[!hbp]
+%
+%    \begin{tabular}{|l|l|}
+%      \hline
+%      Logic Elements & 23,310 \\ \hline
+%      Registers Used & 8221 \\ \hline
+%      Minimum Clock Cycle & 25.2ns \\ \hline
+%      CPI & 2.3 cycles \\ \hline
+%      Instruction Latency & ??? cycles \\ \hline
+%    \end{tabular}
+%
+%    \caption{Multicore Synthesis Results}
+%  \end{table}
   
 
   For the CPI numbers, fib.asm was run on each of the CPUs. To find the number of instructions, it was run in the MIPS simulator which reports the instruction count when it finishes executing, which was 160 instructions. Then when simulating in hardware, the testbench prints out the number of clock cycles. Since the CPU was running off of a clock divider at half the system clock frequency, the number of CPU cycles taken was half of what the testbench reported. Then the CPI calculation was a direct application of the definition, number of cycles/number of instructions. The CPI got progressively worse in each implemtation. First the pipeline added stalls, then the cache added miss penalties, then the multicore added coherence operations, all of which increases the CPI. However, this was with RAM running at twice the CPU clock speed. In a real system, RAM will of course have a latency of many CPU clock cycles, and the cache would fare comparitively better in this configuration.
