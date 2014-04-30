@@ -141,6 +141,9 @@ The common case of dcache use is one where a block is brought into cache and use
   %Multicore instruction latency. Throughput is easy but I have no idea how to figure out latency.
   %Discuss how the cache hierarchy influences instruction throughput.
   %Run your parallel algorithm on the multi-core gate level net list with timing included for the following clock periods 100ns/50ns/20ns/10ns/2ns. Discuss any observations or failures you experience.
+  
+  
+  \pagebreak
   \section{Conclusion}
   %the paragraph describing the conclusion and the grading rubric do not really match each other
   
