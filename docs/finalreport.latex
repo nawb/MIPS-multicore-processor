@@ -27,13 +27,6 @@
   
   \section{Processor Design and Verification}
   
-    \subsection{Pipeline Design}
-  \textbf{5-stage}
-
-\textbf{Forwarding} (from mem to ex on rtype, from mem to ex on lw w/ stall, from wb to ex)
-
-\textbf{Branch prediction} (static not-taken predictor, resolved in ex)
-
   \subsection{Cache Design}
   
   1KB 2-way set associative with each block containing 2 words as well as valid, dirty, and state bits.
