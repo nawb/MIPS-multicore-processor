@@ -7,9 +7,9 @@
 \usepackage[pdftex]{graphicx,color}
 \usepackage{amsmath}
 \def\baselinestretch{1.5} % line spaceing
-\title{ECE437L Preliminary Report \\ TA: Eric}
+\title{ECE437L Final Report \\ TA: Eric Villasenor}
 \author{Nabeel Zaim \and Steven Ellis} 
-\date{April 18}
+\date{April 30, 2014}
 
 \begin{document}
   \maketitle
@@ -18,7 +18,7 @@
 
   \section{Executive Summary}
   
-  We have designed several implementations of a MIPS CPU. First there was a singlecycle CPU, which executes one instruction per clock cycle. Then we implemented a 5 stage pipeline which overlaps several instructions to increase the clock rate. Then we added caches to reduce average memory access time. Then we implemented a coherence controller for a dual-core CPU. All of these designs have been successful.
+  We have designed several implementations of a MIPS CPU. Initially, a single-cycle CPU was designed that executes (roughly) a single instruction each clock cycle. That was built into a 5-stage pipelined CPU which allows the overlapping of several instructions in order to increase the clock rate. Afterwards, caches were added to reduce the average memory access time. Finally, the design was converted into a dual-core CPU, implementing a bus coherence controller connecting the cores. All of these designs have been successful.
   
   During the process of creating these processors, many insights into processor design were gained. One of the most imporant of these is the importance of modularity, which is tremendously helpful when incrementally adding new features to a design by enabling large amounts of code reuse. Another one was that making things into seperate Verilog modules is neccecary but not sufficient for useful modularity. If a module makes too many assumptions about the other pieces it will be connected to (such as the latency of memory), then it can become too specific to be easily reusable, largely defeating the point of the modularity. The other key importance of modularity besides code reuse is as an abstraction tool, helping to break a highly complex system into smaller, more managable pieces.
   
