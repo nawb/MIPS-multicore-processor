@@ -18,9 +18,11 @@
 
   \section{Executive Summary}
   
-  We have designed several implementations of a MIPS CPU. First there was a singlecycle CPU, which executes one instruction per clock cycle. Then we implemented a 5 stage pipeline which overlaps several instructions to increase the clock rate. Then we added caches to reduce average memory access time. Then we implemented a coherence controller for a dual-core CPU.
+  We have designed several implementations of a MIPS CPU. First there was a singlecycle CPU, which executes one instruction per clock cycle. Then we implemented a 5 stage pipeline which overlaps several instructions to increase the clock rate. Then we added caches to reduce average memory access time. Then we implemented a coherence controller for a dual-core CPU. All of these designs have been successful.
   
-  In the rest of the report, the design and verification process of both the caches and the cache coherence implementation will be discussed.
+  During the process of creating these processors, many insights into processor design were gained. One of the most imporant of these is the importance of modularity, which is tremendously helpful when incrementally adding new features to a design by enabling large amounts of code reuse. Another one was that making things into seperate Verilog modules is neccecary but not sufficient for useful modularity. If a module makes too many assumptions about the other pieces it will be connected to (such as the latency of memory), then it can become too specific to be easily reusable, largely defeating the point of the modularity. The other key importance of modularity besides code reuse is as an abstraction tool, helping to break a highly complex system into smaller, more managable pieces.
+  
+  In the rest of the report, the design and verification process of both the caches and the cache coherence implementation will be discussed. There will also be a listing and analysis of the performance of the different designs.
   \pagebreak
   
   \section{Processor Design and Verification}
@@ -31,8 +33,6 @@
 \textbf{Forwarding} (from mem to ex on rtype, from mem to ex on lw w/ stall, from wb to ex)
 
 \textbf{Branch prediction} (static not-taken predictor, resolved in ex)
-
-
 
   \subsection{Cache Design}
   
@@ -86,68 +86,76 @@ The common case of dcache use is one where a block is brought into cache and use
    \pagebreak
 
   \section{Results}
-
-  \begin{table}[!hbp]
-
-    \begin{tabular}{|l|l|l|}
-      \hline
-       & Singlecycle & Pipeline \\ \hline
-      Logic Elements Used & 3,542 & 3,518 \\ \hline
-      Registers Used & ??? & ??? \\ \hline
-      Minimum Clock Cycle & 24.3ns & 12.2ns \\ \hline
-      CPI without cache & 1.4 cycles & 1.9 cycles\\ \hline
-    \end{tabular}
-
-    \caption{Synthesis results comparison using fib.asm}
-  \end{table}
-  
-%    \begin{table}[!hbp]
-
-%    \begin{tabular}{|l|l|}
-%      \hline
-%      Logic Elements & 3,518 \\ \hline
-%      Registers Used & ??? \\ \hline
-%      Minimum Clock Cycle & 12.2ns \\ \hline
-%      CPI & 1.9  cycles \\ \hline
-%    \end{tabular}
-%
-%    \caption{Pipeline Synthesis Results}
-%  \end{table}
   
     \begin{table}[!hbp]
 
     \begin{tabular}{|l|l|l|}
       \hline
-	& Pipeline with cache & Multicore \\ \hline
-      Logic Elements & 9,662 & 23,310\\ \hline
-      Registers Used & ??? & ??? \\ \hline
-      Minimum Clock Cycle & 17.0ns & 25.2ns \\ \hline
-      CPI & 1.9 cycles & ??? cycles \\ \hline
+       & Singlecycle & Pipeline \\ \hline
+      Logic Elements Used & 3,542 & 3,518 \\ \hline
+      Registers Used & 1252 & 1672 \\ \hline
+      Minimum Clock Cycle & 24.3ns & 12.2ns \\ \hline
+      CPI without cache (1 cycle RAM) & 1.4 cycles & 1.8 cycles\\ \hline      
     \end{tabular}
 
-    \caption{Pipeline with cache Synthesis Results}
+    \caption{Synthesis results comparison using fib.asm}
   \end{table}
   
-%      \begin{table}[!hbp]
-%
-%    \begin{tabular}{|l|l|}
-%      \hline
-%      Logic Elements & 23,310 \\ \hline
-%      Registers Used & 8221 \\ \hline
-%      Minimum Clock Cycle & 25.2ns \\ \hline
-%      CPI & 2.3 cycles \\ \hline
-%      Instruction Latency & ??? cycles \\ \hline
-%    \end{tabular}
-%
-%    \caption{Multicore Synthesis Results}
-%  \end{table}
-  
+      \begin{table}[!hbp]
 
-  For the CPI numbers, fib.asm was run on each of the CPUs. To find the number of instructions, it was run in the MIPS simulator which reports the instruction count when it finishes executing, which was 160 instructions. Then when simulating in hardware, the testbench prints out the number of clock cycles. Since the CPU was running off of a clock divider at half the system clock frequency, the number of CPU cycles taken was half of what the testbench reported. Then the CPI calculation was a direct application of the definition, number of cycles/number of instructions. The CPI got progressively worse in each implemtation. First the pipeline added stalls, then the cache added miss penalties, then the multicore added coherence operations, all of which increases the CPI. However, this was with RAM running at twice the CPU clock speed. In a real system, RAM will of course have a latency of many CPU clock cycles, and the cache would fare comparitively better in this configuration.
+    \begin{tabular}{|l|l|l|}
+      \hline
+      & Pipeline with cache & Multicore \\ \hline
+      Logic Elements & 9,662 & 23,310\\ \hline
+      Registers Used & 4135 & 8221 \\ \hline
+      Minimum Clock Cycle & 17.0ns & 25.2ns \\ \hline
+    \end{tabular}
+        \caption{Cached pipeline and multicore comparision}
+
+      \end{table}
+
+    
+  \begin{table}[!hbp]
+    \begin{tabular}{|l|l|l|l|}
+      \hline
+      & Pipeline without cache & Pipeline with cache & Multicore \\ \hline
+      1 cycle RAM & 1.8 & 2.0 & 2.3 \\ \hline
+      5 cycle RAM & 3.0* & 2.8 & 3.1 \\ \hline
+    \end{tabular}
+    \caption{CPI Results}
+  \end{table}
+
+  
+  * = estimated result for non-working design
+  
+  The logic elements and registers used indicate how much of the FPGA is being used, these were taken directly from the Quartus log files. As expected, these increased with each new design's increased complexity. In particular, caches resulted in a huge number of registers because each bit of cache is one. And ulticore approximately doubled each, as would be expected.
+  
+  Minimum clock period gives the total delay through the system's critical path, and was found as the inverse of the max frequency (1200mV 0C Model) given in the log files. The pipeline decreased the length of the critical path, which is expected becaue that is the entire point of pipelining. Caches made the critical path longer, and multicore longer than that.
+
+  For the CPI numbers, fib.asm was run on each of the CPUs. To find the number of instructions, it was run in the MIPS simulator which reports the instruction count when it finishes executing, which was 160 instructions. Then when simulating in hardware, the testbench prints out the number of clock cycles. Since the CPU was running off of a clock divider at half the system clock frequency, the number of CPU cycles taken was half of what the testbench reported. Then the CPI calculation was a direct application of the definition, number of cycles/number of instructions. For the singlecycle, each instruction took 1 cycle unless it was a LW/SW, which took 2. With 40 percent of dynamic instructions in fib.asm being LW/SW, the CPI would be expected to be 1.4 which it was. Then the CPI got progressively worse in each implemtation, with 1 cycle RAM latency. First the pipeline added stalls, then the cache added miss penalties, then the multicore added coherence operations, all of which increases the CPI. However, with a higher RAM latency the cache decreates average memory access time and achieves better CPI, but coherence still brings it back down somewhat.
 
   In the multicore CPU, the critical path is from the RAM address to the memory/writeback latch in the CPU. This implies that the critical path is through the coherence controller and the data cache, which makes a lot of sense. First of all, the fact that it was slower than the single core pipeline with cache immediately points to the coherence controller and/or data caches being the critical path, because they are the only parts that changed in the multicore design, aside from some small additions to the datapath to add the LL and SC instructions. Also, the datapath of each CPU is pipelined to reduce its critical path but the coherence bus controller is a simple single cycle implentation. Obviously without pipelining we should expect it to have a fairly slow maximum clock.
+  
+  The cache hierarchy influences the instruction throughput because it determines the average memory access time. Because the cache in this design is quite small and with low associativity, the hit rate, hit penalty, and miss penalty will all be low. 
+  
+  %TODO 
+  %Multicore instruction latency. Throughput is easy but I have no idea how to figure out latency.
+  %Discuss how the cache hierarchy influences instruction throughput.
+  %Run your parallel algorithm on the multi-core gate level net list with timing included for the following clock periods 100ns/50ns/20ns/10ns/2ns. Discuss any observations or failures you experience.
+  
+  
+  \pagebreak
   \section{Conclusion}
+  %the paragraph describing the conclusion and the grading rubric do not really match each other
+  
+  %summary
+  
+  The single cycle processor worked. The pipelined implementation worked, but broke with increased memory latency. The changes needed to fix this have been made, but only implemented in the version with caches attached. The pipeline with caches is also working. The dual core processor with cache coherence also works. %assuming palgorithm gets fixed
+  
+  %lessons learned
+  
+  %advantages and disadvantages of processors
 
-  Text for your conclusion
+  The singlecycle has the advantage of a low CPI, but suffers from a low clockspeed as well. The pipeline increases the clock but drops CPI, gaining some performance but with dramatically higher power consumption. Caches bring both the CPI and clock down, while taking up substantially more area. The multicore adds the ability to run 2 programs simultaneously to potentially double the performance, but loses a large fraction of that performance gain to a combination of lower clock speed and higher CPI and of course doubles area and power consumption.
 
 \end{document}
