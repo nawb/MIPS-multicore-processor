@@ -9,7 +9,7 @@
 \def\baselinestretch{1.5} % line spaceing
 \title{ECE437L Final Report \\ TA: Eric Villasenor}
 \author{Nabeel Zaim \and Steven Ellis} 
-\date{April 30, 2014}
+\date{May 2, 2014}
 
 \begin{document}
   \maketitle
@@ -20,7 +20,7 @@
   
   We have designed several implementations of a MIPS CPU. Initially, a single-cycle CPU was designed that executes (roughly) a single instruction each clock cycle. That was built into a 5-stage pipelined CPU which allows the overlapping of several instructions in order to increase the clock rate. Afterwards, caches were added to reduce the average memory access time. Finally, the design was converted into a dual-core CPU, implementing a bus coherence controller connecting the cores. All of these designs have been successful.
   
-  During the process of creating these processors, many insights into processor design were gained. One of the most imporant of these is the importance of modularity, which is tremendously helpful when incrementally adding new features to a design by enabling large amounts of code reuse. Another one was that making things into seperate Verilog modules is neccecary but not sufficient for useful modularity. If a module makes too many assumptions about the other pieces it will be connected to (such as the latency of memory), then it can become too specific to be easily reusable, largely defeating the point of the modularity. The other key importance of modularity besides code reuse is as an abstraction tool, helping to break a highly complex system into smaller, more managable pieces.
+  During the process of creating these processors, many insights into processor design were gained. One of the most imporant of these is the importance of modularity, which is tremendously helpful when incrementally adding new features to a design by enabling large amounts of code reuse, assisted fully by SystemVerilog's parameterization feature. This was incredibly helpful in creating multiple pipeline latches, all of which were internally identical but had different bus widths. Another one was that making things into seperate Verilog modules was necessary but not sufficient for useful modularity. If a module made too many assumptions about the other pieces it is connected to (such as the latency of memory), then it becomes too specific to be easily reusable, largely defeating the point of the modularity. The other key importance of modularity besides code reuse was as an abstraction tool, helping to break a highly complex system into smaller, more managable pieces.
   
   In the rest of the report, the design and verification process of both the caches and the cache coherence implementation will be discussed. There will also be a listing and analysis of the performance of the different designs.
   \pagebreak
@@ -136,6 +136,10 @@ The common case of dcache use is one where a block is brought into cache and use
   %Discuss how the cache hierarchy influences instruction throughput.
   %Run your parallel algorithm on the multi-core gate level net list with timing included for the following clock periods 100ns/50ns/20ns/10ns/2ns. Discuss any observations or failures you experience.
   
+\begin{verbatim}
+ori $1,$0,
+end
+\end{verbatim}
   
   \pagebreak
   \section{Conclusion}
@@ -143,7 +147,7 @@ The common case of dcache use is one where a block is brought into cache and use
   
   %summary
   
-  The single cycle processor worked. The pipelined implementation worked, but broke with increased memory latency. The changes needed to fix this have been made, but only implemented in the version with caches attached. The pipeline with caches is also working. The dual core processor with cache coherence also works. %assuming palgorithm gets fixed
+  The single cycle processor worked. The pipelined implementation worked, but broke with increased memory latency. The issues causing it to fail were remedied in the version with caches attached. The cached pipelined CPU worked for a reasonably wide range of memory latency (1 to 10 clock cycles). The dual core processor with cache coherence worked equally alike. %assuming palgorithm gets fixed
   
   %lessons learned
   
