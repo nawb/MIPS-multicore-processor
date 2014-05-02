@@ -1,0 +1,116 @@
+onerror {resume}
+quietly virtual function -install /system_tb/DUT/CPU/DP0/ppif -env /system_tb/PROG/#INITIAL#60 { &{/system_tb/DUT/CPU/DP0/ppif/DE_out.memwr, /system_tb/DUT/CPU/DP0/ppif/DE_out.dcuWEN, /system_tb/DUT/CPU/DP0/ppif/DE_out.dcuREN }} dc
+quietly virtual function -install /system_tb/DUT/CPU/CM0/DCACHE -env /system_tb/DUT/CPU/CM0/DCACHE { &{/system_tb/DUT/CPU/CM0/DCACHE/snooptag, /system_tb/DUT/CPU/CM0/DCACHE/snoopindex, /system_tb/DUT/CPU/CM0/DCACHE/snoopoffset, /system_tb/DUT/CPU/CM0/DCACHE/snoopset }} lesnoopaddr
+quietly WaveActivateNextPane {} 0
+add wave -noupdate -expand -group PC1 /system_tb/DUT/CPU/DP1/PC/pcif/imemaddr
+add wave -noupdate -expand -group PC1 /system_tb/DUT/CPU/DP1/PC/pcif/pc_src
+add wave -noupdate -expand -group PC1 /system_tb/DUT/CPU/DP1/PC/pcif/pcEN
+add wave -noupdate -expand -group PC0 /system_tb/DUT/CPU/DP0/PC/pcif/imemaddr
+add wave -noupdate -expand -group PC0 /system_tb/DUT/CPU/DP0/PC/pcif/pc_src
+add wave -noupdate -expand -group PC0 /system_tb/DUT/CPU/DP0/PC/pcif/pcEN
+add wave -noupdate -group ICACHE0 /system_tb/DUT/CPU/CM0/ICACHE/cache
+add wave -noupdate -group ICACHE0 /system_tb/DUT/CPU/CM0/ICACHE/tag
+add wave -noupdate -group ICACHE0 /system_tb/DUT/CPU/CM0/ICACHE/index
+add wave -noupdate -group ICACHE0 {/system_tb/DUT/CPU/CM1/ccif/iaddr[0]}
+add wave -noupdate -group ICACHE0 {/system_tb/DUT/CPU/CM1/ccif/iload[0]}
+add wave -noupdate -group ICACHE0 {/system_tb/DUT/CPU/CM1/ccif/iREN[0]}
+add wave -noupdate -group ICACHE0 {/system_tb/DUT/CPU/CM1/ccif/iwait[0]}
+add wave -noupdate -group ICACHE1 /system_tb/DUT/CPU/CM1/ICACHE/cache
+add wave -noupdate -group ICACHE1 /system_tb/DUT/CPU/CM1/ICACHE/tag
+add wave -noupdate -group ICACHE1 /system_tb/DUT/CPU/CM1/ICACHE/index
+add wave -noupdate -group ICACHE1 {/system_tb/DUT/CPU/CM1/ccif/iaddr[1]}
+add wave -noupdate -group ICACHE1 {/system_tb/DUT/CPU/CM1/ccif/iload[1]}
+add wave -noupdate -group ICACHE1 {/system_tb/DUT/CPU/CM1/ccif/iREN[1]}
+add wave -noupdate -group ICACHE1 {/system_tb/DUT/CPU/CM1/ccif/iwait[1]}
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/CM0/DCACHE/cache
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/CM0/DCACHE/cstate
+add wave -noupdate -expand -group DCACHE0 {/system_tb/DUT/CPU/CM1/ccif/dstore[0]}
+add wave -noupdate -expand -group DCACHE0 {/system_tb/DUT/CPU/CM1/ccif/dload[0]}
+add wave -noupdate -expand -group DCACHE0 {/system_tb/DUT/CPU/CM1/ccif/daddr[0]}
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/CM0/DCACHE/dhit_t
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/CM0/DCACHE/snoophit
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/CM0/DCACHE/tag
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/CM0/DCACHE/index
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/CM0/DCACHE/offset
+add wave -noupdate -expand -group DCACHE0 -expand -group {snoop address} /system_tb/DUT/CPU/CM0/DCACHE/snooptag
+add wave -noupdate -expand -group DCACHE0 -expand -group {snoop address} /system_tb/DUT/CPU/CM0/DCACHE/snoopindex
+add wave -noupdate -expand -group DCACHE0 -expand -group {snoop address} /system_tb/DUT/CPU/CM0/DCACHE/snoopoffset
+add wave -noupdate -expand -group DCACHE0 -expand -group {snoop address} /system_tb/DUT/CPU/CM0/DCACHE/snoopset
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/CM0/DCACHE/wset
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/CM0/DCACHE/rset
+add wave -noupdate -expand -group DCACHE0 {/system_tb/DUT/CPU/CM1/ccif/dwait[0]}
+add wave -noupdate -expand -group DCACHE0 {/system_tb/DUT/CPU/CM1/ccif/dREN[0]}
+add wave -noupdate -expand -group DCACHE0 {/system_tb/DUT/CPU/CM1/ccif/dWEN[0]}
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/DP0/dpif/datomic
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/DP0/dpif/dmemload
+add wave -noupdate -expand -group DCACHE0 /system_tb/DUT/CPU/DP0/dpif/dmemstore
+add wave -noupdate -expand -group DCACHE1 /system_tb/DUT/CPU/CM1/DCACHE/cache
+add wave -noupdate -expand -group DCACHE1 /system_tb/DUT/CPU/CM1/DCACHE/cstate
+add wave -noupdate -expand -group DCACHE1 {/system_tb/DUT/CPU/CM1/ccif/dstore[1]}
+add wave -noupdate -expand -group DCACHE1 {/system_tb/DUT/CPU/CM1/ccif/dload[1]}
+add wave -noupdate -expand -group DCACHE1 {/system_tb/DUT/CPU/CM1/ccif/daddr[1]}
+add wave -noupdate -expand -group DCACHE1 /system_tb/DUT/CPU/CM1/DCACHE/dhit_t
+add wave -noupdate -expand -group DCACHE1 /system_tb/DUT/CPU/CM1/DCACHE/tag
+add wave -noupdate -expand -group DCACHE1 /system_tb/DUT/CPU/CM1/DCACHE/index
+add wave -noupdate -expand -group DCACHE1 /system_tb/DUT/CPU/CM1/DCACHE/offset
+add wave -noupdate -expand -group DCACHE1 /system_tb/DUT/CPU/CM1/DCACHE/wset
+add wave -noupdate -expand -group DCACHE1 /system_tb/DUT/CPU/CM1/DCACHE/rset
+add wave -noupdate -expand -group DCACHE1 {/system_tb/DUT/CPU/CM1/ccif/dwait[1]}
+add wave -noupdate -expand -group DCACHE1 {/system_tb/DUT/CPU/CM1/ccif/dREN[1]}
+add wave -noupdate -expand -group DCACHE1 {/system_tb/DUT/CPU/CM1/ccif/dWEN[1]}
+add wave -noupdate -itemcolor {Midnight Blue} -label {rfile[0]} /system_tb/DUT/CPU/DP0/RF/rfile
+add wave -noupdate -itemcolor {Midnight Blue} -label {rfile[1]} /system_tb/DUT/CPU/DP1/RF/rfile
+add wave -noupdate -expand -group {MEMORY CONTROL} /system_tb/DUT/CPU/CC/state
+add wave -noupdate -expand -group {MEMORY CONTROL} /system_tb/DUT/CPU/CC/ccif/iwait
+add wave -noupdate -expand -group {MEMORY CONTROL} -expand /system_tb/DUT/CPU/CC/ccif/dwait
+add wave -noupdate -expand -group {MEMORY CONTROL} -expand /system_tb/DUT/CPU/CC/ccif/ccwait
+add wave -noupdate -expand -group {MEMORY CONTROL} /system_tb/DUT/CPU/CC/ccif/ccinv
+add wave -noupdate -expand -group {MEMORY CONTROL} /system_tb/DUT/CPU/CC/ccif/ccwrite
+add wave -noupdate -expand -group {MEMORY CONTROL} /system_tb/DUT/CPU/CC/ccif/cctrans
+add wave -noupdate -expand -group {MEMORY CONTROL} -expand /system_tb/DUT/CPU/CC/ccif/ccsnoopaddr
+add wave -noupdate -expand -group {MEMORY CONTROL} /system_tb/DUT/CPU/CC/ccif/ramaddr
+add wave -noupdate -expand -group {MEMORY CONTROL} /system_tb/DUT/CPU/CC/ccif/ramload
+add wave -noupdate -expand -group {MEMORY CONTROL} /system_tb/DUT/CPU/CC/ccif/ramstore
+add wave -noupdate /system_tb/DUT/RAM/rstate
+add wave -noupdate -label halt0 /system_tb/DUT/CPU/dcif0/halt
+add wave -noupdate -label halt1 /system_tb/DUT/CPU/dcif1/halt
+add wave -noupdate -itemcolor {Midnight Blue} -expand -subitemconfig {/system_tb/DUT/CPU/DP0/ppif/FD_out.opcode {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/FD_out.instr {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/FD_out.pc_plus_4 {-height 17 -itemcolor {Midnight Blue}}} /system_tb/DUT/CPU/DP0/ppif/FD_out
+add wave -noupdate -color Firebrick -itemcolor Firebrick -expand -subitemconfig {/system_tb/DUT/CPU/DP1/ppif/FD_out.opcode {-color Firebrick -height 17 -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/FD_out.instr {-color Firebrick -height 17 -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/FD_out.pc_plus_4 {-color Firebrick -height 17 -itemcolor Firebrick}} /system_tb/DUT/CPU/DP1/ppif/FD_out
+add wave -noupdate -itemcolor {Midnight Blue} /system_tb/DUT/CPU/DP0/ppif/DE_in
+add wave -noupdate -itemcolor {Midnight Blue} /system_tb/DUT/CPU/DP0/ppif/DE_out
+add wave -noupdate -color Firebrick -itemcolor Firebrick /system_tb/DUT/CPU/DP1/ppif/DE_in
+add wave -noupdate -color Firebrick -itemcolor Firebrick -childformat {{/system_tb/DUT/CPU/DP1/ppif/DE_out.rd -radix unsigned} {/system_tb/DUT/CPU/DP1/ppif/DE_out.rs -radix unsigned} {/system_tb/DUT/CPU/DP1/ppif/DE_out.rt -radix unsigned}} -subitemconfig {/system_tb/DUT/CPU/DP1/ppif/DE_out.opcode {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.rdat1 {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.rdat2 {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.imm16 {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.imm26 {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.alu_src {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.alu_op {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.shamt {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.rd {-color Firebrick -itemcolor Firebrick -radix unsigned} /system_tb/DUT/CPU/DP1/ppif/DE_out.rs {-color Firebrick -itemcolor Firebrick -radix unsigned} /system_tb/DUT/CPU/DP1/ppif/DE_out.rt {-color Firebrick -itemcolor Firebrick -radix unsigned} /system_tb/DUT/CPU/DP1/ppif/DE_out.regdst {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.memwr {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.dcuWEN {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.dcuREN {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.datomic {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.pc_plus_4 {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.memtoreg {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.pc_src {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.regwr {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.icuREN {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.halt {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/DE_out.beq {-color Firebrick -itemcolor Firebrick}} /system_tb/DUT/CPU/DP1/ppif/DE_out
+add wave -noupdate -itemcolor {Midnight Blue} /system_tb/DUT/CPU/DP0/ppif/EM_in
+add wave -noupdate -itemcolor {Midnight Blue} -expand -subitemconfig {/system_tb/DUT/CPU/DP0/ppif/EM_out.opcode {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.alu_res {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.dmemstore {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.rd {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.rt {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.regdst {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.memwr {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.dcuWEN {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.dcuREN {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.datomic {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.pc_plus_4 {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.memtoreg {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.pc_src {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.regwr {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.icuREN {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/EM_out.halt {-height 17 -itemcolor {Midnight Blue}}} /system_tb/DUT/CPU/DP0/ppif/EM_out
+add wave -noupdate /system_tb/DUT/CPU/CM0/dcif/datomic
+add wave -noupdate /system_tb/DUT/CPU/CM0/dcif/dmemREN
+add wave -noupdate /system_tb/DUT/CPU/CM0/dcif/dmemWEN
+add wave -noupdate /system_tb/DUT/CPU/CM0/dcif/dmemaddr
+add wave -noupdate /system_tb/DUT/CPU/CM0/DCACHE/linkreg
+add wave -noupdate /system_tb/DUT/CPU/CM0/DCACHE/linkvalid
+add wave -noupdate -color Firebrick -itemcolor Firebrick /system_tb/DUT/CPU/DP1/ppif/EM_in
+add wave -noupdate -color Firebrick -itemcolor Firebrick -childformat {{/system_tb/DUT/CPU/DP1/ppif/EM_out.rd -radix unsigned} {/system_tb/DUT/CPU/DP1/ppif/EM_out.rt -radix unsigned}} -subitemconfig {/system_tb/DUT/CPU/DP1/ppif/EM_out.opcode {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.alu_res {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.dmemstore {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.rd {-color Firebrick -itemcolor Firebrick -radix unsigned} /system_tb/DUT/CPU/DP1/ppif/EM_out.rt {-color Firebrick -itemcolor Firebrick -radix unsigned} /system_tb/DUT/CPU/DP1/ppif/EM_out.regdst {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.memwr {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.dcuWEN {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.dcuREN {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.datomic {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.pc_plus_4 {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.memtoreg {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.pc_src {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.regwr {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.icuREN {-color Firebrick -itemcolor Firebrick} /system_tb/DUT/CPU/DP1/ppif/EM_out.halt {-color Firebrick -itemcolor Firebrick}} /system_tb/DUT/CPU/DP1/ppif/EM_out
+add wave -noupdate -itemcolor {Midnight Blue} /system_tb/DUT/CPU/DP0/ppif/MW_in
+add wave -noupdate -itemcolor {Midnight Blue} -expand -subitemconfig {/system_tb/DUT/CPU/DP0/ppif/MW_out.opcode {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/MW_out.alu_res {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/MW_out.dmemload {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/MW_out.wsel {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/MW_out.memtoreg {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/MW_out.pc_src {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/MW_out.dcuREN {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/MW_out.icuREN {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/MW_out.datomic {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/MW_out.pc_plus_4 {-height 17 -itemcolor {Midnight Blue}} /system_tb/DUT/CPU/DP0/ppif/MW_out.halt {-height 17 -itemcolor {Midnight Blue}}} /system_tb/DUT/CPU/DP0/ppif/MW_out
+add wave -noupdate /system_tb/DUT/CPU/DP0/RF/rfile
+add wave -noupdate -color Firebrick -itemcolor Firebrick /system_tb/DUT/CPU/DP1/ppif/MW_in
+add wave -noupdate -color Firebrick -itemcolor Firebrick /system_tb/DUT/CPU/DP1/ppif/MW_out
+add wave -noupdate /system_tb/DUT/CPU/DP1/RF/rfile
+TreeUpdate [SetDefaultTree]
+WaveRestoreCursors {{Cursor 1} {1414599 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 150
+configure wave -valuecolwidth 100
+configure wave -justifyvalue left
+configure wave -signalnamewidth 1
+configure wave -snapdistance 10
+configure wave -datasetprefix 0
+configure wave -rowmargin 4
+configure wave -childrowmargin 2
+configure wave -gridoffset 0
+configure wave -gridperiod 1
+configure wave -griddelta 40
+configure wave -timeline 0
+configure wave -timelineunits ns
+update
+WaveRestoreZoom {510938 ps} {1867846 ps}

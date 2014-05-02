@@ -1,0 +1,89 @@
+onerror {resume}
+quietly WaveActivateNextPane {} 0
+add wave -noupdate /system_tb/DUT/CPU/DP/PC/pcif/imemaddr
+add wave -noupdate /system_tb/DUT/CPU/DP/ppif/FD_in.opcode
+add wave -noupdate -expand -group ICACHE /system_tb/DUT/CPU/CM/ICACHE/cache
+add wave -noupdate -expand -group ICACHE /system_tb/DUT/CPU/CM/ICACHE/tag
+add wave -noupdate -expand -group ICACHE /system_tb/DUT/CPU/CM/ICACHE/index
+add wave -noupdate -expand -group ICACHE {/system_tb/DUT/CPU/CM/ccif/iaddr[0]}
+add wave -noupdate -expand -group ICACHE {/system_tb/DUT/CPU/CM/ccif/iload[0]}
+add wave -noupdate -expand -group ICACHE /system_tb/DUT/CPU/dcif/imemREN
+add wave -noupdate -expand -group ICACHE {/system_tb/DUT/CPU/CM/ccif/iREN[0]}
+add wave -noupdate -expand -group ICACHE {/system_tb/DUT/CPU/CM/ccif/iwait[0]}
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/dcif/dmemREN
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/dcif/dmemWEN
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/dcif/dmemaddr
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/cstate
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/cache
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/tag
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/index
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/offset
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/wset
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/rset
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/used
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/daddr[0]}
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/dstore[0]}
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/dload[0]}
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/dWEN[0]}
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/dREN[0]}
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/dwait[0]}
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/dcif/dhit
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/dcif/halt
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/dcif/flushed
+add wave -noupdate /system_tb/DUT/CPU/DP/dpif/ihit
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/HZ/hzif/FDen
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/HZ/hzif/DEen
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/HZ/hzif/EMen
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/HZ/hzif/MWen
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/hzif/loading
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/hzif/branching
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/hzif/jumping
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/PC/pc_cnt
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/pcEN
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/cuif/halt
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/imm26
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/imm16
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/regval
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/pc_src
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/branchmux
+add wave -noupdate -itemcolor {Orange Red} /system_tb/DUT/CPU/DP/ppif/FD_in
+add wave -noupdate -itemcolor Red /system_tb/DUT/CPU/DP/ppif/FD_out
+add wave -noupdate -itemcolor {Orange Red} /system_tb/DUT/CPU/DP/ppif/DE_in
+add wave -noupdate -itemcolor Red -childformat {{/system_tb/DUT/CPU/DP/ppif/DE_out.rd -radix unsigned} {/system_tb/DUT/CPU/DP/ppif/DE_out.rs -radix unsigned} {/system_tb/DUT/CPU/DP/ppif/DE_out.rt -radix unsigned} {/system_tb/DUT/CPU/DP/ppif/DE_out.regdst -radix unsigned}} -subitemconfig {/system_tb/DUT/CPU/DP/ppif/DE_out.opcode {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.rdat1 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.rdat2 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.imm16 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.imm26 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.alu_src {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.alu_op {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.shamt {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.rd {-height 17 -itemcolor Red -radix unsigned} /system_tb/DUT/CPU/DP/ppif/DE_out.rs {-height 17 -itemcolor Red -radix unsigned} /system_tb/DUT/CPU/DP/ppif/DE_out.rt {-height 17 -itemcolor Red -radix unsigned} /system_tb/DUT/CPU/DP/ppif/DE_out.regdst {-height 17 -itemcolor Red -radix unsigned} /system_tb/DUT/CPU/DP/ppif/DE_out.memwr {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.dcuWEN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.dcuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.pc_plus_4 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.memtoreg {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.pc_src {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.regwr {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.icuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.halt {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.beq {-height 17 -itemcolor Red}} /system_tb/DUT/CPU/DP/ppif/DE_out
+add wave -noupdate /system_tb/DUT/CPU/DP/RF/rfile
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/fwif/fwd_op1
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/fwif/fwd_op2
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/fwif/fwd_mem
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/aluif/opcode
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/op1_saved
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/op2_saved
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/aluif/op1
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/aluif/op2
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/aluif/res
+add wave -noupdate -itemcolor {Orange Red} /system_tb/DUT/CPU/DP/ppif/EM_in
+add wave -noupdate -itemcolor Red -expand -subitemconfig {/system_tb/DUT/CPU/DP/ppif/EM_out.opcode {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.alu_res {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.dmemstore {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.rd {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.rt {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.regdst {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.memwr {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.dcuWEN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.dcuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.pc_plus_4 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.memtoreg {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.pc_src {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.regwr {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.icuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.halt {-height 17 -itemcolor Red}} /system_tb/DUT/CPU/DP/ppif/EM_out
+add wave -noupdate {/system_tb/DUT/CPU/CC/ccif/dWEN[0]}
+add wave -noupdate {/system_tb/DUT/CPU/CC/ccif/dstore[0]}
+add wave -noupdate {/system_tb/DUT/CPU/CC/ccif/daddr[0]}
+add wave -noupdate /system_tb/DUT/CPU/dcif/dmemload
+add wave -noupdate -itemcolor {Orange Red} /system_tb/DUT/CPU/DP/ppif/MW_in
+add wave -noupdate -itemcolor Red -childformat {{/system_tb/DUT/CPU/DP/ppif/MW_out.wsel -radix unsigned}} -expand -subitemconfig {/system_tb/DUT/CPU/DP/ppif/MW_out.opcode {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.alu_res {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.dmemload {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.wsel {-height 17 -itemcolor Red -radix unsigned} /system_tb/DUT/CPU/DP/ppif/MW_out.memtoreg {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.pc_src {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.dcuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.icuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.pc_plus_4 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.halt {-height 17 -itemcolor Red}} /system_tb/DUT/CPU/DP/ppif/MW_out
+add wave -noupdate -color Green -itemcolor Green -radix hexadecimal -childformat {{{/system_tb/DUT/CPU/DP/RF/rfile[31]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[30]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[29]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[28]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[27]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[26]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[25]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[24]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[23]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[22]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[21]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[20]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[19]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[18]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[17]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[16]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[15]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[14]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[13]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[12]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[11]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[10]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[9]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[8]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[7]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[6]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[5]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[4]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[3]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[2]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[1]} -radix hexadecimal} {{/system_tb/DUT/CPU/DP/RF/rfile[0]} -radix hexadecimal}} -subitemconfig {{/system_tb/DUT/CPU/DP/RF/rfile[31]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[30]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[29]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[28]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[27]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[26]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[25]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[24]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[23]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[22]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[21]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[20]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[19]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[18]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[17]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[16]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[15]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[14]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[13]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[12]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[11]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[10]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[9]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[8]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[7]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[6]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[5]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[4]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[3]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[2]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[1]} {-color Green -height 17 -itemcolor Green -radix hexadecimal} {/system_tb/DUT/CPU/DP/RF/rfile[0]} {-color Green -height 17 -itemcolor Green -radix hexadecimal}} /system_tb/DUT/CPU/DP/RF/rfile
+TreeUpdate [SetDefaultTree]
+WaveRestoreCursors {{Cursor 1} {2989519 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 150
+configure wave -valuecolwidth 100
+configure wave -justifyvalue left
+configure wave -signalnamewidth 1
+configure wave -snapdistance 10
+configure wave -datasetprefix 0
+configure wave -rowmargin 4
+configure wave -childrowmargin 2
+configure wave -gridoffset 0
+configure wave -gridperiod 1
+configure wave -griddelta 40
+configure wave -timeline 0
+configure wave -timelineunits ns
+update
+WaveRestoreZoom {2318580 ps} {3091446 ps}

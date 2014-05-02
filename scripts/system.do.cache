@@ -1,0 +1,78 @@
+onerror {resume}
+quietly virtual function -install /system_tb/DUT/CPU/DP/HZ/hzif -env /system_tb/DUT/CPU/DP/#ASSIGN#167 { &{/system_tb/DUT/CPU/DP/HZ/hzif/FDflush, /system_tb/DUT/CPU/DP/HZ/hzif/DEflush, /system_tb/DUT/CPU/DP/HZ/hzif/EMflush, /system_tb/DUT/CPU/DP/HZ/hzif/MWflush }} Flushes
+quietly WaveActivateNextPane {} 0
+add wave -noupdate /system_tb/DUT/CPU/DP/PC/pcif/imemaddr
+add wave -noupdate /system_tb/DUT/CPU/DP/ppif/FD_in.opcode
+add wave -noupdate -expand -group ICACHE /system_tb/DUT/CPU/CM/ICACHE/cache
+add wave -noupdate -expand -group ICACHE /system_tb/DUT/CPU/CM/ICACHE/tag
+add wave -noupdate -expand -group ICACHE /system_tb/DUT/CPU/CM/ICACHE/index
+add wave -noupdate -expand -group ICACHE {/system_tb/DUT/CPU/CM/ccif/iaddr[0]}
+add wave -noupdate -expand -group ICACHE {/system_tb/DUT/CPU/CM/ccif/iload[0]}
+add wave -noupdate -expand -group ICACHE /system_tb/DUT/CPU/dcif/imemREN
+add wave -noupdate -expand -group ICACHE {/system_tb/DUT/CPU/CM/ccif/iREN[0]}
+add wave -noupdate -expand -group ICACHE {/system_tb/DUT/CPU/CM/ccif/iwait[0]}
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/dcif/dmemREN
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/dcif/dmemWEN
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/cstate
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/cache
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/tag
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/index
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/offset
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/wset
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/rset
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/DCACHE/used
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/daddr[0]}
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/dstore[0]}
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/dload[0]}
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/dWEN[0]}
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/dREN[0]}
+add wave -noupdate -expand -group DCACHE {/system_tb/DUT/CPU/CM/ccif/dwait[0]}
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/dcif/dhit
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/dcif/halt
+add wave -noupdate -expand -group DCACHE /system_tb/DUT/CPU/CM/dcif/flushed
+add wave -noupdate /system_tb/DUT/CPU/DP/dpif/ihit
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/HZ/hzif/FDen
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/HZ/hzif/DEen
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/HZ/hzif/EMen
+add wave -noupdate -expand -group {HAZARD UNIT} /system_tb/DUT/CPU/DP/HZ/hzif/MWen
+add wave -noupdate -expand -group {HAZARD UNIT} -radix unsigned -childformat {{(3) -radix unsigned} {(2) -radix unsigned} {(1) -radix unsigned} {(0) -radix unsigned}} -expand -subitemconfig {/system_tb/DUT/CPU/DP/HZ/hzif/FDflush {-radix unsigned} /system_tb/DUT/CPU/DP/HZ/hzif/DEflush {-radix unsigned} /system_tb/DUT/CPU/DP/HZ/hzif/EMflush {-radix unsigned} /system_tb/DUT/CPU/DP/HZ/hzif/MWflush {-radix unsigned}} /system_tb/DUT/CPU/DP/HZ/hzif/Flushes
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/PC/pc_cnt
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/pcEN
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/cuif/halt
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/imm26
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/imm16
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/regval
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/pc_src
+add wave -noupdate -expand -group {HAZARD UNIT} -expand -group PC /system_tb/DUT/CPU/DP/pcif/branchmux
+add wave -noupdate -itemcolor {Orange Red} /system_tb/DUT/CPU/DP/ppif/FD_in
+add wave -noupdate -itemcolor Red /system_tb/DUT/CPU/DP/ppif/FD_out
+add wave -noupdate -itemcolor {Orange Red} /system_tb/DUT/CPU/DP/ppif/DE_in
+add wave -noupdate -itemcolor Red -childformat {{/system_tb/DUT/CPU/DP/ppif/DE_out.rd -radix unsigned} {/system_tb/DUT/CPU/DP/ppif/DE_out.rs -radix unsigned} {/system_tb/DUT/CPU/DP/ppif/DE_out.rt -radix unsigned} {/system_tb/DUT/CPU/DP/ppif/DE_out.regdst -radix unsigned}} -subitemconfig {/system_tb/DUT/CPU/DP/ppif/DE_out.opcode {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.rdat1 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.rdat2 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.imm16 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.imm26 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.alu_src {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.alu_op {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.shamt {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.rd {-height 17 -itemcolor Red -radix unsigned} /system_tb/DUT/CPU/DP/ppif/DE_out.rs {-height 17 -itemcolor Red -radix unsigned} /system_tb/DUT/CPU/DP/ppif/DE_out.rt {-height 17 -itemcolor Red -radix unsigned} /system_tb/DUT/CPU/DP/ppif/DE_out.regdst {-height 17 -itemcolor Red -radix unsigned} /system_tb/DUT/CPU/DP/ppif/DE_out.memwr {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.dcuWEN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.dcuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.pc_plus_4 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.memtoreg {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.pc_src {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.regwr {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.icuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.halt {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/DE_out.beq {-height 17 -itemcolor Red}} /system_tb/DUT/CPU/DP/ppif/DE_out
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/aluif/opcode
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/aluif/op1
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/aluif/op2
+add wave -noupdate -expand -group ALU /system_tb/DUT/CPU/DP/aluif/res
+add wave -noupdate -itemcolor {Orange Red} -subitemconfig {/system_tb/DUT/CPU/DP/ppif/EM_in.opcode {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.alu_res {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.dmemstore {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.rd {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.rt {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.regdst {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.memwr {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.dcuWEN {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.dcuREN {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.pc_plus_4 {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.memtoreg {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.pc_src {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.regwr {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.icuREN {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/EM_in.halt {-itemcolor {Orange Red}}} /system_tb/DUT/CPU/DP/ppif/EM_in
+add wave -noupdate -itemcolor Red -expand -subitemconfig {/system_tb/DUT/CPU/DP/ppif/EM_out.opcode {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.alu_res {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.dmemstore {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.rd {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.rt {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.regdst {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.memwr {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.dcuWEN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.dcuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.pc_plus_4 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.memtoreg {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.pc_src {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.regwr {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.icuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/EM_out.halt {-height 17 -itemcolor Red}} /system_tb/DUT/CPU/DP/ppif/EM_out
+add wave -noupdate /system_tb/DUT/CPU/dcif/dmemload
+add wave -noupdate -itemcolor {Orange Red} -subitemconfig {/system_tb/DUT/CPU/DP/ppif/MW_in.opcode {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/MW_in.alu_res {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/MW_in.dmemload {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/MW_in.wsel {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/MW_in.memtoreg {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/MW_in.pc_src {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/MW_in.dcuREN {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/MW_in.icuREN {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/MW_in.pc_plus_4 {-itemcolor {Orange Red}} /system_tb/DUT/CPU/DP/ppif/MW_in.halt {-itemcolor {Orange Red}}} /system_tb/DUT/CPU/DP/ppif/MW_in
+add wave -noupdate -itemcolor Red -childformat {{/system_tb/DUT/CPU/DP/ppif/MW_out.wsel -radix unsigned}} -expand -subitemconfig {/system_tb/DUT/CPU/DP/ppif/MW_out.opcode {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.alu_res {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.dmemload {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.wsel {-height 17 -itemcolor Red -radix unsigned} /system_tb/DUT/CPU/DP/ppif/MW_out.memtoreg {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.pc_src {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.dcuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.icuREN {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.pc_plus_4 {-height 17 -itemcolor Red} /system_tb/DUT/CPU/DP/ppif/MW_out.halt {-height 17 -itemcolor Red}} /system_tb/DUT/CPU/DP/ppif/MW_out
+add wave -noupdate -color Green -itemcolor Green -radix hexadecimal /system_tb/DUT/CPU/DP/RF/rfile
+TreeUpdate [SetDefaultTree]
+WaveRestoreCursors {{Cursor 1} {1540335 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 150
+configure wave -valuecolwidth 100
+configure wave -justifyvalue left
+configure wave -signalnamewidth 1
+configure wave -snapdistance 10
+configure wave -datasetprefix 0
+configure wave -rowmargin 4
+configure wave -childrowmargin 2
+configure wave -gridoffset 0
+configure wave -gridperiod 1
+configure wave -griddelta 40
+configure wave -timeline 0
+configure wave -timelineunits ns
+update
+WaveRestoreZoom {1303445 ps} {2090945 ps}
