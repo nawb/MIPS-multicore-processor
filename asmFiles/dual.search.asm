@@ -1,9 +1,10 @@
 #--------------------------------------
-# Test a search algorithm
+# Test a search algorithm in parallel - core1 searches half the list and core2 searches the latter half
+# They store a found flag that is a shared address between them.
 #--------------------------------------
   org   0x0000
   ori   $sp, $zero, 0x80
-start:
+startp1:
   ori   $1, $zero, 0x01
   ori   $2, $zero, 0x04
 
@@ -12,19 +13,18 @@ start:
   lw    $4, 8($sp)            # load search length into $4
   addiu $5, $sp, 12           # search pointer is in $5
 
-loop:
+loopp1:
   lw    $6, 0($5)             # load element at pointer $5
   subu  $7, $6, $3            # compare loaded element with search var
-  beq   $7, $zero, found      # if matches, go to found
+  beq   $7, $zero, foundp1    # if matches, go to found
   addu  $5, $5, $2            # increment pointer
   subu  $4, $4, $1            # subutract search length
-  beq   $4, $zero, notfound   # if end of list, go to not found
-  beq   $0, $zero, loop       # do loop again
-found:
+  beq   $4, $zero, notfoundp1 # if end of list, go to not found
+  beq   $0, $zero, loopp1     # do loop again
+foundp1:
   sw    $5, 0($sp)            # store into 0x80
-notfound:
+notfoundp1:
   halt
-
 
   org 0x80
 item_position:
@@ -32,7 +32,7 @@ item_position:
 search_item:
   cfw 0x5c6f
 list_length:
-  cfw 100
+  cfw 50                      # 100 items divided into 2
 search_list:
   cfw 0x087d
   cfw 0x5fcb
@@ -84,6 +84,7 @@ search_list:
   cfw 0xb495
   cfw 0x8a5e
   cfw 0xd859
+p2list:	
   cfw 0x0bac
   cfw 0xd0db
   cfw 0x3552
@@ -135,5 +136,29 @@ search_list:
   cfw 0x8bf9
   cfw 0x12f7
 
-org 0x200
- halt
+
+  org   0x0200
+  ori   $sp, $zero, 0x80
+startp2:
+  ori   $1, $zero, 0x01
+  ori   $2, $zero, 0x04
+
+  sw    $0, 0($sp)            # set result to 0   #doesn't need to be atomized - both are writing 0
+  lw    $3, 4($sp)            # load search variable into $3
+  lw    $4, 8($sp)            # load search length into $4
+# addiu $5,  $4, 12           # load starting point (offset + core1 territory = 12+50)
+  ori   $5, $0, p2list        # search pointer is in $5
+
+loopp2:
+  lw    $6, 0($5)             # load element at pointer $5
+  subu  $7, $6, $3            # compare loaded element with search var
+  beq   $7, $zero, foundp2    # if matches, go to found
+  addu  $5, $5, $2            # increment pointer
+  subu  $4, $4, $1            # subutract search length
+  beq   $4, $zero, notfoundp2 # if end of list, go to not found
+  beq   $0, $zero, loopp2     # do loop again
+foundp2:
+  sw    $5, 0($sp)            # store into 0x80
+notfoundp2:
+  halt
+
