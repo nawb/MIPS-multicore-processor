@@ -29,15 +29,11 @@
   
   \subsection{Cache Design}
   
-  1KB 2-way set associative with each block containing 2 words as well as valid, dirty, and state bits.
+  A 2-way set associative cache was designed to hold 1KB of data. As specified, it was designed as a write-back cache, thereby allowing the regulation of writes and decreasing the chances of saturating memory bandwidth. A 64-byte direct-mapped cache was used as the instruction cache.
 
-Implemented as a state machine since filling or flushing a multiple-word block requires multiple memory cycles (the memory can only supply one word at a time).
+The data cache was implemented as a state machine since filling or flushing a multiple-word block required multiple memory cycles (the memory can only supply one word at a time). The state diagram shown in Figure 2 shows how the cache handles cache misses. Within the caches, each block holds an MSI state. It arbitrates with other caches by sending BusRd, BusRdX and BusCache signals onto the bus. 
 
-Description of states. Fetch, Writeback, Flush.
-
-  Within the caches, each block holds an MSI state. It arbitrates with other caches by sending BusRd, BusRdX and BusCache signals onto the bus. 
-
-The MSI protocol was tested by running it through a parallel program (similar to dual.llsc) that would utilize the same address block. Only a single address was changed to keep it simple - the block in dcache was monitored for state transitions while one core would write and the other would read, and then vice versa. 
+The MSI protocol was tested by running it through a parallel program (similar to \textit{dual.llsc}) that would utilize the same address block. Only a single address was changed to keep it simple - the block in dcache was monitored for state transitions while one core would write and the other would read, and then vice versa. 
 
 Verification of dcache involved testing reading and writing. Data incurring cumpulsory misses (tests fetch states), conflict misses with no dirty block, conflict misses with dirty block, working on data with index match but different tag (tests set associativity), flushing.
 
@@ -45,43 +41,55 @@ The common case of dcache use is one where a block is brought into cache and use
 
   
   \subsection{Multicore Design}
-  The CPU designed utilizes a shared memory model architecture - one where multiple processors work on data in a shared address space, communicating over a single shared bus connecting the cores to each other and to main memory. Figure 1 shows the arrangement of the datapath and cache components of the CPU with respect to the memory.
+  The CPU designed utilizes a shared memory model architecture - one where multiple processors work on data in a shared address space, communicating over a single shared bus connecting the cores to each other and to main memory. Figure 5 shows the arrangement of the datapath and cache components of the CPU with respect to the memory.
 
-  In the process of implementing multiple cores, hardware has been added to support write atomicity through \textbf{load-link/store-conditional} instructions. The address to work on is stored in a link register, which is a latch with two fields - a 32-bit address field and a 1-bit valid field. This allowed the implementation to be kept simple. The register may be written to or read from but its result would only hold value (i.e. denote a true atomic operation) when paired with a high valid bit.
+  Important design decisions taking in implementing the coherence controller included adding additional states to the data cache state machine. These included a state for invalidating a block when another cache wrote to it, and three states for writing back all words of a dirty block when another cache wanted it. If a cache had a dirty block and another cache performed a write to it, the former would simply invalidate itself and \textit{not} write the old value to memory. This was done to save bus cycles.
+
+  In the process of implementing multiple cores, hardware was added to support write atomicity through \textbf{load-link/store-conditional} instructions. The address to work on is stored in a link register, which is a latch with two fields - a 32-bit address field and a 1-bit valid field. The register may be written to or read from but its result would only hold value (i.e. denote a true atomic operation) when paired with a high valid bit.
   
-  One key change that needed to be made to implement multicore was to replace the memory controller with a bus controller, for a bus which connects to RAM and both CPUs. This bus controller arbitrates between the two CPU cores, facilitating memory access and transitions in the MSI state machine for cache coherence. The bus controller is implemented with its own state machine, different from but tightly interconnected with the MSI state machine. One of the important design decisions in a multicore CPU is how to implement this bus controller and its state machine.
+  %One key change that needed to be made to implement multicore was to replace the memory controller with a bus controller, for a bus which connects to RAM and both CPUs. This bus controller arbitrates between the two CPU cores, facilitating memory access and transitions in the MSI state machine for cache coherence. The bus controller is implemented with its own state machine, different from but tightly interconnected with the MSI state machine. One of the important design decisions in a multicore CPU is how to implement this bus controller and its state machine.
   
   The bus controller state machine starts out in an idle state, which it remains in as long as there is no activity on the bus. Whenever one or both of the CPU cores initiates a bus transaction, the bus controller transitions to a state giving one of the cores control over the bus. The arbitration gives control to whoever comes first, and in the case of both cores requesting at the same time, core 0 wins. The next state sends out signals for a snoop operation, where the requesting core will inform the other core if it needs to invalidate a block or perform a cache to cache transfer. After snooping, if the other core is forced to do a writeback by the coherence operation, a new state is entered for the writeback. If the writeback isn't needed or after the writeback completes, a memory access state is entered which allows the cache to access memory for either a read or a write. Once that core indicates that it has completed its memory transaction, the bus controller then returns to idle.
 
   \pagebreak
   \subsection{Diagrams}
 
-  \begin{figure}[hp]
-      \includegraphics[width=\textwidth,angle=90]{pipeline_datapath.pdf}
-    \caption{Pipeline Diagram}
+\begin{figure}[hp]
+   \centering
+      \includegraphics[width=\textwidth]{cache_coherence_state_diagram.jpg}
+    \caption{Coherence Controller State Diagram}
+  \end{figure}
+
+\begin{figure}[hp]
+   \centering
+      \includegraphics[width=\textwidth]{dcache_state.jpg}
+    \caption{Data Cache State Diagram}
   \end{figure}
 
     \begin{figure}[hp]
+    \centering
       \includegraphics[width=\textwidth]{caches.pdf}
     \caption{Data Cache Diagram}
-  \end{figure}
+  \end{figure}   
   
-   \begin{figure}[hp]
-      \includegraphics[width=\textwidth]{cache_coherence_state_diagram.png}
-    \caption{Data Cache Diagram}
-  \end{figure}
-  
-
   \begin{figure}[hp]
+  \centering
       \includegraphics[width=\textwidth]{multicore.png}
     \caption{Multicore Block Diagram}
    \end{figure}
+
+  \begin{figure}[hp]
+  \centering
+      \includegraphics[height=\textwidth,angle=90]{pipeline_datapath.pdf}
+    \caption{Pipelined Datapath Block Diagram}
+  \end{figure}
+
    \pagebreak
 
   \section{Results}
   
     \begin{table}[!hbp]
-
+    \centering
     \begin{tabular}{|l|l|l|}
       \hline
        & Singlecycle & Pipeline \\ \hline
@@ -91,11 +99,11 @@ The common case of dcache use is one where a block is brought into cache and use
       CPI without cache (1 cycle RAM) & 1.4 cycles & 1.8 cycles\\ \hline      
     \end{tabular}
 
-    \caption{Synthesis results comparison using fib.asm}
+    \caption{Synthesis results comparison using fibonacci}
   \end{table}
   
-      \begin{table}[!hbp]
-
+  \begin{table}[!hbp]
+  \centering
     \begin{tabular}{|l|l|l|}
       \hline
       & Pipeline with cache & Multicore \\ \hline
@@ -103,29 +111,29 @@ The common case of dcache use is one where a block is brought into cache and use
       Registers Used & 4135 & 8221 \\ \hline
       Minimum Clock Cycle & 17.0ns & 25.2ns \\ \hline
     \end{tabular}
-        \caption{Cached pipeline and multicore comparision}
+        \caption{Synthesis results comparison using parallel search}
 
       \end{table}
 
+  
+  The logic elements and registers used indicate how much of the FPGA is being used, these were taken directly from the Quartus log files. As expected, these increased with each new design's increased complexity. In particular, caches resulted in a huge number of registers because each bit of cache is one. And multicore approximately doubled each, as would be expected.
+  
+  Minimum clock period gives the total delay through the system's critical path, and was found as the inverse of the max frequency (1200mV 0C Model) given in the log files. The pipeline decreased the length of the critical path, which is expected becaue that is the entire point of pipelining. Caches made the critical path longer, and multicore longer than that.
+
     
-  \begin{table}[!hbp]
+  \begin{table}[!ht]
+  \centering
     \begin{tabular}{|l|l|l|l|}
       \hline
       & Pipeline without cache & Pipeline with cache & Multicore \\ \hline
       1 cycle RAM & 1.8 & 2.0 & 2.3 \\ \hline
       5 cycle RAM & 3.0* & 2.8 & 3.1 \\ \hline
     \end{tabular}
-    \caption{CPI Results}
+    \caption{CPI results using parallel search}
+    \textit{* = estimated result for non-working design}
   \end{table}
 
-  
-  * = estimated result for non-working design
-  
-  The logic elements and registers used indicate how much of the FPGA is being used, these were taken directly from the Quartus log files. As expected, these increased with each new design's increased complexity. In particular, caches resulted in a huge number of registers because each bit of cache is one. And ulticore approximately doubled each, as would be expected.
-  
-  Minimum clock period gives the total delay through the system's critical path, and was found as the inverse of the max frequency (1200mV 0C Model) given in the log files. The pipeline decreased the length of the critical path, which is expected becaue that is the entire point of pipelining. Caches made the critical path longer, and multicore longer than that.
-
-  For the CPI numbers, fib.asm was run on each of the CPUs. To find the number of instructions, it was run in the MIPS simulator which reports the instruction count when it finishes executing, which was 160 instructions. Then when simulating in hardware, the testbench prints out the number of clock cycles. Since the CPU was running off of a clock divider at half the system clock frequency, the number of CPU cycles taken was half of what the testbench reported. Then the CPI calculation was a direct application of the definition, number of cycles/number of instructions. For the singlecycle, each instruction took 1 cycle unless it was a LW/SW, which took 2. With 40 percent of dynamic instructions in fib.asm being LW/SW, the CPI would be expected to be 1.4 which it was. Then the CPI got progressively worse in each implemtation, with 1 cycle RAM latency. First the pipeline added stalls, then the cache added miss penalties, then the multicore added coherence operations, all of which increases the CPI. However, with a higher RAM latency the cache decreates average memory access time and achieves better CPI, but coherence still brings it back down somewhat.
+  For the CPI numbers, the parallel search program (provided in Appendix A) was run on each of the CPUs. To find the number of instructions, it was run in the MIPS simulator which reports the instruction count when it finishes executing, which was 160 instructions. Then when simulating in hardware, the testbench prints out the number of clock cycles. Since the CPU was running off of a clock divider at half the system clock frequency, the number of CPU cycles taken was half of what the testbench reported. Then the CPI calculation was a direct application of the definition, number of cycles/number of instructions. For the singlecycle, each instruction took 1 cycle unless it was a LW/SW, which took 2. With 40 percent of dynamic instructions in fib.asm being LW/SW, the CPI would be expected to be 1.4 which it was. Then the CPI got progressively worse in each implemtation, with 1 cycle RAM latency. First the pipeline added stalls, then the cache added miss penalties, then the multicore added coherence operations, all of which increases the CPI. However, with a higher RAM latency the cache decreates average memory access time and achieves better CPI, but coherence still brings it back down somewhat.
 
   In the multicore CPU, the critical path is from the RAM address to the memory/writeback latch in the CPU. This implies that the critical path is through the coherence controller and the data cache, which makes a lot of sense. First of all, the fact that it was slower than the single core pipeline with cache immediately points to the coherence controller and/or data caches being the critical path, because they are the only parts that changed in the multicore design, aside from some small additions to the datapath to add the LL and SC instructions. Also, the datapath of each CPU is pipelined to reduce its critical path but the coherence bus controller is a simple single cycle implentation. Obviously without pipelining we should expect it to have a fairly slow maximum clock.
   
@@ -135,12 +143,10 @@ The common case of dcache use is one where a block is brought into cache and use
   %Multicore instruction latency. Throughput is easy but I have no idea how to figure out latency.
   %Discuss how the cache hierarchy influences instruction throughput.
   %Run your parallel algorithm on the multi-core gate level net list with timing included for the following clock periods 100ns/50ns/20ns/10ns/2ns. Discuss any observations or failures you experience.
-  
-\begin{verbatim}
-ori $1,$0,
-end
-\end{verbatim}
-  
+  The design was tested with a parallel search algorithm to measure differences in latency and throughput between the pipeline and the dual-core. The relevant portion of the test program can be found in \textbf{Appendix A}.
+    
+  The program worked as expected for clock periods between \textbf{20ns} and \textbf{100ns}. It was tested on lower clock periods - \textbf{10ns}, \textbf{5ns}, and \textbf{2ns} - and the design did not execute anything beyond its first instruction cycle. The reason for this can be speculated to be the lack of delay time given for the combinational logic blocks between the pipeline latches, such that the clock signal would fall before the logic had time to complete its execution. Another reason could be the lack of delay time between the data cache and the \textit{dmemload} port of the datapath, which is among the paths of our design with highest slack. However, this was not an issue in the test program.
+
   \pagebreak
   \section{Conclusion}
   %the paragraph describing the conclusion and the grading rubric do not really match each other
@@ -148,11 +154,99 @@ end
   %summary
   
   The single cycle processor worked. The pipelined implementation worked, but broke with increased memory latency. The issues causing it to fail were remedied in the version with caches attached. The cached pipelined CPU worked for a reasonably wide range of memory latency (1 to 10 clock cycles). The dual core processor with cache coherence worked equally alike. %assuming palgorithm gets fixed
-  
-  %lessons learned
-  
   %advantages and disadvantages of processors
+  While the singlecycle processor had the advantage of a low CPI, it suffered from a low clockspeed. The pipeline allowed us to speed up the clock, while paying with CPI, thus gaining some performance not withstanding a dramatically higher power consumption. Caches brought both the CPI and clock down, while taking up substantially more area. The multicore added the ability to run 2 programs simultaneously to potentially double the performance, but lost a large fraction of that performance gain to a combination of lower clock speed and higher CPI and, expectedly, doubled area and power consumption.
+  %lessons learned
+  The multicore design, however, could not be mapped onto an FPGA due to synthesis warnings discovered too late. This taught us how modelsim had synthesized our design leading to unintentional bidirectional ports being created. These went unnoticed in all synthesis tests but arose while trying to map to the DE-II.
+  Other important lessons learned were about abstraction and the use of interfaces, tasks and parameters for elegant and clean Verilog code.     
 
-  The singlecycle has the advantage of a low CPI, but suffers from a low clockspeed as well. The pipeline increases the clock but drops CPI, gaining some performance but with dramatically higher power consumption. Caches bring both the CPI and clock down, while taking up substantially more area. The multicore adds the ability to run 2 programs simultaneously to potentially double the performance, but loses a large fraction of that performance gain to a combination of lower clock speed and higher CPI and of course doubles area and power consumption.
+\pagebreak
+\section{Appendix A - code listing}
+\subsection{Parallel Search}
+\begingroup
+\fontsize{10pt}{10pt}\selectfont
+\begin{verbatim}
+#-------------------------------------------------------------------------
+# Test a search algorithm in parallel:
+# core1 searches half the list and core2 searches the latter half
+# They store a found flag that is a shared address between them.
+#-------------------------------------------------------------------------
+\end{verbatim}
+\begin{minipage}[t]{0.5\textwidth}
+\begin{verbatim}
+/************************
+ *     PROCESSOR 1 
+ ************************/
+  org   0x0000
+  ori   $sp, $zero, 0x80
+startp1:
+  ori   $1, $zero, 0x01
+  ori   $2, $zero, 0x04
+
+  sw    $0, 0($sp)            
+  lw    $3, 4($sp)            
+  lw    $4, 8($sp)            
+  addiu $5, $sp, 12           
+
+loopp1:
+  lw    $6, 0($5)             
+  subu  $7, $6, $3            
+  beq   $7, $zero, foundp1    
+  addu  $5, $5, $2            
+  subu  $4, $4, $1            
+  beq   $4, $zero, notfoundp1 
+  beq   $0, $zero, loopp1     
+foundp1:
+  sw    $5, 0($sp)            
+
+notfoundp1:
+  halt
+\end{verbatim}
+%  org 0x80
+%item_position:
+%  cfw 0                       # should be found at 0x0124
+%search_item:
+%  cfw 0x5c6f
+%list_length:
+%  cfw 50                      # 100 items divided into 2
+%search_list:
+%  cfw 0x087d
+%  ...
+%p2list: 
+%  cfw 0x0bac
+%  ...
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\begin{verbatim}
+/************************
+ *     PROCESSOR 2 
+ ************************/
+  org   0x0200
+  ori   $sp, $zero, 0x80
+startp2:
+  ori   $1, $zero, 0x01
+  ori   $2, $zero, 0x04
+
+  sw    $0, 0($sp)  # both storing 0
+  lw    $3, 4($sp)  
+  lw    $4, 8($sp)  
+  ori   $5, $0, p2list
+
+loopp2:
+  lw    $6, 0($5)   # load from search ptr
+  subu  $7, $6, $3  
+  beq   $7, $zero, foundp2
+  addu  $5, $5, $2        
+  subu  $4, $4, $1        
+  beq   $4, $zero, notfoundp2
+  beq   $0, $zero, loopp2
+foundp2:
+  sw    $5, 0($sp)  # only one of the
+                    # cores will store
+notfoundp2:
+  halt
+\end{verbatim}
+\end{minipage}
+\endgroup
 
 \end{document}
